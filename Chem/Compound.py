@@ -1,3 +1,4 @@
+import numpy as np
 class Compound:
     ''' simple class for describing chemical compounds by empirical formula 
     
@@ -22,14 +23,19 @@ class Compound:
         By parsing empirical formulas into element:count dictionaries, Compounds
         can be incorporated into Reactions and those Reactions can be balanced. 
 
+        Any keyword arguments passed to __init__ that are not 'empirical_formula'
+        or 'name' are stored in the attribute dictionary 'thermoChemicalData'
+
         Cameron F. Abrams cfa22@drexel.edu 
 
     '''
-    def __init__(self,ef,nameStr=''):
-        if len(ef)>0:
-            self.name=nameStr # optional namestring
-            efc=ef.split('^')
+    def __init__(self,empirical_formula='',name='',**kwargs):
+        if len(empirical_formula)>0:
+            self.name=name # optional namestring
+            efc=empirical_formula.split('^')
             self.ef=efc[0]
+            if len(self.name)==0:
+                self.name=self.ef
             self.charge=0
             if len(efc)>1:
                 expo=efc[1]
@@ -41,6 +47,40 @@ class Compound:
             self.A=parse_empirical_formula(self.ef)
             ''' To do: allow for charges in ef (as block superscripts) '''
             self.atomset=set(self.A.keys())
+            self.thermoChemicalData=kwargs
+            if not 'Tref' in self.thermoChemicalData:
+                self.thermoChemicalData['Tref']=298.15
+            for reqScal in ['H','G']:
+                if reqScal not in self.thermoChemicalData:
+                    self.thermoChemicalData[reqScal]=0.
+            for reqArr in ['Cp']:
+                if reqArr not in self.thermoChemicalData:
+                    self.thermoChemicalData[reqArr]=np.array([0.])
+            #print(self.name,self.thermoChemicalData)
+    def setThermochemicalData(self,**kwargs):
+        for k,v in kwargs.items():
+            self.thermoChemicalData[k]=v
+    def reportThermochemicalData(self):
+        for k,v in self.thermoChemicalData.items():
+            print(f'{k}: {str(v)}')
+    def computeGoT(self,T):
+        ''' Computes the standard state Gibbs energy of formation at arbitrary temperature T '''
+        go=self.thermoChemicalData['G']
+        ho=self.thermoChemicalData['H']
+        cpo=self.thermoChemicalData['Cp']
+        Tref=self.thermoChemicalData['Tref']
+        self.thermoChemicalData['T']=T
+        gT=go*T/Tref+ho*(1-T/Tref)+self._cpI(cpo,(Tref,T))-T*self._cpTI(cpo,(Tref,T))
+        self.thermoChemicalData['GoT']=gT
+    def _cpI(self,cp,TL):
+        return sum([cp[i]/(i+1)*(TL[1]**(i+1)-TL[0]**(i+1)) for i in range(len(cp))])
+    def _cpTI(self,cp,TL):
+        return cp[0]*np.log(TL[1]/TL[0])+sum([cp[i]/i*(TL[1]**i-TL[0]**i) for i in range(1,len(cp))])
+    def __eq__(self,other):
+        return self.A==other.A
+    def __hash__(self):
+        ''' provided to make instances of Compounds hashable '''
+        return id(self)
     def __str__(self):
         return self.ef+('' if self.charge==0 else r'^{'+f'{self.charge:+}'+r'}')
     def countAtoms(self,a):
@@ -49,6 +89,8 @@ class Compound:
         else:
             return 0
 
+''' a bunch of functions that permit conversion of an empirical formula into
+    an element:count dictionary '''
 # per https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on
 def _push(obj,l,depth):
     while depth:
@@ -63,7 +105,6 @@ def _parse_parentheses(s):
     try:
         i=0
         while i<len(s):
-#        for char in s:
             char=s[i]
             if char == '(':
                 _push([], groups, depth)
@@ -150,11 +191,9 @@ def parse_empirical_formula(ef):
     return reduce(my_flatten(block_levels))
 
 if __name__ == '__main__':
-    compounds=[]
-    empirical_formulas={'methane':'CH4','methanol':'CH3OH','n-butane':'CH3(CH2)2CH3','water':'H2O','hydrogen':'H2','silver chloride':'AgCl','silver nitrate':'AgNO3','sodium chloride':'NaCl','sodium nitrate':'NaNO3','calcium nitrate':'Ca(NO3)2','sodium sulfate':'Na2SO4','cobalt chloride':'CoCl2','cobalt nitrate':'Co(NO3)2','phenol':'C6H5OH','toluene':'C6H5CH3','some polyether':'CH3(OCH2)10CH3','graphite':'C','hydroxide':'OH^{-1}'}
-    for name,ef in empirical_formulas.items():
-        compounds.append(Compound(ef,nameStr=name))
-    for c in compounds:
-        print(f'{str(c):>20s} = {c.A}')
-    
+    A=Compound(empirical_formula='A2B')
+    B=Compound(empirical_formula='BA2')
+    print(A==B) # test for equality by reduced empirical formula; should be true
+    my_dict={A:0.5,B:1.2} # should be possible to use Compound instances as dictionary keys
+    print(my_dict)
 

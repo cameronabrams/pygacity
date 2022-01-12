@@ -1,0 +1,51 @@
+=>PYTHONTEX#py#default#default#0#code####AmmoniaSynthesis.tex#1#
+import numpy as np
+import sys
+sys.path.append('../Chem')
+from Properties import PureProperties
+from System import ChemEqSystem
+from Reaction import Reaction
+Prop=PureProperties()
+my_compounds={
+    'A':Prop.get_compound('hydrogen (equilib)'),
+    'B':Prop.get_compound('nitrogen'),
+    'C':Prop.get_compound('ammonia'),
+}
+N0={my_compounds['A']:3.,my_compounds['B']:1.,my_compounds['C']:0.}
+T=323.15
+P=8 # bar
+Eq=ChemEqSystem(N0=N0,T=500,P=15)
+Eq.solve_lagrange()
+R=Reaction(R=[my_compounds['A'],my_compounds['B']],P=[my_compounds['C']])
+rxnstr=R.latexify()
+=>PYTHONTEX#py#default#default#1#i####AmmoniaSynthesis.tex#23#
+T
+=>PYTHONTEX#py#default#default#2#i####AmmoniaSynthesis.tex#25#
+rxnstr
+=>PYTHONTEX#py#default#default#3#i####AmmoniaSynthesis.tex#27#
+np.round(Eq.ys[2],decimals=4)
+=>PYTHONTEX:SETTINGS#
+version=0.18
+outputdir=pythontex-files-driver
+workingdir=.
+workingdirset=false
+gobble=none
+rerun=default
+hashdependencies=default
+makestderr=false
+stderrfilename=full
+keeptemps=none
+pyfuture=default
+pyconfuture=none
+pygments=true
+pygglobal=:GLOBAL||
+fvextfile=-1
+pyconbanner=none
+pyconfilename=stdin
+depythontex=false
+pygfamily=py|python3|
+pygfamily=pycon|pycon|
+pygfamily=sympy|python3|
+pygfamily=sympycon|pycon|
+pygfamily=pylab|python3|
+pygfamily=pylabcon|pycon|
