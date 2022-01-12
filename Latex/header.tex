@@ -16,9 +16,6 @@
 \usepackage{booktabs}
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{pythontex}
-%\usepackage[utf8]{inputenc}
-
-%\DTLsetseparator{,}
 
 \newif\ifshowsolutions
 \newif\ifshowanswers
@@ -59,6 +56,7 @@ numbers=none
 \newcommand{\inl}[1][]{%
   \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
 }
+
 \DeclareRobustCommand{\molar}[1]{\underaccent{\bar}{#1}}
 \newcommand{\parmol}[2]{\overline{#1}_{#2}}
 \def\ub{\molar{U}}
@@ -79,13 +77,17 @@ numbers=none
 \newcommand{\gr}{\dr{G^{\circ}}}
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
+
+\newcommand{\Universityname}{\so{\sc Drexel University}}
+\newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
+
 \newcommand{\psheader}[4]{
     \showsolutionsfalse
     \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
     \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
     \begin{centering}
-        {\sc D\ R\ E\ X\ E\ L\ \ \ U\ N\ I\ V\ E\ R\ S\ I\ T\ Y}\\
-        Department of Chemical and Biological Engineering\\
+        \Universityname\\
+        \Departmentname\\
         CHE 330 -- Chemical Engineering Thermodynamics II -- {#1} -- Prof. Abrams\\
         P\ R\ O\ B\ L\ E\ M\ \ \ S\ E\ T\ \ \ {#2}\\
         Due {#3}\\*[5mm]

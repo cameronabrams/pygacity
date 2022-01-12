@@ -45,6 +45,7 @@ class Compound:
                     print('Error: malformed charge:',efc[1])
             ''' dictionary of atomname:count items representing empirical formula '''
             self.A=parse_empirical_formula(self.ef)
+            self._reorder_elements()
             ''' To do: allow for charges in ef (as block superscripts) '''
             self.atomset=set(self.A.keys())
             self.thermoChemicalData=kwargs
@@ -76,6 +77,19 @@ class Compound:
         return sum([cp[i]/(i+1)*(TL[1]**(i+1)-TL[0]**(i+1)) for i in range(len(cp))])
     def _cpTI(self,cp,TL):
         return cp[0]*np.log(TL[1]/TL[0])+sum([cp[i]/i*(TL[1]**i-TL[0]**i) for i in range(1,len(cp))])
+    def _reorder_elements(self):
+        my_order_preference=['C','O','N','H','Na','K','Ca','F','Cl','Br','I']
+        A=self.A.copy()
+        ef=''
+        for a in my_order_preference:
+            if a in A:
+                c='' if A[a]==1 else str(A[a])
+                ef+=f'{a}{c}'
+                del A[a]
+        for e,c in A.items():
+            c='' if c==1 else str(c)
+            ef+=f'{e}{c}'
+        self.ef=ef
     def __eq__(self,other):
         return self.A==other.A
     def __hash__(self):
