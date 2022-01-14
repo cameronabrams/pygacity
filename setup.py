@@ -12,6 +12,6 @@ setup(
       author='Cameron F. Abrams',
       author_email='cfa22@drexel.edu',
       license='MIT',
-      packages=['ThermoProblems','ThermoProblems.Chem'],
+      packages=['ThermoProblems','ThermoProblems.Chem','tests'],
       include_package_data=True
 )

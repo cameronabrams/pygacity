@@ -40,7 +40,7 @@ class Reaction:
             else:
                 infolist.append(f'Δ{p} = {v:.2f}')
         return retstr+' '.join(infolist)
-    def latexify(self):
+    def as_tex(self):
         reactants,products,nureactants,nuproducts=self._split_reactants_products()
         rxnstr=r'\ce{'+' + '.join(['{:s} {:s}'.format(n,e) for n,e in zip(nureactants,reactants)])+r' <=> '+' + '.join(['{:s} {:s}'.format(n,e) for n,e in zip(nuproducts,products)])+r'}'
         return rxnstr

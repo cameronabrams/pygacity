@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import fsolve
 import roman
+from ThermoProblems.Latex.TexUtils import *
 
 class ChemEqSystem:
     R=8.314 # J/mol.K
@@ -48,7 +49,12 @@ class ChemEqSystem:
                 print(f'Reaction {roman.toRoman(i+1):>4s}:',str(r),f' Ka({self.T:.2f} K)={k:.5e} => Xeq={x:.5e}')
         for i,(c,y) in enumerate(zip(self.compounds,self.ys)):
             print(f'y_{str(c)}={y:.4f}')
-
+    def thermochemicaltable_as_tex(self,float_format='.3f'):
+        return table_as_tex({
+            'Species':[c.as_tex() for c in self.compounds],
+            r'$\hf$':[c.thermoChemicalData['H'] for c in self.compounds],
+            r'$\gf$':[c.thermoChemicalData['G'] for c in self.compounds]},
+            drop_zeros=[False,True,True],float_format='{:,.0f}'.format)
     def solve_implicit(self,Xinit=[],ideal=True):
         ''' Implicit solution of M equations using equilibrium constants '''
         def _NX(self,X):

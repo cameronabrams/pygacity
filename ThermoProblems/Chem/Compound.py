@@ -29,6 +29,8 @@ class Compound:
         Cameron F. Abrams cfa22@drexel.edu 
 
     '''
+    compound_properties=['H','G','Cp']
+    system_properties=['T','Tref','P']
     def __init__(self,empirical_formula='',name='',**kwargs):
         if len(empirical_formula)>0:
             self.name=name # optional namestring
@@ -46,31 +48,42 @@ class Compound:
             ''' dictionary of atomname:count items representing empirical formula '''
             self.A=parse_empirical_formula(self.ef)
             self._reorder_elements()
-            ''' To do: allow for charges in ef (as block superscripts) '''
             self.atomset=set(self.A.keys())
-            self.thermoChemicalData=kwargs
-            if not 'Tref' in self.thermoChemicalData:
-                self.thermoChemicalData['Tref']=298.15
-            for reqScal in ['H','G']:
-                if reqScal not in self.thermoChemicalData:
-                    self.thermoChemicalData[reqScal]=0.
-            for reqArr in ['Cp']:
-                if reqArr not in self.thermoChemicalData:
-                    self.thermoChemicalData[reqArr]=np.array([0.])
-            #print(self.name,self.thermoChemicalData)
+            self.thermoChemicalData={}
+            self.systemData={}
+            self._parseKeywords(kwargs)
+            if 'Tref' not in self.systemData:
+                self.systemData['Tref']=298.15 # assumed by default
+    def _parseKeywords(self,words):
+        for n,v in words.items():
+            if n in self.compound_properties:
+                self.thermoChemicalData[n]=v
+            elif n in self.system_properties:
+                self.systemData[n]=v
+        for reqScal in ['H','G']:
+            if reqScal not in self.thermoChemicalData:
+                self.thermoChemicalData[reqScal]=0.
+        for reqArr in ['Cp']:
+            if reqArr not in self.thermoChemicalData:
+                self.thermoChemicalData[reqArr]=np.array([0.]*4)
+        
     def setThermochemicalData(self,**kwargs):
         for k,v in kwargs.items():
             self.thermoChemicalData[k]=v
-    def reportThermochemicalData(self):
+    def report(self,indent=''):
+        print(f'{self.name}({self.ef})\n{indent}Thermochemical Data:')
         for k,v in self.thermoChemicalData.items():
-            print(f'{k}: {str(v)}')
+            print(f'{indent}    {k}: {str(v)}')
+        print(f'{indent}System Data:')
+        for k,v in self.systemData.items():
+            print(f'{indent}    {k}: {str(v)}')
     def computeGoT(self,T):
         ''' Computes the standard state Gibbs energy of formation at arbitrary temperature T '''
         go=self.thermoChemicalData['G']
         ho=self.thermoChemicalData['H']
         cpo=self.thermoChemicalData['Cp']
-        Tref=self.thermoChemicalData['Tref']
-        self.thermoChemicalData['T']=T
+        Tref=self.systemData['Tref']
+        self.systemData['T']=T
         gT=go*T/Tref+ho*(1-T/Tref)+self._cpI(cpo,(Tref,T))-T*self._cpTI(cpo,(Tref,T))
         self.thermoChemicalData['GoT']=gT
     def _cpI(self,cp,TL):
@@ -97,6 +110,8 @@ class Compound:
         return id(self)
     def __str__(self):
         return self.ef+('' if self.charge==0 else r'^{'+f'{self.charge:+}'+r'}')
+    def as_tex(self):
+        return r'\ce{'+str(self)+r'}'
     def countAtoms(self,a):
         if a in self.A:
             return self.A[a]
