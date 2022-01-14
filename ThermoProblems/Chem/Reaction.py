@@ -20,9 +20,12 @@ class Reaction:
         self.nCompounds=len(self.Compounds)
         self.nu=[]
         self.stoProps={}
-        self._balance()
-        if not nosums:
-            self._computeStoSums()
+        if len(R)>0 and len(P)>0:
+            self._balance()
+            if not nosums:
+                self._computeStoSums()
+        else:
+            print('Empty Reaction created.')
     def __str__(self):
         ''' spoof nu if reaction is not yet balanced '''
         nuR=['*']*self.nReactants if len(self.nu)==0 else self.nu[:self.nReactants]

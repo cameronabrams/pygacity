@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
-from Compound import Compound
+import pkgutil
+from .Compound import Compound
 class PureProperties:
     ''' simple class for handling Sandler's pure properties database '''
     def __init__(self,inputfile='properties_binaries_database.xlsx',sheet_name='pure_properties'):
-        self.inputfile=inputfile
-        self.df=pd.read_excel(inputfile,sheet_name=sheet_name,index_col=2)
+        self.inputfile=pkgutil.get_data(__name__,'data/'+inputfile)
+        self.df=pd.read_excel(self.inputfile,sheet_name=sheet_name,index_col=2)
         self.df.fillna(0,inplace=True)
     def report(self):
         print(self.df.columns)

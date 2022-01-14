@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+\usepackage{datatool}
+\usepackage{graphicx}
+\usepackage{amsfonts, amssymb, amsmath, latexsym, epic, eepic, url, enumitem}
+\usepackage{multirow}
+\usepackage{palatino}
+\usepackage[mathscr]{euscript}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{accents}
+\usepackage{xifthen}
+\usepackage{cancel}
+\usepackage{listings}
+\usepackage{xfp}
+\usepackage[version=4]{mhchem}
+\usepackage{booktabs}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{pythontex}
+
+\newif\ifshowsolutions
+\newif\ifshowanswers
+\newif\ifgivespace
+
+\newsavebox{\fmbox}
+\newenvironment{fmpage}[1]
+{\begin{lrbox}{\fmbox}\begin{minipage}[c]{#1}}
+{\end{minipage}\end{lrbox}\fbox{\usebox{\fmbox}}}
+
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{lightlightgray}{gray}{0.9}
+\lstdefinestyle{mybash}{language=bash,basicstyle=\ttfamily\color{white},backgroundcolor=\color{black},numbers=none,keywordstyle=\bf\color{white},showspaces=false,showstringspaces=false}
+\lstdefinestyle{myc}{language=C,basicstyle=\ttfamily\color{CadetBlue},backgroundcolor=\color{lightlightgray},frame=none,numbers=none,keywordstyle=\bf\color{CadetBlue},tabsize=2,showspaces=false,showstringspaces=false}
+\lstdefinestyle{mypython}{
+language=Python,                             % Code langugage
+basicstyle=\footnotesize\ttfamily,                   % Code font, Examples: \footnotesize, \ttfamily
+keywordstyle=\color{OliveGreen},        % Keywords font ('*' = uppercase)
+commentstyle=\color{gray},              % Comments font
+numbers=left,                           % Line nums position
+numberstyle=\tiny,                      % Line-numbers fonts
+stepnumber=1,                           % Step between two line-numbers
+numbersep=5pt,                          % How far are line-numbers from code
+backgroundcolor=\color{lightlightgray}, % Choose background color
+frame=none,                             % A frame around the code
+tabsize=4,                              % Default tab size
+captionpos=b,                           % Caption-position = bottom
+breaklines=true,                        % Automatic line breaking?
+breakatwhitespace=false,                % Automatic breaks only at whitespace?
+showspaces=false,                       % Dont make spaces visible
+showstringspaces=false,
+showtabs=false,                         % Dont make tabls visible
+numbers=none
+%columns=flexible,                       % Column format
+}
+\newcommand{\inl}[1][]{%
+  \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
+}
+
+\DeclareRobustCommand{\molar}[1]{\underaccent{\bar}{#1}}
+\newcommand{\parmol}[2]{\overline{#1}_{#2}}
+\def\ub{\molar{U}}
+\def\hb{\molar{H}}
+\def\sb{\molar{S}}
+\def\vb{\molar{V}}
+\def\gb{\molar{G}}
+\def\thetab{\molar{\theta}}
+\newcommand{\dm}[1]{\Delta_{\rm mix} {#1}}
+\newcommand{\deriv}[2]{\frac{d{#1}}{d{#2}}}
+\newcommand{\pv}{P^{\rm vap}}
+\newcommand{\pd}[2]{\frac{\partial {#1}}{\partial {#2}}}
+\newcommand{\tpd}[3]{\left(\frac{\partial {#1}}{\partial {#2}}\right)_{#3}}
+\newcommand{\ppd}[2]{\frac{\partial^2 {#1}}{\partial {#2}^2}}
+\newcommand{\dr}[1]{\Delta_{\rm rxn} {#1}}
+\newcommand{\df}[1]{\Delta_{\rm f} {#1}^\circ}
+\newcommand{\hr}{\dr{H^{\circ}}}
+\newcommand{\gr}{\dr{G^{\circ}}}
+\newcommand{\hf}{\df{H}}
+\newcommand{\gf}{\df{G}}
+
+\newcommand{\Universityname}{\so{\sc Drexel University}}
+\newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
+
+\newcommand{\psheader}[4]{
+    \showsolutionsfalse
+    \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
+    \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
+    \begin{centering}
+        \Universityname\\
+        \Departmentname\\
+        CHE 330 -- Chemical Engineering Thermodynamics II -- {#1} -- Prof. Abrams\\
+        P\ R\ O\ B\ L\ E\ M\ \ \ S\ E\ T\ \ \ {#2}\\
+        Due {#3}\\*[5mm]
+
+        \ifshowsolutions
+        \color{blue}{\bf S\ O\ L\ U\ T\ I\ O\ N\ S}\color{black}\\
+        \fi
+    \end{centering}
+}
+\newcommand{\examheader}[4]{
+    \showsolutionsfalse
+    \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
+    \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
+    \begin{centering}
+        {\sc D\ R\ E\ X\ E\ L\ \ \ U\ N\ I\ V\ E\ R\ S\ I\ T\ Y}\\
+        Department of Chemical and Biological Engineering\\
+        CHE 330 -- Chemical Engineering Thermodynamics II -- {#1} -- Prof. Abrams\\
+        {#2}\\
+        {#3}\\*[5mm]
+        \ifshowsolutions
+        \color{blue}{\bf S\ O\ L\ U\ T\ I\ O\ N\ S}\color{black}\\*[1cm]
+        \fi
+        \end{centering}
+}
+\newcommand{\morespace}[1]{
+\noindent More space for problem #1
+\clearpage
+}
+\newcommand\examquestion[2]{\givespacetrue\newcommand\totalpoints{#1}\input{#2}\givespacefalse}
+\newcommand\practicequestion[1]{\givespacefalse\input{#1}}
+\newcommand\problem[1]{\givespacefalse\input{#1}}
+\graphicspath{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
+\makeatletter
+\def\input@path{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
+\makeatother

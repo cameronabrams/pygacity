@@ -12,3 +12,10 @@ ThermoProblems/Chem/Properties.py
 ThermoProblems/Chem/Reaction.py
 ThermoProblems/Chem/System.py
 ThermoProblems/Chem/__init__.py
+ThermoProblems/Chem/__pycache__/Reaction.cpython-310.pyc
+ThermoProblems/Chem/__pycache__/__init__.cpython-310.pyc
+ThermoProblems/Chem/data/properties_binaries_database.xlsx
+ThermoProblems/Latex/AmmoniaSynthesis.tex
+ThermoProblems/Latex/driver.tex
+ThermoProblems/Latex/header.tex
+ThermoProblems/__pycache__/__init__.cpython-310.pyc
