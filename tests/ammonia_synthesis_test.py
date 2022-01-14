@@ -2,6 +2,7 @@ import numpy as np
 from ThermoProblems.Chem.Properties import PureProperties
 from ThermoProblems.Chem.System import ChemEqSystem
 from ThermoProblems.Chem.Reaction import Reaction
+from ThermoProblems.Latex.TexUtils import *
 Prop=PureProperties()
 my_compounds={
     'A':Prop.get_compound('hydrogen (equilib)'),
@@ -29,5 +30,7 @@ print('Example reaction:')
 rxnstr=R.as_tex()
 print(rxnstr)
 thermochemicaltable=mock.thermochemicaltable_as_tex()
+resultstable=table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$y_i$':Eq.ys})
 print(thermochemicaltable)
+print(resultstable)
 print('End of test.')
