@@ -134,5 +134,5 @@ if __name__=='__main__':
                     Compound('H2O',G=-900,H=-923,Cp=np.array([30,0.9,0.03,0.003]))
                     ]
                 )
-    print(rxn.latexify())
+    print(rxn.as_tex())
 

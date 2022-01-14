@@ -6,7 +6,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 setup(
       name='ThermoProblems',
-      version='0.1',
+      version='0.0.1',
       description='Routines for solving problems in thermodynamics',
       url='github.com/cameronabrams/ThermoProblems',
       author='Cameron F. Abrams',

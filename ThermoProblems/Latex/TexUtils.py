@@ -2,7 +2,18 @@ import pandas as pd
 import fractions as fr
 from math import fabs
 import numpy as np
+''' 
+    TexUtils for ThermoProblems 
+    Cameron F. Abrams cfa22@drexel.edu
+
+    These functions are used to produce LaTeX-syntax strings relevant
+    for preparing documents containing homework and exam problems for
+    thermodynamics (and beyond).
+
+'''
 def table_as_tex(tabledict,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
+    ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
+        items and generates a table '''
     df=pd.DataFrame(tabledict)
     if drop_zeros:
         for k,d in zip(tabledict.keys(),drop_zeros):
@@ -16,6 +27,7 @@ def table_as_tex(tabledict,float_format='{:.4f}'.format,drop_zeros=None,total_ro
     return tablestring
 
 def sci_notation_as_tex(x,**kwargs):
+    ''' Writes a floating point in LaTeX format scientific notation '''
     maglimit=1000 if 'maglimit' not in kwargs else kwargs['maglimit']
     fmt='{:.4f}' if 'fmt' not in kwargs else kwargs['fmt']
     mantissa_fmt='{:.6e}' if 'mantissa_fmt' not in kwargs else kwargs['mantissa_fmt']
@@ -38,9 +50,17 @@ def sci_notation_as_tex(x,**kwargs):
         return mantissa+r'\times10^{'+exponent+r'}'
 
 def file_listing(filename,style='mypython'):
+    ''' Generates a program listing using the listings package '''
     return r'\lstinputlisting[style='+style+r']{'+filename+r'}'
 
 def StoProd_as_tex(bases,nu,parens=False):
+    ''' Generates a LaTeX formatted stoichiometric ratio 
+        Parameters:
+            bases -- list of strings, e.g., ['x_1', 'x_2', ] 
+            nu -- list of stoichiometric coefficients, parallel to bases
+        Returns:
+            a \frac{}{}
+    '''
     reactants,products,nureactants,nuproducts=split_reactants_products(bases,nu)
     expreactants=['' if n==1 else r'^{'+n+r'}' for n in nureactants]
     expproducts=['' if n==1 else r'^{'+n+r'}' for n in nuproducts]
@@ -67,6 +87,7 @@ def split_reactants_products(emps,nu):
             f=fr.Fraction(n)
             nuproducts.append(frac_or_int_as_tex(f))
     return (reactants,products,nureactants,nuproducts)
+
 def frac_or_int_as_tex(f):
     if f.denominator>1:
         return r'\frac{'+'{:d}'.format(f.numerator)+r'}{'+'{:d}'.format(f.denominator)+r'}'

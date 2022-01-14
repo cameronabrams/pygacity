@@ -1,4 +1,5 @@
 import numpy as np
+from ThermoProblems.Latex.TexUtils import *
 class Compound:
     ''' simple class for describing chemical compounds by empirical formula 
     
@@ -77,6 +78,15 @@ class Compound:
         print(f'{indent}System Data:')
         for k,v in self.systemData.items():
             print(f'{indent}    {k}: {str(v)}')
+    def report_as_tex(self):
+        retstr=f'{self.name} ({self.as_tex()})\\\\'
+        retstr+=r'$\Delta_f H^\circ$ = '+f"{self.thermoChemicalData['H']:,.0f} J/mol\\\\\n"
+        retstr+=r'$\Delta_f G^\circ$ = '+f"{self.thermoChemicalData['G']:,.0f} J/mol\\\\\n"
+        retstr+=r'$C_p^\circ$ = '+f"{self.thermoChemicalData['Cp'][0]:.3f} + "
+        retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][1],mantissa_fmt='{:.4e}')+r') $T$ + '
+        retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][2],mantissa_fmt='{:.4e}')+r') $T^2$ + '
+        retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][3],mantissa_fmt='{:.4e}')+r') $T^3$'
+        return(retstr)
     def computeGoT(self,T):
         ''' Computes the standard state Gibbs energy of formation at arbitrary temperature T '''
         go=self.thermoChemicalData['G']

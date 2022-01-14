@@ -1,4 +1,7 @@
-Chem/__pycache__/
 __pycache__/
 build/
-ThermoProblems.egg-info
+*.egg-info
+*.aux
+*.log
+*.pytxcode
+pythontex-files-*/

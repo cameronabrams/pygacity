@@ -1,0 +1,47 @@
+\documentclass[11pt]{article}
+\usepackage{datatool}
+\usepackage{graphicx}
+\usepackage{amsfonts, amssymb, amsmath, latexsym, epic, eepic, url, enumitem}
+\usepackage{multirow}
+\usepackage{palatino}
+\usepackage[mathscr]{euscript}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{accents}
+\usepackage{xifthen}
+\usepackage{cancel}
+\usepackage{listings}
+\usepackage[version=4]{mhchem}
+
+\usepackage{pythontex}
+
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{lightlightgray}{gray}{0.9}
+\lstdefinestyle{mybash}{language=bash,basicstyle=\ttfamily\color{white},backgroundcolor=\color{black},numbers=none,keywordstyle=\bf\color{white},showspaces=false,showstringspaces=false}
+\lstdefinestyle{myc}{language=C,basicstyle=\ttfamily\color{CadetBlue},backgroundcolor=\color{lightlightgray},frame=none,numbers=none,keywordstyle=\bf\color{CadetBlue},tabsize=2,showspaces=false,showstringspaces=false}
+\lstdefinestyle{mypython}{
+language=Python,                             % Code langugage
+basicstyle=\footnotesize\ttfamily,                   % Code font, Examples: \footnotesize, \ttfamily
+keywordstyle=\color{OliveGreen},        % Keywords font ('*' = uppercase)
+commentstyle=\color{gray},              % Comments font
+numbers=left,                           % Line nums position
+numberstyle=\tiny,                      % Line-numbers fonts
+stepnumber=1,                           % Step between two line-numbers
+numbersep=5pt,                          % How far are line-numbers from code
+backgroundcolor=\color{lightlightgray}, % Choose background color
+frame=none,                             % A frame around the code
+tabsize=4,                              % Default tab size
+captionpos=b,                           % Caption-position = bottom
+breaklines=true,                        % Automatic line breaking?
+breakatwhitespace=false,                % Automatic breaks only at whitespace?
+showspaces=false,                       % Dont make spaces visible
+showstringspaces=false,
+showtabs=false,                         % Dont make tabls visible
+numbers=none
+%columns=flexible,                       % Column format
+}
+\newcommand{\inl}[1][]{%
+  \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
+}

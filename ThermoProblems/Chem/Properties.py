@@ -21,7 +21,7 @@ class PureProperties:
             print('Warning: %s is not found in %s.'%(compound_name,self.inputfile))
             return None, None, None
     def get_compound(self,compound_name=''):
-        ''' Returns a fully data-full Compound instance '''
+        ''' Returns a fully loaded Compound instance '''
         if compound_name in self.df.index.values:
             cp=np.array([self.df.loc[compound_name,'CpA'],self.df.loc[compound_name,'CpB'],self.df.loc[compound_name,'CpC'],self.df.loc[compound_name,'CpD']])
             C=Compound(
