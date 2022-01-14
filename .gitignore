@@ -1,1 +1,4 @@
 Chem/__pycache__/
+__pycache__/
+build/
+ThermoProblems.egg-info
