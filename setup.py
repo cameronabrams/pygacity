@@ -1,10 +1,17 @@
+import pathlib
 from setuptools import setup
-setup(name='ThermoProblems',
+# The directory containing this file
+HERE = pathlib.Path(__file__).parent
+# The text of the README file
+README = (HERE / "README.md").read_text()
+setup(
+      name='ThermoProblems',
       version='0.1',
       description='Routines for solving problems in thermodynamics',
-      url='github.com/AbramsTeaching/ThermoProblems',
+      url='github.com/cameronabrams/ThermoProblems',
       author='Cameron F. Abrams',
       author_email='cfa22@drexel.edu',
       license='MIT',
-      packages=['Chem'],
-      zip_safe=False)
+      packages=['ThermoProblems','ThermoProblems.Chem'],
+      include_package_data=True
+)

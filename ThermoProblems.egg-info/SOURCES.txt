@@ -1,0 +1,14 @@
+.gitignore
+LICENSE
+README.md
+setup.py
+ThermoProblems/__init__.py
+ThermoProblems.egg-info/PKG-INFO
+ThermoProblems.egg-info/SOURCES.txt
+ThermoProblems.egg-info/dependency_links.txt
+ThermoProblems.egg-info/top_level.txt
+ThermoProblems/Chem/Compound.py
+ThermoProblems/Chem/Properties.py
+ThermoProblems/Chem/Reaction.py
+ThermoProblems/Chem/System.py
+ThermoProblems/Chem/__init__.py
