@@ -1,7 +1,7 @@
 # ThermoProblems
 > A Python package to enable high-throughput generation of problems suitable for exams and problem sets for Thermodynamics courses
 
-You may have learned how to use Python to solve thermodynamics problems, like equilibrium compositions for a reacting system, or phase compositions in vapor-liquid equilibrium.  `ThermoProblems` takes this idea and uses Python to generate new problems in the form of LaTeX.  `ThermoProblems` relies on the `pythontex` package in LaTeX to allow Python code to be run during document compilation and results of those calculations automatically included in the document.  `ThermoProblems` includes the pure-properties database that originally accompanied the textbook _Chemical, Biochemical, and Engineering Thermodynamics_ (4th edition) by Stan Sandler (Wiley, USA).
+You may have learned how to use Python to solve thermodynamics problems, like equilibrium compositions for a reacting system, or phase compositions in vapor-liquid equilibrium.  `ThermoProblems` takes this idea and uses Python to generate new problems.  The problems are generated in such a way that they can be typeset into PDF's using LaTeX. in the form of LaTeX.  `ThermoProblems` relies on the `pythontex` package in LaTeX to allow Python code to run during document compilation and results of those calculations automatically included in the document.  `ThermoProblems` includes the pure-properties database that originally accompanied the textbook _Chemical, Biochemical, and Engineering Thermodynamics_ (4th edition) by Stan Sandler (Wiley, USA).
 
 ## Installation
 
