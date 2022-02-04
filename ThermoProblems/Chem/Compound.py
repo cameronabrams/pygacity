@@ -116,7 +116,8 @@ class Compound:
     def __eq__(self,other):
         return self.A==other.A
     def __hash__(self):
-        ''' provided to make instances of Compounds hashable '''
+        ''' provided to make instances of Compounds hashable (i.e., so they can
+            be dictionary keys) '''
         return id(self)
     def __str__(self):
         return self.ef+('' if self.charge==0 else r'^{'+f'{self.charge:+}'+r'}')

@@ -139,4 +139,4 @@ if __name__=='__main__':
 
     # specifying reactions, just for output
     R=Reaction(R=[my_compounds['A'],my_compounds['D']],P=[my_compounds['E']],nosums=True)
-    print(R.latexify())
+    print(R.as_tex())
