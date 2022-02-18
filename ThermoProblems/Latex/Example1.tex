@@ -1,4 +1,5 @@
 \input{SimpleHeader}
+\begin{document}
 \begin{pycode}
 from ThermoProblems.Chem.Properties import PureProperties
 Prop=PureProperties()
@@ -6,7 +7,6 @@ A=Prop.get_compound('n-butane')
 restr=A.report_as_tex()
 \end{pycode}
 
-\begin{document}
 \noindent Here is some information about \py{A.name}:\\*[2em]
 \py{restr}
 \end{document}

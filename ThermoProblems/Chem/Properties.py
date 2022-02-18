@@ -63,6 +63,7 @@ class PureProperties:
             if A==B:
                 matches.append(B)
         return matches
+        
 if __name__=='__main__':
     Prop=PureProperties()
     Prop.report()
