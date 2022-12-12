@@ -1,3 +1,4 @@
+__pycache__
 __pycache__/**
 build/
 *.egg-info
@@ -8,4 +9,5 @@ build/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+*.pdf
 pythontex-files-*/
