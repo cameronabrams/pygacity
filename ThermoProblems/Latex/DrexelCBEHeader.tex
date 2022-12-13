@@ -81,6 +81,11 @@ numbers=none
 \newcommand{\Universityname}{\so{\sc Drexel University}}
 \newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
 \newcommand{\Coursename}{CHE 330 -- Chemical Engineering Thermodynamics II}
+\newcommand{\Instructorname}{Prof. Abrams}
+\newcommand{\Instructoremail}{cfa22\@drexel.edu}
+\newcommand{\Subjectname}{Thermodynamics}
+\newcommand{\Solutionscolor}{blue}
+\newcommand{\Solutionsheader}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
 \newcommand{\psheader}[4]{
     \showsolutionsfalse
     \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
@@ -88,12 +93,12 @@ numbers=none
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ -- {#1} -- Prof. Abrams\\
-        P\ R\ O\ B\ L\ E\ M\ \ \ S\ E\ T\ \ \ {#2}\\
+        \Coursename\ -- {#1} -- \Instructorname -- \Instructoremail\\
+        {#2}\\
         Due {#3}\\*[5mm]
 
         \ifshowsolutions
-        \color{blue}{\bf S\ O\ L\ U\ T\ I\ O\ N\ S}\color{black}\\
+        \Solutionsheader\\
         \fi
     \end{centering}
 }
@@ -102,13 +107,28 @@ numbers=none
     \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
     \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
     \begin{centering}
-        {\sc D\ R\ E\ X\ E\ L\ \ \ U\ N\ I\ V\ E\ R\ S\ I\ T\ Y}\\
-        Department of Chemical and Biological Engineering\\
-        \Coursename\ -- {#1} -- Prof. Abrams\\
+        \Universityname\\
+        \Departmentname\\
+        \Coursename\ -- {#1} -- \Instructorname -- \Instructoremail\\
         {#2}\\
         {#3}\\*[5mm]
         \ifshowsolutions
-        \color{blue}{\bf S\ O\ L\ U\ T\ I\ O\ N\ S}\color{black}\\*[1cm]
+        \Solutionsheader\\*[1cm]
+        \fi
+        \end{centering}
+}
+\newcommand{\qualifierheader}[4]{
+    \showsolutionsfalse
+    \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
+    \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
+    \begin{centering}
+        \Universityname\\
+        \Departmentname\\
+        \Subjectname\\
+        {#2}\\
+        {#3}\\*[5mm]
+        \ifshowsolutions
+        \Solutionsheader\\*[1cm]
         \fi
         \end{centering}
 }
@@ -119,7 +139,7 @@ numbers=none
 \newcommand\examquestion[2]{\givespacetrue\newcommand\totalpoints{#1}\input{#2}\givespacefalse}
 \newcommand\practicequestion[1]{\givespacefalse\input{#1}}
 \newcommand\problem[1]{\givespacefalse\input{#1}}
-\graphicspath{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
-\makeatletter
-\def\input@path{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
-\makeatother
+% \graphicspath{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
+% \makeatletter
+% \def\input@path{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
+% \makeatother
