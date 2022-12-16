@@ -1,6 +1,6 @@
 import pandas as pd
 import fractions as fr
-from math import fabs
+# from math import fabs
 import numpy as np
 ''' 
     TexUtils for ThermoProblems 
@@ -11,12 +11,12 @@ import numpy as np
     thermodynamics (and beyond).
 
 '''
-def table_as_tex(tabledict,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
+def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
         items and generates a table '''
-    df=pd.DataFrame(tabledict)
+    df=pd.DataFrame(table)
     if drop_zeros:
-        for k,d in zip(tabledict.keys(),drop_zeros):
+        for k,d in zip(table.keys(),drop_zeros):
             if d:
                 df=df[df[k]!=0.]
     tablestring=df.to_latex(escape=False,index=False,float_format=float_format)
@@ -28,10 +28,10 @@ def table_as_tex(tabledict,float_format='{:.4f}'.format,drop_zeros=None,total_ro
 
 def sci_notation_as_tex(x,**kwargs):
     ''' Writes a floating point in LaTeX format scientific notation '''
-    maglimit=1000 if 'maglimit' not in kwargs else kwargs['maglimit']
-    fmt='{:.4f}' if 'fmt' not in kwargs else kwargs['fmt']
-    mantissa_fmt='{:.6e}' if 'mantissa_fmt' not in kwargs else kwargs['mantissa_fmt']
-    mathmode=False if 'mathmode' not in kwargs else kwargs['mathmode']
+    maglimit=kwargs.get('maglimit',1000)
+    fmt=kwargs.get('fmt','{:.4f}')
+    mantissa_fmt=kwargs.get('mantissa_fmt','{:.6e}')
+    mathmode=kwargs.get('mathmode',False)
     if 1/maglimit<np.abs(x)<maglimit:
         return str(fmt.format(x))
     xstr=mantissa_fmt.format(x)

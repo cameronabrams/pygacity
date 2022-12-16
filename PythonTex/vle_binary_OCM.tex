@@ -1,0 +1,206 @@
+\begin{pycode}
+from ThermoProblems.Latex import TexUtils as tu
+from scipy.optimize import fsolve
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def acm_ocm(x,A):
+    return np.array([np.exp(A*(1-x)**2),np.exp(A*x**2)])
+
+def bubp(x,Pvap=[],acm=None,acmp=[]):
+    g=acm(x,*acmp)
+    Ptot=x*g[0]*Pvap[0]+(1-x)*g[1]*Pvap[1]
+    yres=x*g[0]*Pvap[0]/Ptot
+    return Ptot,yres
+
+def dewp(y,Pvap=[],acm=None,acmp=[],xinit=0.5):
+    def f_dewp(xguess,ytarg,Pvap,acm,acmp):
+        P,ycomp=bubp(xguess,Pvap,acm,acmp)
+        return ytarg-ycomp
+    result=fsolve(f_dewp,xinit,args=(y,Pvap,acm,acmp))
+    x=result[0]
+    P,ydum=bubp(x,Pvap,acm,acmp)
+    return P,x
+
+T=343.15
+Pv=np.array([79.8,40.5])
+Aij=1.15
+xbub=0.08
+g=acm_ocm(xbub,Aij)
+Pbub,ybub=bubp(xbub,Pvap=Pv,acm=acm_ocm,acmp=[Aij])
+
+ydew=0.12
+xinit=0.02
+Pdew,xdew=dewp(ydew,Pvap=Pv,acm=acm_ocm,acmp=[Aij],xinit=xinit)
+gdew=acm_ocm(xdew,Aij)
+Pcheck,ycheck=bubp(xdew,Pvap=Pv,acm=acm_ocm,acmp=[Aij])
+
+# newton raphson for dew point
+def nr_f(x,y,Pvap=[],acm=None,acmp=[]):
+    g=acm(x,*acmp)
+    return y*(1-x)*g[1]*Pvap[1]-(1-y)*x*g[0]*Pvap[0]
+def nr_dfdx(x,y,Pvap=[],acm=None,acmp=[]):
+    g=acm(x,*acmp)
+    A=acmp[0]
+    return -(1-2*A*x*(1-x))*(y*g[1]*Pvap[1]+(1-y)*g[0]*Pvap[0])
+
+
+xsav=[xinit]
+x=xsav[-1]
+g=acm_ocm(x,Aij)
+g1sav=[g[0]]
+g2sav=[g[1]]
+dsav=[1-2*Aij*x*(1-x)]
+fsav=[nr_f(x,ydew,Pv,acm_ocm,[Aij])]
+dfsav=[nr_dfdx(x,ydew,Pv,acm_ocm,[Aij])]
+dx=-fsav[-1]/dfsav[-1]
+epsilon=1.e-6
+while abs(dx)>epsilon:
+    xsav.append(xsav[-1]+dx)
+    x=xsav[-1]
+    g=acm_ocm(x,Aij)
+    g1sav.append(g[0])
+    g2sav.append(g[1])
+    dsav.append(1-2*Aij*x*(1-x))
+    fsav.append(nr_f(x,ydew,Pv,acm_ocm,[Aij]))
+    dfsav.append(nr_dfdx(x,ydew,Pv,acm_ocm,[Aij]))
+    dx=-fsav[-1]/dfsav[-1]
+table={r'$x$':xsav,r'$\gamma_1$':g1sav,r'$\gamma_2$':g2sav,r'$[1-2Ax(1-x)]$':dsav,r'$f$':fsav,r'$df/dx$':dfsav}
+st=tu.table_as_tex(table,float_format='%.5f')
+
+xazeo=0.5-0.5/Aij*np.log(Pv[1]/Pv[0])
+gazeo=acm_ocm(xazeo,Aij)
+Pazeo=xazeo*gazeo[0]*Pv[0]+(1-xazeo)*gazeo[1]*Pv[1]
+
+xplot=np.linspace(0,1,101)
+gplot=acm_ocm(xplot,Aij)
+Pplot=xplot*gplot[0]*Pv[0]+(1-xplot)*gplot[1]*Pv[1]
+yplot=xplot*gplot[0]*Pv[0]*np.reciprocal(Pplot)
+
+df=pd.DataFrame({'x':xplot,'y':yplot,'g1':gplot[0],'g2':gplot[1],'P':Pplot})
+df.to_csv('pxy.csv',header=True,index=False)
+fig,ax=plt.subplots(1,1,figsize=(7,7))
+ax.plot(xplot,Pplot,label='bub')
+ax.plot(yplot,Pplot,label='dew')
+ax.scatter([xazeo],[Pazeo],label='azeotrope',color='red')
+ax.set_xlim([0,1])
+ax.set_xlabel(r'$x_1$, $y_1$')
+ax.set_ylabel(r'$P$ [kPa]')
+ax.legend()
+plt.savefig('mypxy.pdf',bbox_inches='tight')
+plt.close()
+
+\end{pycode}
+
+For the system of ethyl ethanoate(1)/$n$-heptane(2) at \py{f'{T:.2f}'} K,
+\begin{itemize}
+\item[] $\ln\gamma_1 = \py{f'{Aij:.3f}'} x_2^2$ \ \ \ \ \ \ \ \ \ \ \ $\ln\gamma_2 = \py{f'{Aij:.3f}'} x_1^2$,
+\item[] $P_1^{\rm vap}$ = \py{f'{Pv[0]:.2f}'} kPa \ \ \ \ \  $P_2^{\rm vap}$ = \py{f'{Pv[1]:.2f}'} kPa.
+\end{itemize}
+Assume you can use low-pressure VLE (i.e., ``Modified Raoult's Law''):\\*[3mm]
+$y_iP = x_i\gamma_iP_i^{\rm vap}$\\*[3mm]
+and answer the following.
+\begin{enumerate}
+\item[(a)] Compute the bubble-point pressure at $T$ = \py{f'{T:.2f}'} K, $x_1$ = \py{f'{xbub:.2f}'}.
+\item[(b)] Compute the dew-point pressure at $T$ = \py{f'{T:.2f}'} K, $y_1$ = \py{f'{ydew:.2f}'}.
+\item[(c)] What is the azeotrope composition and pressure at $T$ = \py{f'{T:.2f}'} K?
+\end{enumerate}
+
+\ifshowsolutions\Solutionheader
+
+\begin{enumerate}
+\item[(a)] Using Modified Raoult's Law, 
+\begin{align*}
+    P & = x_1 \gamma_1 P_1^{\rm vap} + x_2 \gamma_2 P_2^{\rm vap}\\
+     & = x_1 \exp\left[(\py{f'{Aij:.3f}'})(1-x_1)^2\right] P_1^{\rm vap} + (1-x_1) \exp\left[(\py{f'{Aij:.3f}'})x_1^2\right] P_2^{\rm vap}\\
+     & = (\py{f'{xbub:.2f}'})(\py{f'{g[0]:.4f}'})(\py{f'{Pv[0]:.2f}'}) + (1-\py{f'{xbub:.2f}'})(\py{f'{g[1]:.4f}'})(\py{f'{Pv[0]:.2f}'}) = \fbox{\py{f'{Pbub:.2f}'}\ \mbox{kPa}}.
+\end{align*}
+
+\item[(b)] We can cast the Modified Raoult's law expressions
+\begin{align*}
+y_1 P & = x_1 \gamma_1 P_1^{\rm vap}\ \mbox{and}\\
+P & = x_1 \gamma_1 P_1^{\rm vap} + x_2 \gamma_2 P_2^{\rm vap}
+\end{align*}
+into a single equation implicit in $x_1$, which for brevity we will refer to as just $x$ (and $y$ instead of $y_1$):
+\begin{align*}
+y & = \frac{x \gamma_1 P_1^{\rm vap}}{x \gamma_1 P_1^{\rm vap} + (1-x) \gamma_2 P_2^{\rm vap}}\\
+\Rightarrow\  y (1-x) \gamma_2 P_2^{\rm vap} & = (1-y) x \gamma_1 P_1^{\rm vap}
+\end{align*}
+We could opt to solve this using a numerical tool like Solver in Excel or \inl{fsolve} in Python, or your favorite implicit solution method on your graphing calculator.  Here, I present a solution using the Newton-Raphson (NR) approach. For NR, we need to construct the function $f(x)$ that evaluates to zero when $x$ satisfies our implicit equation:  
+\begin{align*}
+f(x) & = y (1-x) \gamma_2(x) P_2^{\rm vap} - (1-y) x \gamma_1(x) P_1^{\rm vap},\ \ \mbox{where}\\
+\gamma_1(x) & = \exp\left[A(1-x)^2\right]\ \ \mbox{and}\\
+\gamma_2(x) & = \exp\left(Ax^2\right).
+\end{align*}
+Additionally, we need its derivative $df/dx$:
+\begin{align*}
+\frac{df}{dx} & = y \left[-\gamma_2+(1-x)\frac{d\gamma_2}{dx}\right] P_2^{\rm vap} - (1-y)\left[\gamma_1 + x\frac{d\gamma_1}{dx}\right] P_1^{\rm vap},\\
+& = -y\gamma_2P_2^{\rm vap} \left[1-(1-x)\frac{d\ln\gamma_2}{dx}\right] - (1-y)\gamma_1P_1^{\rm vap}\left[1+x\frac{d\ln\gamma_1}{dx}\right],\\
+& = -y\gamma_2P_2^{\rm vap} \left[1-2Ax(1-x)\right] - (1-y)\gamma_1P_1^{\rm vap}\left[1-2Ax(1-x)\right]\\
+& = -\left[1-2Ax(1-x)\right]\left[y\gamma_2P_2^{\rm vap}+(1-y)\gamma_1P_1^{\rm vap}\right]
+\end{align*}
+
+NR says that the quantity $x - f/(df/dx)$ is a better approximation to the solution of the implicit equation than is just $x$.  So we follow an iterative strategy in which the "current" value of $x$ is updated to "new" value of $x$, which then becomes the "current" value to give as another "new" value, and so on.  When the absolute value of the correction term $f/(df/dx)$ falls below some tolerance $\epsilon$, then we stop and claim victory.
+
+To begin, we need an initial guess for $x$.  We know that ethanoate (species 1) is much more volatile than $n$-heptane (species 2) at the temperature because it has the higher vapor pressure.  So that means that we expect that, in the absence of any azeotropes, that the liquid in equilibrium with a vapor will have a much lower mole fraction of ethanoate than that vapor does.  So we expect $x$ to be much less than \py{f'{ydew:.2f}'}. Let's begin with $x$ = \py{f'{xinit:.2f}'} and use a tolerance $\epsilon$ of \py{tu.sci_notation_as_tex(epsilon,mantissa_fmt='{:.1e}')}:
+
+\begin{table}[h]
+\begin{center}
+\py{st}
+\end{center}
+\end{table}
+
+So the value of $x$ that satisfies the implicit equation is \py{f'{xdew:.4f}'}.  This is the composition of the droplet of dew that condenses from a vapor with composition $y_1$ = \py{f'{ydew:.2f}'} at \py{f'{T:.2f}'} K.  The pressure at which this condensation occurs is the dew-point pressure:
+\begin{align*}
+    P & = x_1\gamma_1P_1^{\rm vap} + x_2 \gamma_2 P_2^{\rm vap}\\
+    & = (\py{f'{xdew:.4f}'})(\py{f'{gdew[0]:.2f}'})(\py{f'{Pv[0]:.2f}'}) + (1-\py{f'{xdew:.4f}'})(\py{f'{gdew[1]:.2f}'})(\py{f'{Pv[1]:.2f}'})\\
+    & = \fbox{\py{f'{Pdew:.2f}'}\ \mbox{kPa}}.
+\end{align*}
+
+(Checking using \inl{fsolve}, I get $x_1$ = \py{f'{xdew:.5f}'} at the dew-point.)
+
+\item[(c)]  At the azeotrope, we know $x_i = y_i$, so
+\begin{align*}
+    y_iP & = x_i\gamma_iP_i^{\rm vap}\\
+    \Rightarrow\ P& = \gamma_iP_i^{\rm vap} = \gamma_1P_1^{\rm vap} = \gamma_2P_2^{\rm vap}\\
+    \Rightarrow\ \frac{\gamma_1}{\gamma_2} &= \frac{P_2^{\rm vap}}{P_1^{\rm vap}}
+\end{align*}
+Note that this final equation appears implict for $x_1$ at the azeotrope.  However, because the activity coefficient model is so simple, we can solve for $x_1$ explicitly:
+\begin{align*}
+    \gamma_1 & = \frac{P_2^{\rm vap}}{P_1^{\rm vap}}\gamma_2\\
+    e^{A(1-x_1)^2} & = \frac{P_2^{\rm vap}}{P_1^{\rm vap}}e^{Ax_1^2}\\
+    A(1-x_1)^2 & = \ln\frac{P_2^{\rm vap}}{P_1^{\rm vap}} + Ax_1^2\\
+    A(1-2x_1+x_1^2-x_1^2) & = \ln\frac{P_2^{\rm vap}}{P_1^{\rm vap}}\\
+    1-2x_1 & = \frac{1}{A}\ln\frac{P_2^{\rm vap}}{P_1^{\rm vap}}\\
+    \Rightarrow\ x_1 & = \frac{1}{2}-\frac{1}{2A}\ln\frac{P_2^{\rm vap}}{P_1^{\rm vap}}\\
+    & = \frac{1}{2}-\frac{1}{2(\py{Aij})}\ln\left(\frac{\py{Pv[1]}}{\py{Pv[0]}}\right) = \fbox{\py{f'{xazeo:.4f}'}}.
+\end{align*}
+
+Peforming a bubble-point pressure calculation at this composition gives the pressure at the azeotrope:
+\begin{align*}
+    P & = x_1 \gamma_1 P_1^{\rm vap} + x_2 \gamma_2 P_2^{\rm vap}\\
+    & = (\py{f'{xazeo:.4f}'})(\py{f'{gazeo[0]:.4f}'})(\py{f'{Pv[0]:.4f}'}) + (1-\py{f'{xazeo:.4f}'})(\py{f'{gazeo[1]:.4f}'})(\py{f'{Pv[1]:.4f}'}) = \fbox{\py{f'{Pazeo:.2f}'}~kPa}.
+\end{align*}
+
+\IfFileExists{mypxy.pdf}{
+The figure below shows the full $Pxy$ diagram for this binary at \py{f'{T:.2f}'} K, with the azeotrope labeled.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{mypxy.pdf}
+\end{center}
+\end{figure}
+}{
+not showing plot yet
+}
+
+\end{enumerate}
+\clearpage
+\else
+\ifgivespace
+\clearpage
+\noindent (This page left blank for extra space for Problem \theenumi.)
+\clearpage
+\fi
+\fi

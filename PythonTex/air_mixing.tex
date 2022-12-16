@@ -1,0 +1,57 @@
+\begin{pycode}
+from ThermoProblems.Latex import TexUtils as tu
+import fractions as fr
+from math import pow
+P1=14
+P2=12
+T1=1000
+T2=400
+T3=600
+CP_over_R=7./2.
+alpha = (T1-T3)/(T3-T2)
+P3=pow(pow(T3**(1+alpha)/T1/T2**alpha,CP_over_R)*P1*P2**alpha,1/(1+alpha))
+cpr=tu.frac_or_int_as_tex(fr.Fraction(CP_over_R))
+\end{pycode}
+
+A stream of air at \py{P1} bar and \py{T1} K (labeled ``stream 1'') is to be cooled to \py{T3} K by mixing with another stream of air at \py{P2} bar and \py{T2} K (labeled ``stream 2'').  Let $\alpha$ be the ratio of the molar flow rate of the hotter stream to that of the cooler stream.  Compute (1) $\alpha$, and (2) the pressure $P$ of the mixed stream (labeled ``stream 3'').  You may assume this is carried out adiabatically and that air is an ideal gas for which $C_{\rm P}$ = $\py{cpr}R$.
+
+It may be helpful for you to remember, {\bf for the ideal gas}, that a change of state from $(T_A,P_A)$ to $(T_B,P_B)$ results in the following enthalpy and entropy changes, respectively:
+
+\begin{align*}
+\Delta \molar{H} \equiv \molar{H}_B-\molar{H}_A = \int_{T_A}^{T_B} C_{\rm P} dT\\
+\Delta \molar{S} \equiv \molar{S}_B-\molar{S}_A = \int_{T_A}^{T_B} \frac{C_{\rm P}}{T} dT - R \ln\frac{P_B}{P_A}.
+\end{align*}
+
+\ifshowsolutions\Solutionheader
+
+Let $\dot{n}$ be the unknown molar flow rate of stream 1.  This means the outlet stream (3) has a flow rate of $\alpha\dot{n}$.  An energy balance here resolves to 
+\begin{align*}
+H_{\rm out} & = H_{\rm in}\\
+(1+\alpha) \dot{n} \hb(T_3,P_3) & = \dot{n}\hb(T_1,P_1) + \alpha\dot{n} \hb(T_2,P_2)\\
+(1+\alpha)  \int_{T_r}^{T_3} C_{\rm P} dT & = \int_{T_r}^{T_1} C_{\rm P}dT + \alpha\int_{T_r}^{T_2} C_{\rm P}dT\\
+(1+\alpha)C_{\rm P}(T_3-T_r) & = C_{\rm P}(T_1-T_r) + \alpha C_{\rm P}(T_2-T_r)\\
+(1+\alpha)T_3 & = T_1 + \alpha T_2\\
+\Rightarrow T_3 & = \frac{T_1+\alpha T_2}{1+\alpha},\ \mbox{or}\\
+\alpha & = \frac{T_1-T_3}{T_3-T_2}\\
+ & = \frac{900-500}{500-400} = \frac{400}{100} = \fbox{\py{f'{alpha:.1f}'}}.
+\end{align*}
+(Note all terms involving $T_r$ cancel and $C_{\rm P}$ divides out.).  We can get $P_3$ from an entropy balance:
+\begin{align*}
+S_{\rm out} & = S_{\rm in}\\
+(1+\alpha)\dot{n} \sb(T_3,P_3) & = \dot{n}\sb(T_1,P_1) + \alpha\dot{n} \sb(T_2,P_2)\\
+\sb(T_3,P_3) - \sb(T_1,P_1) + \alpha\left[\sb(T_3,P_3)-\sb(T_2,P_2)\right] & = 0\\
+C_{\rm P}\ln\frac{T_3}{T_1} - R\ln\frac{P_3}{P_1} + \alpha\left[C_{\rm P}\ln\frac{T_3}{T_2}-R\ln\frac{P_3}{P_2}\right] & = 0\\
+C_{\rm P}\ln\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right) - R\ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right) & = 0\\
+\ln\left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C_{\rm P}}{R}}\right] & = \ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right)\\
+\Rightarrow\ P_3 & = \left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C_{\rm P}}{R}}P_1P_2^\alpha\right]^{\frac{1}{1+\alpha}}\\
+& = \left[\left(\frac{(\py{T3})^{(1+\py{f'{alpha:.2f}'})}}{(\py{T1})(\py{T2})^{\py{f'{alpha:.2f}'}}}\right)^{\py{cpr}}(\py{P1})(\py{P2})^{\py{f'{alpha:.2f}'}}\right]^{\frac{1}{1+\py{f'{alpha:.2f}'}}} \\
+& = \fbox{\py{f'{P3:.2f}'}\ \mbox{bar}}.
+\end{align*}
+\clearpage
+\else
+\ifgivespace
+\clearpage
+\noindent (This page left blank for extra space for Problem \theenumi.)
+\clearpage
+\fi
+\fi

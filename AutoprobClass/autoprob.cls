@@ -1,31 +1,48 @@
-\documentclass[11pt]{article}
-\usepackage{datatool}
-\usepackage{graphicx}
-\usepackage{amsfonts, amssymb, amsmath, latexsym, epic, eepic, url, enumitem}
-\usepackage{multirow}
-\usepackage{palatino}
-\usepackage[mathscr]{euscript}
-\usepackage{xcolor}
-\usepackage[margin=1in]{geometry}
-\usepackage{accents}
-\usepackage{xifthen}
-\usepackage{cancel}
-\usepackage{listings}
-\usepackage{xfp}
-\usepackage[version=4]{mhchem}
-\usepackage{booktabs}
-\usepackage[font=small,labelfont=bf]{caption}
-\usepackage{pythontex}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesClass{autoprob}[2022/12/15]
+
+\RequirePackage{datatool}
+\RequirePackage{graphicx}
+\RequirePackage{amsfonts}
+\RequirePackage{amssymb}
+\RequirePackage{amsmath}
+\RequirePackage{latexsym}
+\RequirePackage{epic}
+\RequirePackage{eepic}
+\RequirePackage{url}
+%\RequirePackage{enumitem}
+\RequirePackage{multirow}
+%\RequirePackage{palatino}
+\RequirePackage[mathscr]{euscript}
+\RequirePackage{xcolor}
+\RequirePackage{accents}
+\RequirePackage{xifthen}
+\RequirePackage{cancel}
+%\RequirePackage{xfp}
 
 \newif\ifshowsolutions
+\showsolutionsfalse
 \newif\ifshowanswers
+\showanswersfalse
 \newif\ifgivespace
+\givespacefalse
+
+\DeclareOption{solutions}{\showsolutionstrue}
+\DeclareOption{answers}{\showanwersstrue}
+\DeclareOption{givespace}{\givespacetrue}
+
+\DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
+\ProcessOptions\relax
+
+\LoadClass{article}
+
 
 \newsavebox{\fmbox}
 \newenvironment{fmpage}[1]
 {\begin{lrbox}{\fmbox}\begin{minipage}[c]{#1}}
 {\end{minipage}\end{lrbox}\fbox{\usebox{\fmbox}}}
 
+\RequirePackage{listings}
 \definecolor{Brown}{cmyk}{0,0.81,1,0.60}
 \definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
 \definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
@@ -78,6 +95,7 @@ numbers=none
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
 
+\RequirePackage{soul}
 \newcommand{\Universityname}{\so{\sc Drexel University}}
 \newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
 \newcommand{\Coursename}{CHE 330 -- Chemical Engineering Thermodynamics II}
@@ -86,26 +104,21 @@ numbers=none
 \newcommand{\Subjectname}{Thermodynamics}
 \newcommand{\Solutionscolor}{blue}
 \newcommand{\Solutionsheader}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
-\newcommand{\psheader}[4]{
-    \showsolutionsfalse
-    \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
-    \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
+\newcommand{\Solutionheader}{\color{\Solutionscolor}\so{\sc SOLUTION.}\color{black}}
+
+\newcommand{\psheader}[3]{
     \begin{centering}
         \Universityname\\
         \Departmentname\\
         \Coursename\ -- {#1} -- \Instructorname -- \Instructoremail\\
         {#2}\\
         Due {#3}\\*[5mm]
-
         \ifshowsolutions
         \Solutionsheader\\
         \fi
     \end{centering}
 }
-\newcommand{\examheader}[4]{
-    \showsolutionsfalse
-    \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
-    \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
+\newcommand{\examheader}[3]{
     \begin{centering}
         \Universityname\\
         \Departmentname\\
@@ -115,31 +128,32 @@ numbers=none
         \ifshowsolutions
         \Solutionsheader\\*[1cm]
         \fi
-        \end{centering}
+    \end{centering}
 }
-\newcommand{\qualifierheader}[4]{
-    \showsolutionsfalse
-    \ifthenelse{\equal{#4}{soln}}{\showsolutionstrue}{\showsolutionsfalse}
-    \ifthenelse{\equal{#4}{ans}}{\showanswerstrue}{\showanswersfalse}
+
+\newcommand{\qualifierheader}[1]{
     \begin{centering}
         \Universityname\\
         \Departmentname\\
+        Ph.D. Qualifying Exam\\
         \Subjectname\\
-        {#2}\\
-        {#3}\\*[5mm]
+        {#1}\\*[5mm]
         \ifshowsolutions
         \Solutionsheader\\*[1cm]
         \fi
-        \end{centering}
+    \end{centering}
 }
+
 \newcommand{\morespace}[1]{
 \noindent More space for problem #1
 \clearpage
 }
 \newcommand\examquestion[2]{\givespacetrue\newcommand\totalpoints{#1}\input{#2}\givespacefalse}
+\newcommand\qualquestion[2]{\input{#1}\ifgivespace\morespace{#2}\fi}
 \newcommand\practicequestion[1]{\givespacefalse\input{#1}}
-\newcommand\problem[1]{\givespacefalse\input{#1}}
-% \graphicspath{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
-% \makeatletter
-% \def\input@path{{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Exams/}{C:/Users/cfa22/OneDrive - Drexel University/Teaching/Thermodynamics II (CHE 330)/Problems/For Problem Sets/}}
-% \makeatother
+\newcommand\problem[1]{\input{#1}}
+
+\RequirePackage[version=4]{mhchem}
+\RequirePackage{booktabs}
+\RequirePackage[font=small,labelfont=bf]{caption}
+\RequirePackage{pythontex}
