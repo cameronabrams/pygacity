@@ -13,6 +13,13 @@ cd ThermoProblems
 pip install -e .
 ```
 
+Then, you need to add the TeX tree under `Autoprob` to the TeXLive list of auxiliary trees:
+
+```sh
+tlmgr conf auxtrees add "path-to-ThermoProblems/Autoprob"
+```
+
+
 ## Usage example
 
 Consider the following file `Example1.tex`:

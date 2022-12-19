@@ -9,16 +9,12 @@
 \RequirePackage{latexsym}
 \RequirePackage{epic}
 \RequirePackage{eepic}
-\RequirePackage{url}
-%\RequirePackage{enumitem}
 \RequirePackage{multirow}
-%\RequirePackage{palatino}
 \RequirePackage[mathscr]{euscript}
 \RequirePackage{xcolor}
 \RequirePackage{accents}
 \RequirePackage{xifthen}
-\RequirePackage{cancel}
-%\RequirePackage{xfp}
+\RequirePackage{xfp}
 
 \newif\ifshowsolutions
 \showsolutionsfalse
@@ -36,6 +32,8 @@
 
 \LoadClass{article}
 
+\RequirePackage{cancel}
+\RequirePackage{enumitem}
 
 \newsavebox{\fmbox}
 \newenvironment{fmpage}[1]
@@ -74,13 +72,13 @@ numbers=none
   \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
 }
 
-\DeclareRobustCommand{\molar}[1]{\underaccent{\bar}{#1}}
+\DeclareRobustCommand{\molar}[1]{\protect\underaccent{\bar}{#1}}
 \newcommand{\parmol}[2]{\overline{#1}_{#2}}
-\def\ub{\molar{U}}
-\def\hb{\molar{H}}
-\def\sb{\molar{S}}
-\def\vb{\molar{V}}
-\def\gb{\molar{G}}
+\def\Ub{\molar{U}}
+\def\Hb{\molar{H}}
+\def\Sb{\molar{S}}
+\def\Vb{\molar{V}}
+\def\Gb{\molar{G}}
 \def\thetab{\molar{\theta}}
 \newcommand{\dm}[1]{\Delta_{\rm mix} {#1}}
 \newcommand{\deriv}[2]{\frac{d{#1}}{d{#2}}}
@@ -95,14 +93,13 @@ numbers=none
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
 
-\RequirePackage{soul}
-\newcommand{\Universityname}{\so{\sc Drexel University}}
+\newcommand{\Universityname}{\sc Drexel University}
 \newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
 \newcommand{\Coursename}{CHE 330 -- Chemical Engineering Thermodynamics II}
 \newcommand{\Termname}{Winter 2022-2023}
 \newcommand{\Termcode}{202225}
 \newcommand{\Instructorname}{Prof. Abrams}
-\newcommand{\Instructoremail}{cfa22\@drexel.edu}
+\newcommand{\Instructoremail}{cfa22@drexel.edu}
 \newcommand{\Subjectname}{Thermodynamics}
 \newcommand{\Solutionscolor}{blue}
 \newcommand{\Solutionsheader}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
@@ -112,9 +109,8 @@ numbers=none
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ --  \Termname (\Termcode)\\
-        \Instructorname -- \Instructoremail\\
-        {#1}
+        \Coursename\ -- \Termname\ (\Termcode)\\*[1em]
+        {#1}\\
     \end{centering}
 }
 
@@ -122,21 +118,25 @@ numbers=none
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ -- {#1} -- \Instructorname -- \Instructoremail\\
-        {#2}\\
-        Due {#3}\\*[5mm]
+        \Coursename\ -- \Termname\ (\Termcode)\\
+        \Instructorname\ -- \Instructoremail\\
+        Problem Set {#1}\ -- Due {#2}\\*[1em]
         \ifshowsolutions
         \Solutionsheader\\
         \fi
     \end{centering}
 }
-\newcommand{\examheader}[3]{
+
+\newcommand{\examheader}[2]{
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ -- {#1} -- \Instructorname -- \Instructoremail\\
-        {#2}\\
-        {#3}\\*[5mm]
+        \Coursename\ -- \Termname\ (\Termcode)\\
+        \Instructorname\ -- \Instructoremail\\
+        {#1}\ -- {#2}\\*[1em]
+        \ifshowsolutions
+        \Solutionsheader\\
+        \fi
         \ifshowsolutions
         \Solutionsheader\\*[1cm]
         \fi
