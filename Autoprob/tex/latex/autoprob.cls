@@ -99,12 +99,24 @@ numbers=none
 \newcommand{\Universityname}{\so{\sc Drexel University}}
 \newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
 \newcommand{\Coursename}{CHE 330 -- Chemical Engineering Thermodynamics II}
+\newcommand{\Termname}{Winter 2022-2023}
+\newcommand{\Termcode}{202225}
 \newcommand{\Instructorname}{Prof. Abrams}
 \newcommand{\Instructoremail}{cfa22\@drexel.edu}
 \newcommand{\Subjectname}{Thermodynamics}
 \newcommand{\Solutionscolor}{blue}
 \newcommand{\Solutionsheader}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
 \newcommand{\Solutionheader}{\color{\Solutionscolor}\so{\sc SOLUTION.}\color{black}}
+
+\newcommand{\plainheader}[1]{
+    \begin{centering}
+        \Universityname\\
+        \Departmentname\\
+        \Coursename\ --  \Termname (\Termcode)\\
+        \Instructorname -- \Instructoremail\\
+        {#1}
+    \end{centering}
+}
 
 \newcommand{\psheader}[3]{
     \begin{centering}
