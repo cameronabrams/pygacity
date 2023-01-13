@@ -44,7 +44,7 @@ pdflatex Example1
 ```
 yields:
 
-![](Example1-PDFshot.png)
+![](docs/Example1-PDFshot.png)
 
 ## Release History
 

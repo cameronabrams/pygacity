@@ -1,5 +1,5 @@
 import numpy as np
-from ThermoProblems.Latex.TexUtils import *
+from ThermoProblems.TexUtils import *
 class Compound:
     ''' simple class for describing chemical compounds by empirical formula 
     
