@@ -1,11 +1,12 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{autoprob}[2022/12/15]
+\ProvidesClass{autoprob}[2023/01/06]
 
 \RequirePackage{datatool}
 \RequirePackage{graphicx}
 \RequirePackage{amsfonts}
 \RequirePackage{amssymb}
 \RequirePackage{amsmath}
+\RequirePackage{amstext}
 \RequirePackage{latexsym}
 \RequirePackage{epic}
 \RequirePackage{eepic}
@@ -32,7 +33,6 @@
 
 \LoadClass{article}
 
-\RequirePackage{cancel}
 \RequirePackage{enumitem}
 
 \newsavebox{\fmbox}
@@ -93,9 +93,13 @@ numbers=none
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
 
-\newcommand{\Universityname}{\sc Drexel University}
+%\RequirePackage[cmtip,all]{xy}
+%\newcommand{\longsquiggly}{\xymatrix{{}\ar@{~>}[r]&{}}}
+
+\RequirePackage{soul}
+\newcommand{\Universityname}{\so{\sc Drexel University}}
 \newcommand{\Departmentname}{Department of Chemical and Biological Engineering}
-\newcommand{\Coursename}{CHE 330 -- Chemical Engineering Thermodynamics II}
+\newcommand{\Coursename}{CHE 230 -- Chemical Engineering Thermodynamics I}
 \newcommand{\Termname}{Winter 2022-2023}
 \newcommand{\Termcode}{202225}
 \newcommand{\Instructorname}{Prof. Abrams}
@@ -103,26 +107,30 @@ numbers=none
 \newcommand{\Subjectname}{Thermodynamics}
 \newcommand{\Solutionscolor}{blue}
 \newcommand{\Solutionsheader}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
-\newcommand{\Solutionheader}{\color{\Solutionscolor}\so{\sc SOLUTION.}\color{black}}
+\newcommand{\Solutionheader}{\color{\Solutionscolor}{\sc SOLUTION}\color{black}}
 
 \newcommand{\plainheader}[1]{
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ -- \Termname\ (\Termcode)\\*[1em]
+        \Coursename\ -- \Termname\ (\Termcode)\\
+        \Instructorname\ -- \Instructoremail\\*[1em]
         {#1}\\
     \end{centering}
 }
 
-\newcommand{\psheader}[3]{
+\newcommand{\asnheader}[3]{
     \begin{centering}
         \Universityname\\
         \Departmentname\\
         \Coursename\ -- \Termname\ (\Termcode)\\
         \Instructorname\ -- \Instructoremail\\
-        Problem Set {#1}\ -- Due {#2}\\*[1em]
+        \so{\sc Assignment {#1}}\\
+        Due {#2}\\*[1em]
         \ifshowsolutions
         \Solutionsheader\\
+        \else
+        \noindent {#3}\\
         \fi
     \end{centering}
 }
@@ -169,3 +177,10 @@ numbers=none
 \RequirePackage{booktabs}
 \RequirePackage[font=small,labelfont=bf]{caption}
 \RequirePackage{pythontex}
+\RequirePackage{tikz}
+\RequirePackage{calc}
+\newlength{\hght}
+\newlength{\wdth}
+
+\newcommand{\cancelto}[3][.5ex]{\setlength{\hght}{\heightof{$#3$}}\setlength{\wdth}{\widthof{$#3$}}%
+    \makebox[0pt][l]{\tikz[baseline]{\draw[-latex](0,-#1)--(\wdth,\hght+#1) node[shift={(1mm,.5mm)}]{#2};}}#3}
