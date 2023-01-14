@@ -227,7 +227,6 @@ class SANDLER:
                     self.Vapor.u=UVsat
                     self.Vapor.h=HVsat
                     self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
                     self.u=self.x*UVsat+(1-self.x)*ULsat
                     self.h=self.x*HVsat+(1-self.x)*HLsat
                     self.s=self.x*SVsat+(1-self.x)*SLsat
@@ -257,7 +256,6 @@ class SANDLER:
                     self.Vapor.h=HVsat
                     self.Vapor.s=SVsat
                     self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.u=self.x*UVsat+(1-self.x)*ULsat
                     self.h=self.x*HVsat+(1-self.x)*HLsat
                     self.s=self.x*SVsat+(1-self.x)*SLsat
             elif self.s:
@@ -287,7 +285,6 @@ class SANDLER:
                     self.v=self.x*VVsat+(1-self.x)*VLsat
                     self.u=self.x*UVsat+(1-self.x)*ULsat
                     self.h=self.x*HVsat+(1-self.x)*HLsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
             elif self.h:
                 if self.h<HLsat:
                     self.P=self.subc.interpolators['TH']['P'](self.T,self.h)
@@ -314,9 +311,17 @@ class SANDLER:
                     self.Vapor.s=SVsat
                     self.v=self.x*VVsat+(1-self.x)*VLsat
                     self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
                     self.s=self.x*SVsat+(1-self.x)*SLsat
         elif self.P:
+            Tsat=self.satd.interpolators['P']['T'](self.P)
+            VLsat=self.satd.interpolators['P']['VL'](self.P)
+            VVsat=self.satd.interpolators['P']['VV'](self.P)
+            ULsat=self.satd.interpolators['P']['UL'](self.P)
+            UVsat=self.satd.interpolators['P']['UV'](self.P)
+            HLsat=self.satd.interpolators['P']['HL'](self.P)
+            HVsat=self.satd.interpolators['P']['HV'](self.P)
+            SLsat=self.satd.interpolators['P']['SL'](self.P)
+            SVsat=self.satd.interpolators['P']['SV'](self.P)
             if self.v:
                 if self.v<VLsat:
                     self.T=self.subc.interpolators['PV']['T'](self.P,self.v)
@@ -330,7 +335,88 @@ class SANDLER:
                     self.h=self.suph.interpolators['PV']['H'](self.P,self.v)
                 else:
                     self.x=(self.v-VLsat)/(VVsat-VLsat)
-                    self.P=Psat
+                    self.T=Tsat
+                    self.Liquid=PHASE()
+                    self.Liquid.v=VLsat
+                    self.Liquid.u=ULsat
+                    self.Liquid.h=HLsat
+                    self.Liquid.s=SLsat
+                    self.Vapor=PHASE()
+                    self.Vapor.v=VVsat
+                    self.Vapor.u=UVsat
+                    self.Vapor.h=HVsat
+                    self.Vapor.s=SVsat
+                    self.u=self.x*UVsat+(1-self.x)*ULsat
+                    self.h=self.x*HVsat+(1-self.x)*HLsat
+                    self.s=self.x*SVsat+(1-self.x)*SLsat
+            elif self.u:
+                if self.u<ULsat:
+                    self.T=self.subc.interpolators['PU']['T'](self.P,self.u)
+                    self.v=self.subc.interpolators['PU']['V'](self.P,self.u)
+                    self.s=self.subc.interpolators['PU']['S'](self.P,self.u)
+                    self.h=self.subc.interpolators['PU']['H'](self.P,self.u)
+                elif self.u>UVsat:
+                    self.T=self.suph.interpolators['PU']['T'](self.P,self.u)
+                    self.v=self.suph.interpolators['PU']['V'](self.P,self.u)
+                    self.s=self.suph.interpolators['PU']['S'](self.P,self.u)
+                    self.h=self.suph.interpolators['PU']['H'](self.P,self.u)
+                else:
+                    self.x=(self.u-ULsat)/(UVsat-ULsat)
+                    self.T=Tsat
+                    self.Liquid=PHASE()
+                    self.Liquid.v=VLsat
+                    self.Liquid.u=ULsat
+                    self.Liquid.h=HLsat
+                    self.Liquid.s=SLsat
+                    self.Vapor=PHASE()
+                    self.Vapor.v=VVsat
+                    self.Vapor.u=UVsat
+                    self.Vapor.h=HVsat
+                    self.Vapor.s=SVsat
+                    self.v=self.x*VVsat+(1-self.x)*VLsat
+                    self.h=self.x*HVsat+(1-self.x)*HLsat
+                    self.s=self.x*SVsat+(1-self.x)*SLsat
+            elif self.s:
+                if self.s<SLsat:
+                    self.T=self.subc.interpolators['PS']['T'](self.P,self.s)
+                    self.v=self.subc.interpolators['PS']['V'](self.P,self.s)
+                    self.u=self.subc.interpolators['PS']['U'](self.P,self.s)
+                    self.h=self.subc.interpolators['PS']['H'](self.P,self.s)
+                elif self.s>SVsat:
+                    self.T=self.suph.interpolators['PS']['T'](self.P,self.s)
+                    self.v=self.suph.interpolators['PS']['V'](self.P,self.s)
+                    self.u=self.suph.interpolators['PS']['U'](self.P,self.s)
+                    self.h=self.suph.interpolators['PS']['H'](self.P,self.s)
+                else:
+                    self.x=(self.u-ULsat)/(UVsat-ULsat)
+                    self.T=Tsat
+                    self.Liquid=PHASE()
+                    self.Liquid.v=VLsat
+                    self.Liquid.u=ULsat
+                    self.Liquid.h=HLsat
+                    self.Liquid.s=SLsat
+                    self.Vapor=PHASE()
+                    self.Vapor.v=VVsat
+                    self.Vapor.u=UVsat
+                    self.Vapor.h=HVsat
+                    self.Vapor.s=SVsat
+                    self.v=self.x*VVsat+(1-self.x)*VLsat
+                    self.h=self.x*HVsat+(1-self.x)*HLsat
+                    self.s=self.x*SVsat+(1-self.x)*SLsat
+            elif self.h:
+                if self.h<HLsat:
+                    self.T=self.subc.interpolators['PH']['T'](self.P,self.h)
+                    self.v=self.subc.interpolators['PH']['V'](self.P,self.h)
+                    self.u=self.subc.interpolators['PH']['U'](self.P,self.h)
+                    self.s=self.subc.interpolators['PH']['S'](self.P,self.h)
+                elif self.h>HVsat:
+                    self.T=self.suph.interpolators['PH']['T'](self.P,self.h)
+                    self.v=self.suph.interpolators['PH']['V'](self.P,self.h)
+                    self.u=self.suph.interpolators['PH']['U'](self.P,self.h)
+                    self.s=self.suph.interpolators['PH']['S'](self.P,self.h)
+                else:
+                    self.x=(self.h-HLsat)/(HVsat-HLsat)
+                    self.T=Tsat
                     self.Liquid=PHASE()
                     self.Liquid.v=VLsat
                     self.Liquid.u=ULsat
@@ -343,23 +429,7 @@ class SANDLER:
                     self.Vapor.s=SVsat
                     self.v=self.x*VVsat+(1-self.x)*VLsat
                     self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
                     self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.u:
-                self.T=self.suph.interpolators['PU']['T'](self.P,self.u)
-                self.v=self.suph.interpolators['PU']['V'](self.P,self.u)
-                self.s=self.suph.interpolators['PU']['S'](self.P,self.u)
-                self.h=self.suph.interpolators['PU']['H'](self.P,self.u)
-            elif self.s:
-                self.T=self.suph.interpolators['PS']['T'](self.P,self.s)
-                self.v=self.suph.interpolators['PS']['V'](self.P,self.s)
-                self.u=self.suph.interpolators['PS']['U'](self.P,self.s)
-                self.h=self.suph.interpolators['PS']['H'](self.P,self.s)
-            elif self.h:
-                self.T=self.suph.interpolators['PH']['T'](self.P,self.h)
-                self.v=self.suph.interpolators['PH']['V'](self.P,self.h)
-                self.u=self.suph.interpolators['PH']['U'](self.P,self.h)
-                self.s=self.suph.interpolators['PH']['S'](self.P,self.h)
         elif self.v:
             if self.u:
                 self.T=self.suph.interpolators['VU']['T'](self.v,self.u)
