@@ -16,37 +16,39 @@ class SATD:
         pfn=['SandlerSatdSteamTableP1.txt','SandlerSatdSteamTableP2.txt']
         tfn=['SandlerSatdSteamTableT1.txt','SandlerSatdSteamTableT2.txt']
         punits=['kPa','MPa']
-        colorder=['T','PkPa','PMPa','VL','VV','UL','DU','UV','HL','DH','HV','SL','DS','SV']
+        colorder=['T','P','VL','VV','UL','DU','UV','HL','DH','HV','SL','DS','SV']
         self.DF={}
+        self.lim={}
         D=[]
         for f,pu in zip(pfn,punits):
             data_abs_path=os.path.join(inst_root,'data',f)
             df=pd.read_csv(data_abs_path,sep='\s+',header=0,index_col=None)
             if pu=='kPa':
-                df['PMPa']=df['PkPa']/1000.0
-            elif pu=='MPa':
-                df['PkPa']=df['PMPa']*1000.0
+                df['P']=df['P']/1000.0
             ndf=df[colorder]
+            # print(ndf.info())
             # print(ndf.head())
             D.append(ndf)
-        self.DF['PMPa']=pd.concat(D,axis=0)
-        self.DF['PMPa'].sort_values(by='PMPa',inplace=True)
+        self.DF['P']=pd.concat(D,axis=0)
+        self.DF['P'].sort_values(by='P',inplace=True)
+        # print(self.DF['P'].info())
+        self.lim['P']=[self.DF['P'].min().values[0],self.DF['P'].max().values[0]]
         D=[]
         for f,pu in zip(tfn,punits):
             data_abs_path=os.path.join(inst_root,'data',f)
             df=pd.read_csv(data_abs_path,sep='\s+',header=0,index_col=None)
             if pu=='kPa':
-                df['PMPa']=df['PkPa']/1000.0
-            elif pu=='MPa':
-                df['PkPa']=df['PMPa']*1000.0
+                df['P']=df['P']/1000.0
             ndf=df[colorder]
             # print(ndf.head())
             D.append(ndf)
         self.DF['T']=pd.concat(D,axis=0)
+        # print(self.DF['T'].describe())
         self.DF['T'].sort_values(by='T',inplace=True)
+        self.lim['T']=[self.DF['T'].min().values[0],self.DF['T'].max().values[0]]
 
         self.interpolators={}
-        for bp,cp in zip(['PMPa','T'],['T','PMPa']):
+        for bp,cp in zip(['P','T'],['T','P']):
             self.interpolators[bp]={}
             X=np.array(self.DF[bp][bp].to_list())
             for p in [cp,'VL','VV','UL','UV','HL','HV','SL','SV']:
@@ -85,7 +87,7 @@ def my_split(data,hder,P,Tsat,fixw=False):
     return mdf
 
 class SUPH:
-    def __init__(self,phase='V',fixw=False):
+    def __init__(self,phase='V'):
         with importlib.resources.path('Sandlersteam','__init__.py') as f:
             inst_root=os.path.split(os.path.abspath(f))[0]
         if phase=='V':
@@ -124,16 +126,32 @@ class SUPH:
                 Tsat.append(None)
 
             data='\n'.join(lines[l+1:r])
-            # print(hder)
-            # print(data)
             ndf=my_split(data,hder,P,Tsat,fixw=(phase=='L'))
             DFS.append(ndf)
-
+        tokens=lines[plines[-1]].split()
+        kills=['P','=','MPa']
+        for k in kills:
+            while k in tokens:
+                tokens.remove(k)
+        P=[]
+        Tsat=[]
+        for x in tokens:
+            if x[0]=='(':
+                y=x[1:-1]
+                Tsat.append(float(y))
+            else:
+                P.append(float(x))
+        while len(Tsat)<len(P):
+            Tsat.append(None)
         data='\n'.join(lines[plines[-1]+1:])
         ndf=my_split(data,hder,P,Tsat,fixw=(phase=='L'))
         DFS.append(ndf)
         self.data=pd.concat(DFS,axis=0)
+        # print(f'Superheated steam table: {self.data["T"].min()}<T(C)<{self.data["T"].max()} {self.data["P"].min()}<P(MPa)<{self.data["P"].max()} ')
         dof=self.data.columns
+        self.uniqs={}
+        for d in dof:
+            self.uniqs[d]=list(set(self.data[d].to_list())).sort()
         self.interpolators={}
         for i in range(len(dof)):
             X=np.array(self.data[dof[i]].to_list())
@@ -157,19 +175,73 @@ class PHASE:
     def __init__(self):
         pass
 
+LARGE=1.e99
+NEGLARGE=-LARGE
+
 class SANDLER:
     _p=['T','P','u','v','s','h','x']
+    _sp=['T','P','VL','VV','UL','UV','HL','HV','SL','SV']
     def _resolve(self):
+        self.spec=[p for p in self._p if self.__dict__[p]]
+        assert len(self.spec)==2,f'Error: must specify two properties (of {self._p}) for steam'
+        if self.spec[1]=='x':
+            self._resolve_satd()
+        else:
+            if self.spec==['T','P']:
+                self._resolve_supsub()
+            elif 'T' in self.spec or 'P' in self.spec:
+                th=self.spec[1]
+                # could be anything...
+                # return
+                pass
+            else:
+                print('If not explicitly saturated, you must specify either T or P')
+    def _resolve_satd(self):
+        p=self.spec[0]
+        self.Liquid=PHASE()
+        self.Vapor=PHASE()
+        if p=='T':
+            if self.T<self.satd.lim['T'][0] or self.T>self.satd.lim['T'][1]:
+                return
+            for q in self._sp:
+                if q!='T':
+                    self.__dict__[q]=self.satd.interpolators['T'][q](self.T)
+                    if q[-1]=='V':
+                        self.Vapor.__dict__[q[0].lower()]=self.__dict__[q]
+                    elif q[-1]=='L':
+                        self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
+        elif p=='P':
+            if self.P<self.satd.lim['P'][0] or self.P>self.satd.lim['P'][1]:
+                return
+            for q in self._sp:
+                if q!='P':
+                    self.__dict__[q]=self.satd.interpolators['P'][q](self.P)        
+                    if q[-1]=='V':
+                        self.Vapor.__dict__[q[0].lower()]=self.__dict__[q]
+                    elif q[-1]=='L':
+                        self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
+        else:
+            self._resolve_satd_lever()
+
+    def _resolve_satd_lever(self):
+        p=self.spec[0]
+        th=self.__dict__[p]
+
+
+    def _resolve_old(self):
         if self.T:
-            Psat=self.satd.interpolators['T']['PMPa'](self.T)
-            VLsat=self.satd.interpolators['T']['VL'](self.T)
-            VVsat=self.satd.interpolators['T']['VV'](self.T)
-            ULsat=self.satd.interpolators['T']['UL'](self.T)
-            UVsat=self.satd.interpolators['T']['UV'](self.T)
-            HLsat=self.satd.interpolators['T']['HL'](self.T)
-            HVsat=self.satd.interpolators['T']['HV'](self.T)
-            SLsat=self.satd.interpolators['T']['SL'](self.T)
-            SVsat=self.satd.interpolators['T']['SV'](self.T)
+            if self.T<self.satd.DF['T']['T'].max():
+                Psat=self.satd.interpolators['T']['PMPa'](self.T)
+                VLsat=self.satd.interpolators['T']['VL'](self.T)
+                VVsat=self.satd.interpolators['T']['VV'](self.T)
+                ULsat=self.satd.interpolators['T']['UL'](self.T)
+                UVsat=self.satd.interpolators['T']['UV'](self.T)
+                HLsat=self.satd.interpolators['T']['HL'](self.T)
+                HVsat=self.satd.interpolators['T']['HV'](self.T)
+                SLsat=self.satd.interpolators['T']['SL'](self.T)
+                SVsat=self.satd.interpolators['T']['SV'](self.T)
+            else:
+                Psat=LARGE
             if self.x:
                 # saturated V+L
                 self.P=Psat
@@ -196,10 +268,13 @@ class SANDLER:
                     self.h=self.subc.interpolators['TP']['H'](self.T,self.P)
                 else:
                     # superheated vapor
+                    # T0,T1=self.bracket('T',self.T)
+                    # P0,P1=self.bracket('P',self.P,supbracket={'T':(T0,T1)})
                     self.u=self.suph.interpolators['TP']['U'](self.T,self.P)
                     self.v=self.suph.interpolators['TP']['V'](self.T,self.P)
                     self.s=self.suph.interpolators['TP']['S'](self.T,self.P)
                     self.h=self.suph.interpolators['TP']['H'](self.T,self.P)
+                    # print(self.T,self.P,self.u,self.v,self.s,self.h)
             elif self.v:
                 if self.v>VLsat:
                     #subcooled
@@ -313,15 +388,27 @@ class SANDLER:
                     self.u=self.x*UVsat+(1-self.x)*ULsat
                     self.s=self.x*SVsat+(1-self.x)*SLsat
         elif self.P:
-            Tsat=self.satd.interpolators['P']['T'](self.P)
-            VLsat=self.satd.interpolators['P']['VL'](self.P)
-            VVsat=self.satd.interpolators['P']['VV'](self.P)
-            ULsat=self.satd.interpolators['P']['UL'](self.P)
-            UVsat=self.satd.interpolators['P']['UV'](self.P)
-            HLsat=self.satd.interpolators['P']['HL'](self.P)
-            HVsat=self.satd.interpolators['P']['HV'](self.P)
-            SLsat=self.satd.interpolators['P']['SL'](self.P)
-            SVsat=self.satd.interpolators['P']['SV'](self.P)
+            if self.P<self.satd.DF['PMPa']['PMPa'].max():
+                Tsat=self.satd.interpolators['PMPa']['T'](self.P)
+                VLsat=self.satd.interpolators['PMPa']['VL'](self.P)
+                VVsat=self.satd.interpolators['PMPa']['VV'](self.P)
+                ULsat=self.satd.interpolators['PMPa']['UL'](self.P)
+                UVsat=self.satd.interpolators['PMPa']['UV'](self.P)
+                HLsat=self.satd.interpolators['PMPa']['HL'](self.P)
+                HVsat=self.satd.interpolators['PMPa']['HV'](self.P)
+                SLsat=self.satd.interpolators['PMPa']['SL'](self.P)
+                SVsat=self.satd.interpolators['PMPa']['SV'](self.P)
+            else:
+                Tsat=LARGE
+                VLsat=NEGLARGE 
+                VVsat=LARGE
+                ULsat=NEGLARGE 
+                UVsat=LARGE
+                HLsat=NEGLARGE 
+                HVsat=LARGE
+                SLsat=NEGLARGE 
+                SVsat=LARGE
+
             if self.v:
                 if self.v<VLsat:
                     self.T=self.subc.interpolators['PV']['T'](self.P,self.v)
@@ -467,13 +554,8 @@ class SANDLER:
         self.satd=_SATD
         self.suph=_SUPH
         self.subc=_SUBC
-        self.T=kwargs.get('T',None)
-        self.P=kwargs.get('P',None)
-        self.u=kwargs.get('u',None)
-        self.v=kwargs.get('v',None)
-        self.s=kwargs.get('s',None)
-        self.h=kwargs.get('h',None)
-        self.x=kwargs.get('x',None)
+        for p in self._p:
+            self.__dict__[p]=kwargs.get(p,None)
         self._resolve()
 
 
