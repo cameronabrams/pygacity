@@ -7,7 +7,7 @@ import io
 import importlib.resources
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import LinearNDInterpolator, interp1d
+from scipy.interpolate import LinearNDInterpolator, interp1d, interp2d
 
 class SATD:
     def __init__(self):
@@ -31,8 +31,11 @@ class SATD:
             D.append(ndf)
         self.DF['P']=pd.concat(D,axis=0)
         self.DF['P'].sort_values(by='P',inplace=True)
+        print(self.DF['P'].head())
+        print(self.DF['P'].tail())
         # print(self.DF['P'].info())
-        self.lim['P']=[self.DF['P'].min().values[0],self.DF['P'].max().values[0]]
+        self.lim['P']=[self.DF['P']['P'].min(),self.DF['P']['P'].max()]
+        print(self.lim)
         D=[]
         for f,pu in zip(tfn,punits):
             data_abs_path=os.path.join(inst_root,'data',f)
@@ -45,7 +48,7 @@ class SATD:
         self.DF['T']=pd.concat(D,axis=0)
         # print(self.DF['T'].describe())
         self.DF['T'].sort_values(by='T',inplace=True)
-        self.lim['T']=[self.DF['T'].min().values[0],self.DF['T'].max().values[0]]
+        self.lim['T']=[self.DF['T']['T'].min(),self.DF['T']['T'].max()]
 
         self.interpolators={}
         for bp,cp in zip(['P','T'],['T','P']):
@@ -177,32 +180,149 @@ class PHASE:
 
 LARGE=1.e99
 NEGLARGE=-LARGE
+def MyBilinear(specdict,zn,scsh='SUPH'):
+    xn,yn=specdict.keys()
+    xi,yi=specdict.values()
+    if scsh=='SUPH':
+        df=_SUPH.data
+    elif scsh=='SUBC':
+        df=_SUBC.data
+    else:
+        raise Exception('MyBilinear only works on superheated or subcooled data')
+    df1=df[(df[xn]<xi)]
+    x0=df1[xn].max()
+    df1=df1[df1[xn]==x0].sort_values(by=yn)
+    df2=df[(df[xn]>xi)]
+    x1=df2[xn].min()
+    df2=df2[df2[xn]==x1].sort_values(by=yn)
+    df3=df[(df[yn]<yi)]
+    y0=df3[yn].max()
+    df3=df3[df3[yn]==y0].sort_values(by=xn)
+    df4=df[(df[yn]>yi)]
+    y1=df4[yn].min()
+    df4=df4[df4[yn]==y1].sort_values(by=xn)
+    x0y0=df[(df[xn]==x0)&(df[yn]==y0)]
+    x0y1=df[(df[xn]==x0)&(df[yn]==y1)]
+    x1y0=df[(df[xn]==x1)&(df[yn]==y0)]
+    x1y1=df[(df[xn]==x1)&(df[yn]==y1)]
+    inter=pd.concat((x0y0,x0y1,x1y0,x1y1),axis=0)
+    print(inter.to_string())
+    f=interp2d(np.array(inter[xn]),np.array(inter[yn]),np.array(inter[zn]))
+    z=f(xi,yi)
+    return z[0]
 
 class SANDLER:
     _p=['T','P','u','v','s','h','x']
     _sp=['T','P','VL','VV','UL','UV','HL','HV','SL','SV']
     def _resolve(self):
+        """ Resolve the thermodynamic state of steam/water given specifications
+        """
         self.spec=[p for p in self._p if self.__dict__[p]]
         assert len(self.spec)==2,f'Error: must specify two properties (of {self._p}) for steam'
         if self.spec[1]=='x':
+            ''' explicitly saturated '''
             self._resolve_satd()
         else:
             if self.spec==['T','P']:
-                self._resolve_supsub()
+                ''' T and P given explicitly '''
+                self._resolve_subsup()
             elif 'T' in self.spec or 'P' in self.spec:
-                th=self.spec[1]
-                # could be anything...
-                # return
-                pass
+                ''' T OR P given, along with some other property (v,u,s,h) '''
+                self._resolve_TPTh()
             else:
-                print('If not explicitly saturated, you must specify either T or P')
+                raise Exception('If not explicitly saturated, you must specify either T or P')
+
+    def _resolve_TPTh(self):
+        ''' T or P along with one other property (th) are specified '''
+        p=self.spec[0]
+        cp='P' if p=='T' else 'T'
+        th=self.spec[1]
+        print(f'{p} = {self.__dict__[p]} ({self.satd.lim[p][0]}-{self.satd.lim[p][1]}), {th} = {self.__dict__[th]}')
+        if self.satd.lim[p][0]<self.__dict__[p]<self.satd.lim[p][1]:
+            ''' T or P is between saturation limits; may be a saturated state, so 
+                check whether the second property value lies between its liquid
+                and vapor phase values at this T or P '''
+            thL=self.satd.interpolators[p][f'{th.upper()}L'](self.__dict__[p])
+            thV=self.satd.interpolators[p][f'{th.upper()}V'](self.__dict__[p])
+            print(f'{th}L = {thL}, {th}V = {thV}')
+            self.__dict__[cp]=self.satd.interpolators[p][cp](self.__dict__[p])
+            if thL<self.__dict__[th]<thV:
+                ''' This is a saturated state! Use lever rule to get vapor fraction: '''
+                self.x=(self.__dict__[th]-thL)/(thV-thL)
+                self.Liquid=PHASE()
+                self.Vapor=PHASE()
+                self.Liquid.__dict__[th]=thL
+                self.Vapor.__dict__[th]=thV
+                for pp in self._sp:
+                    if pp not in ['T','P',f'{th.upper()}V',f'{th.upper()}L']:
+                        ppL=self.satd.interpolators[p][pp](self.__dict__[p])
+                        ppV=self.satd.interpolators[p][pp](self.__dict__[p])
+                        self.Liquid.__dict__[pp[0].lower()]=ppL
+                        self.Vapor.__dict__[pp[0].lower()]=ppV
+                for pp in self._p:
+                    if pp not in [p,cp,'x']:
+                        self.__dict__[pp]=self.x*self.Vapor.__dict__[pp]+(1-self.x)*self.Liquid.__dict__[pp]
+            else:
+                ''' even though T or P is between saturation limits, the other property is not '''
+                if self.__dict__[th]<thL:
+                    ''' Th is below its liquid-state value; assume this is a subcooled state '''
+                    icode=''.join([x.upper() for x in self.spec])
+                    dofv=[self.__dict__[p] for p in self.spec]
+                    for p in self._p: 
+                        if p not in self.spec:
+                            self.__dict__[p]=self.subc.interpolators[icode][p.upper()](*dofv)
+                else:
+                    ''' Th is above its vapor-state value; assume this is a superheated state '''
+                    icode=''.join([x.upper() for x in self.spec])
+                    dofv=[self.__dict__[p] for p in self.spec]
+                    for p in self._p: 
+                        if p not in self.spec:
+                            self.__dict__[p]=self.suph.interpolators[icode][p.upper()](*dofv)
+        elif self.__dict__[p]>self.satd.lim[p][1]:
+            ''' Th is above its vapor-state value; assume this is a superheated state '''
+            icode=''.join([x.upper() for x in self.spec])
+            dofv=[self.__dict__[p] for p in self.spec]
+            for p in self._p: 
+                if p not in self.spec and p!='x':
+                    self.__dict__[p]=self.suph.interpolators[icode][p.upper()](*dofv)
+        else:
+            ''' Th is below its liquid-state value; assume this is a subcooled state '''
+            icode=''.join([x.upper() for x in self.spec])
+            dofv=[self.__dict__[p] for p in self.spec]
+            for p in self._p: 
+                if p not in self.spec and p!='x':
+                    self.__dict__[p]=self.subc.interpolators[icode][p.upper()](*dofv)
+
+    def _resolve_subsup(self):
+        ''' T and P are both given explicitly.  Could be either superheated or subcooled state '''
+        assert self.spec==['T','P']
+        specdict={'T':self.T,'P':self.P}
+        if self.satd.lim['T'][0]<self.T<self.satd.lim['T'][1]:
+            Psat=self.satd.interpolators['T']['P'](self.T)
+        else:
+            Psat=LARGE
+        if self.P>Psat:
+            ''' P is higher than saturation: this is a subcooled state '''
+            for p in self._p: 
+                if p not in self.spec and p!='x':
+                    self.__dict__[p]=MyBilinear(specdict,p.upper(),scsh='SUBC')
+        else:
+            ''' P is lower than saturation: this is a superheated state '''
+            for p in self._p: 
+                if p not in self.spec and p!='x':
+                    self.__dict__[p]=MyBilinear(specdict,p.upper(),scsh='SUPH')
+
     def _resolve_satd(self):
+        ''' This is an explicitly saturated state with vapor fraction (x) and one 
+        other property (p) specified '''
         p=self.spec[0]
         self.Liquid=PHASE()
         self.Vapor=PHASE()
         if p=='T':
+            ''' The other property is T; make sure it lies between saturation limits '''
             if self.T<self.satd.lim['T'][0] or self.T>self.satd.lim['T'][1]:
-                return
+                raise Exception(f'Cannot have a saturated state at T = {self.T} C')
+            ''' Assign all other property values by interpolation '''
             for q in self._sp:
                 if q!='T':
                     self.__dict__[q]=self.satd.interpolators['T'][q](self.T)
@@ -211,8 +331,10 @@ class SANDLER:
                     elif q[-1]=='L':
                         self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
         elif p=='P':
+            ''' The other property is P; make sure it lies between saturation limits '''
             if self.P<self.satd.lim['P'][0] or self.P>self.satd.lim['P'][1]:
-                return
+                raise Exception(f'Cannot have a saturated state at P = {self.P} MPa')
+            ''' Assign all other property values by interpolation '''
             for q in self._sp:
                 if q!='P':
                     self.__dict__[q]=self.satd.interpolators['P'][q](self.P)        
@@ -221,335 +343,34 @@ class SANDLER:
                     elif q[-1]=='L':
                         self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
         else:
+            ''' The other property is neither T or P; must use a lever-rule-based interpolation '''
             self._resolve_satd_lever()
 
     def _resolve_satd_lever(self):
         p=self.spec[0]
+        assert p!='T' and p!='P'
+        ''' Vapor fraction and one other property value (not T or P) is given '''
         th=self.__dict__[p]
-
-
-    def _resolve_old(self):
-        if self.T:
-            if self.T<self.satd.DF['T']['T'].max():
-                Psat=self.satd.interpolators['T']['PMPa'](self.T)
-                VLsat=self.satd.interpolators['T']['VL'](self.T)
-                VVsat=self.satd.interpolators['T']['VV'](self.T)
-                ULsat=self.satd.interpolators['T']['UL'](self.T)
-                UVsat=self.satd.interpolators['T']['UV'](self.T)
-                HLsat=self.satd.interpolators['T']['HL'](self.T)
-                HVsat=self.satd.interpolators['T']['HV'](self.T)
-                SLsat=self.satd.interpolators['T']['SL'](self.T)
-                SVsat=self.satd.interpolators['T']['SV'](self.T)
-            else:
-                Psat=LARGE
-            if self.x:
-                # saturated V+L
-                self.P=Psat
-                self.Liquid=PHASE()
-                self.Liquid.v=VLsat
-                self.Liquid.u=ULsat
-                self.Liquid.h=HLsat
-                self.Liquid.s=SLsat
-                self.Vapor=PHASE()
-                self.Vapor.v=VVsat
-                self.Vapor.u=UVsat
-                self.Vapor.h=HVsat
-                self.Vapor.s=SVsat
-                self.v=self.x*VVsat+(1-self.x)*VLsat
-                self.u=self.x*UVsat+(1-self.x)*ULsat
-                self.h=self.x*HVsat+(1-self.x)*HLsat
-                self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.P:
-                if self.P>Psat:
-                    # subcooled liquid
-                    self.u=self.subc.interpolators['TP']['U'](self.T,self.P)
-                    self.v=self.subc.interpolators['TP']['V'](self.T,self.P)
-                    self.s=self.subc.interpolators['TP']['S'](self.T,self.P)
-                    self.h=self.subc.interpolators['TP']['H'](self.T,self.P)
-                else:
-                    # superheated vapor
-                    # T0,T1=self.bracket('T',self.T)
-                    # P0,P1=self.bracket('P',self.P,supbracket={'T':(T0,T1)})
-                    self.u=self.suph.interpolators['TP']['U'](self.T,self.P)
-                    self.v=self.suph.interpolators['TP']['V'](self.T,self.P)
-                    self.s=self.suph.interpolators['TP']['S'](self.T,self.P)
-                    self.h=self.suph.interpolators['TP']['H'](self.T,self.P)
-                    # print(self.T,self.P,self.u,self.v,self.s,self.h)
-            elif self.v:
-                if self.v>VLsat:
-                    #subcooled
-                    self.P=self.subc.interpolators['TV']['P'](self.T,self.v)
-                    self.u=self.subc.interpolators['TV']['U'](self.T,self.v)
-                    self.s=self.subc.interpolators['TV']['S'](self.T,self.v)
-                    self.h=self.subc.interpolators['TV']['H'](self.T,self.v)
-                elif self.v<VVsat:
-                    # superheated
-                    self.P=self.suph.interpolators['TV']['P'](self.T,self.v)
-                    self.u=self.suph.interpolators['TV']['U'](self.T,self.v)
-                    self.s=self.suph.interpolators['TV']['S'](self.T,self.v)
-                    self.h=self.suph.interpolators['TV']['H'](self.T,self.v)
-                else:
-                    # apply lever rule
-                    self.x=(self.v-VLsat)/(VVsat-VLsat)
-                    self.P=Psat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.u:
-                if self.u<ULsat:
-                    # subc
-                    self.P=self.subc.interpolators['TU']['P'](self.T,self.u)
-                    self.v=self.subc.interpolators['TU']['V'](self.T,self.u)
-                    self.s=self.subc.interpolators['TU']['S'](self.T,self.u)
-                    self.h=self.subc.interpolators['TU']['H'](self.T,self.u)
-                elif self.u>UVsat:
-                    self.P=self.suph.interpolators['TU']['P'](self.T,self.u)
-                    self.v=self.suph.interpolators['TU']['V'](self.T,self.u)
-                    self.s=self.suph.interpolators['TU']['S'](self.T,self.u)
-                    self.h=self.suph.interpolators['TU']['H'](self.T,self.u)
-                else:
-                    self.x=(self.u-ULsat)/(UVsat-ULsat)
-                    self.P=Psat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.s:
-                if self.s<SLsat:
-                    self.P=self.subc.interpolators['TS']['P'](self.T,self.s)
-                    self.v=self.subc.interpolators['TS']['V'](self.T,self.s)
-                    self.u=self.subc.interpolators['TS']['U'](self.T,self.s)
-                    self.h=self.subc.interpolators['TS']['H'](self.T,self.s)
-                elif self.s>SVsat:
-                    self.P=self.suph.interpolators['TS']['P'](self.T,self.s)
-                    self.v=self.suph.interpolators['TS']['V'](self.T,self.s)
-                    self.u=self.suph.interpolators['TS']['U'](self.T,self.s)
-                    self.h=self.suph.interpolators['TS']['H'](self.T,self.s)
-                else:
-                    self.x=(self.s-SLsat)/(SVsat-SLsat)
-                    self.P=Psat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
-            elif self.h:
-                if self.h<HLsat:
-                    self.P=self.subc.interpolators['TH']['P'](self.T,self.h)
-                    self.v=self.subc.interpolators['TH']['V'](self.T,self.h)
-                    self.u=self.subc.interpolators['TH']['U'](self.T,self.h)
-                    self.s=self.subc.interpolators['TH']['S'](self.T,self.h)
-                elif self.h>HVsat:
-                    self.P=self.suph.interpolators['TH']['P'](self.T,self.h)
-                    self.v=self.suph.interpolators['TH']['V'](self.T,self.h)
-                    self.u=self.suph.interpolators['TH']['U'](self.T,self.h)
-                    self.s=self.suph.interpolators['TH']['S'](self.T,self.h)
-                else:
-                    self.x=(self.h-HLsat)/(HVsat-HLsat)
-                    self.P=Psat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-        elif self.P:
-            if self.P<self.satd.DF['PMPa']['PMPa'].max():
-                Tsat=self.satd.interpolators['PMPa']['T'](self.P)
-                VLsat=self.satd.interpolators['PMPa']['VL'](self.P)
-                VVsat=self.satd.interpolators['PMPa']['VV'](self.P)
-                ULsat=self.satd.interpolators['PMPa']['UL'](self.P)
-                UVsat=self.satd.interpolators['PMPa']['UV'](self.P)
-                HLsat=self.satd.interpolators['PMPa']['HL'](self.P)
-                HVsat=self.satd.interpolators['PMPa']['HV'](self.P)
-                SLsat=self.satd.interpolators['PMPa']['SL'](self.P)
-                SVsat=self.satd.interpolators['PMPa']['SV'](self.P)
-            else:
-                Tsat=LARGE
-                VLsat=NEGLARGE 
-                VVsat=LARGE
-                ULsat=NEGLARGE 
-                UVsat=LARGE
-                HLsat=NEGLARGE 
-                HVsat=LARGE
-                SLsat=NEGLARGE 
-                SVsat=LARGE
-
-            if self.v:
-                if self.v<VLsat:
-                    self.T=self.subc.interpolators['PV']['T'](self.P,self.v)
-                    self.u=self.subc.interpolators['PV']['U'](self.P,self.v)
-                    self.s=self.subc.interpolators['PV']['S'](self.P,self.v)
-                    self.h=self.subc.interpolators['PV']['H'](self.P,self.v)
-                elif self.s>VVsat:
-                    self.T=self.suph.interpolators['PV']['T'](self.P,self.v)
-                    self.u=self.suph.interpolators['PV']['U'](self.P,self.v)
-                    self.s=self.suph.interpolators['PV']['S'](self.P,self.v)
-                    self.h=self.suph.interpolators['PV']['H'](self.P,self.v)
-                else:
-                    self.x=(self.v-VLsat)/(VVsat-VLsat)
-                    self.T=Tsat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.u:
-                if self.u<ULsat:
-                    self.T=self.subc.interpolators['PU']['T'](self.P,self.u)
-                    self.v=self.subc.interpolators['PU']['V'](self.P,self.u)
-                    self.s=self.subc.interpolators['PU']['S'](self.P,self.u)
-                    self.h=self.subc.interpolators['PU']['H'](self.P,self.u)
-                elif self.u>UVsat:
-                    self.T=self.suph.interpolators['PU']['T'](self.P,self.u)
-                    self.v=self.suph.interpolators['PU']['V'](self.P,self.u)
-                    self.s=self.suph.interpolators['PU']['S'](self.P,self.u)
-                    self.h=self.suph.interpolators['PU']['H'](self.P,self.u)
-                else:
-                    self.x=(self.u-ULsat)/(UVsat-ULsat)
-                    self.T=Tsat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.s:
-                if self.s<SLsat:
-                    self.T=self.subc.interpolators['PS']['T'](self.P,self.s)
-                    self.v=self.subc.interpolators['PS']['V'](self.P,self.s)
-                    self.u=self.subc.interpolators['PS']['U'](self.P,self.s)
-                    self.h=self.subc.interpolators['PS']['H'](self.P,self.s)
-                elif self.s>SVsat:
-                    self.T=self.suph.interpolators['PS']['T'](self.P,self.s)
-                    self.v=self.suph.interpolators['PS']['V'](self.P,self.s)
-                    self.u=self.suph.interpolators['PS']['U'](self.P,self.s)
-                    self.h=self.suph.interpolators['PS']['H'](self.P,self.s)
-                else:
-                    self.x=(self.u-ULsat)/(UVsat-ULsat)
-                    self.T=Tsat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.h=self.x*HVsat+(1-self.x)*HLsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-            elif self.h:
-                if self.h<HLsat:
-                    self.T=self.subc.interpolators['PH']['T'](self.P,self.h)
-                    self.v=self.subc.interpolators['PH']['V'](self.P,self.h)
-                    self.u=self.subc.interpolators['PH']['U'](self.P,self.h)
-                    self.s=self.subc.interpolators['PH']['S'](self.P,self.h)
-                elif self.h>HVsat:
-                    self.T=self.suph.interpolators['PH']['T'](self.P,self.h)
-                    self.v=self.suph.interpolators['PH']['V'](self.P,self.h)
-                    self.u=self.suph.interpolators['PH']['U'](self.P,self.h)
-                    self.s=self.suph.interpolators['PH']['S'](self.P,self.h)
-                else:
-                    self.x=(self.h-HLsat)/(HVsat-HLsat)
-                    self.T=Tsat
-                    self.Liquid=PHASE()
-                    self.Liquid.v=VLsat
-                    self.Liquid.u=ULsat
-                    self.Liquid.h=HLsat
-                    self.Liquid.s=SLsat
-                    self.Vapor=PHASE()
-                    self.Vapor.v=VVsat
-                    self.Vapor.u=UVsat
-                    self.Vapor.h=HVsat
-                    self.Vapor.s=SVsat
-                    self.v=self.x*VVsat+(1-self.x)*VLsat
-                    self.u=self.x*UVsat+(1-self.x)*ULsat
-                    self.s=self.x*SVsat+(1-self.x)*SLsat
-        elif self.v:
-            if self.u:
-                self.T=self.suph.interpolators['VU']['T'](self.v,self.u)
-                self.P=self.suph.interpolators['VU']['P'](self.v,self.u)
-                self.s=self.suph.interpolators['VU']['S'](self.v,self.u)
-                self.h=self.suph.interpolators['VU']['H'](self.v,self.u)
-            elif self.s:
-                self.T=self.suph.interpolators['VS']['T'](self.v,self.s)
-                self.P=self.suph.interpolators['VS']['P'](self.v,self.s)
-                self.u=self.suph.interpolators['VS']['U'](self.v,self.s)
-                self.h=self.suph.interpolators['VS']['H'](self.v,self.s)
-            elif self.h:
-                self.T=self.suph.interpolators['VH']['T'](self.v,self.h)
-                self.P=self.suph.interpolators['VH']['P'](self.v,self.h)
-                self.u=self.suph.interpolators['VH']['U'](self.v,self.h)
-                self.s=self.suph.interpolators['VH']['S'](self.v,self.h)
-        elif self.u:
-            if self.s:
-                self.T=self.suph.interpolators['US']['T'](self.u,self.s)
-                self.P=self.suph.interpolators['US']['P'](self.u,self.s)
-                self.v=self.suph.interpolators['US']['V'](self.u,self.s)
-                self.h=self.suph.interpolators['US']['H'](self.u,self.s)
-            elif self.h:
-                self.T=self.suph.interpolators['UH']['T'](self.u,self.h)
-                self.P=self.suph.interpolators['UH']['P'](self.u,self.h)
-                self.v=self.suph.interpolators['UH']['V'](self.u,self.h)
-                self.s=self.suph.interpolators['UH']['S'](self.u,self.h)
-        elif self.s:
-            if self.h:
-                self.T=self.suph.interpolators['SH']['T'](self.s,self.h)
-                self.P=self.suph.interpolators['SH']['P'](self.s,self.h)
-                self.v=self.suph.interpolators['SH']['V'](self.s,self.h)
-                self.u=self.suph.interpolators['SH']['U'](self.s,self.h)
+        x=self.__dict__['x']
+        ''' Build an array of V-L mixed properties based on given value of x '''
+        Y=np.array(self.satd.DF['T'][f'{p.upper()}V'])*x+np.array(self.satd.DF['T'][f'{p.upper()}L'])*(1-x)
+        X=np.array(self.satd.DF['T']['T'])
+        ''' define an interpolator '''
+        f=interp1d(X,Y)
+        try:
+            ''' interpolate the Temperature '''
+            self.T=f(x)
+            ''' Assign all other property values '''
+            for q in self._sp:
+                if q!='T':
+                    self.__dict__[q]=self.satd.interpolators['T'][q](self.T)
+                    if q[-1]=='V':
+                        self.Vapor.__dict__[q[0].lower()]=self.__dict__[q]
+                    elif q[-1]=='L':
+                        self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
+        except:
+            raise Exception(f'Could not interpolate {p} = {th} at quality {x} from saturated steam table')
+        
     def __init__(self,**kwargs):
         self.satd=_SATD
         self.suph=_SUPH
