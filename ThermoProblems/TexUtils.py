@@ -19,7 +19,7 @@ def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]
         for k,d in zip(table.keys(),drop_zeros):
             if d:
                 df=df[df[k]!=0.]
-    tablestring=df.to_latex(escape=False,index=False,float_format=float_format)
+    tablestring=df.style.to_latex(escape=False,index=False,float_format=float_format)
     if len(total_row)>0:
         i=tablestring.find(r'\bottomrule')
         tmpstr=tablestring[:i-1]+r'\hline'+'\n'+'&'.join(total_row)+r'\\'+'\n'+tablestring[i:]
