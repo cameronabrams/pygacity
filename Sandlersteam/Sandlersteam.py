@@ -498,11 +498,15 @@ class SANDLER:
             ''' Assign all other property values by interpolation '''
             for q in self._sp:
                 if q!='T':
-                    self.__dict__[q]=self.satd.interpolators['T'][q](self.T)
+                    prop=self.satd.interpolators['T'][q](self.T)
+                    if q=='P': self.__dict__[q]=prop
                     if q[-1]=='V':
-                        self.Vapor.__dict__[q[0].lower()]=self.__dict__[q]
+                        self.Vapor.__dict__[q[0].lower()]=prop
                     elif q[-1]=='L':
-                        self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
+                        self.Liquid.__dict__[q[0].lower()]=prop
+            for q in self._p:
+                if not q in 'PTx':
+                    self.__dict__[q]=self.x*self.Vapor.__dict__[q]+(1-self.x)*self.Liquid.__dict__[q]
         elif p=='P':
             ''' The other property is P; make sure it lies between saturation limits '''
             if self.P<self.satd.lim['P'][0] or self.P>self.satd.lim['P'][1]:
@@ -510,11 +514,15 @@ class SANDLER:
             ''' Assign all other property values by interpolation '''
             for q in self._sp:
                 if q!='P':
-                    self.__dict__[q]=self.satd.interpolators['P'][q](self.P)        
+                    prop=self.satd.interpolators['P'][q](self.P)        
+                    if q=='T': self.__dict__[q]=prop
                     if q[-1]=='V':
-                        self.Vapor.__dict__[q[0].lower()]=self.__dict__[q]
+                        self.Vapor.__dict__[q[0].lower()]=prop
                     elif q[-1]=='L':
-                        self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
+                        self.Liquid.__dict__[q[0].lower()]=prop
+            for q in self._p:
+                if not q in 'PTx':
+                    self.__dict__[q]=self.x*self.Vapor.__dict__[q]+(1-self.x)*self.Liquid.__dict__[q]
         else:
             ''' The other property is neither T or P; must use a lever-rule-based interpolation '''
             self._resolve_satd_lever()
@@ -536,11 +544,15 @@ class SANDLER:
             ''' Assign all other property values '''
             for q in self._sp:
                 if q!='T':
-                    self.__dict__[q]=self.satd.interpolators['T'][q](self.T)
+                    prop=self.satd.interpolators['T'][q](self.T)
+                    if q=='P': self.__dict__[q]=prop
                     if q[-1]=='V':
-                        self.Vapor.__dict__[q[0].lower()]=self.__dict__[q]
+                        self.Vapor.__dict__[q[0].lower()]=prop
                     elif q[-1]=='L':
-                        self.Liquid.__dict__[q[0].lower()]=self.__dict__[q]
+                        self.Liquid.__dict__[q[0].lower()]=prop
+            for q in self._p:
+                if not q in 'PTx':
+                    self.__dict__[q]=self.x*self.Vapor.__dict__[q]+(1-self.x)*self.Liquid.__dict__[q]
         except:
             raise Exception(f'Could not interpolate {p} = {th} at quality {x} from saturated steam table')
         
