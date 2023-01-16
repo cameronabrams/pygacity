@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import fsolve
 import roman
-from ThermoProblems.Latex.TexUtils import *
+from ThermoProblems.TexUtils import *
 
 class ChemEqSystem:
     R=8.314 # J/mol.K

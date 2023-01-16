@@ -6,7 +6,7 @@ from ThermoProblems.Chem.Compound import Compound
 class PureProperties:
     ''' simple class for handling Sandler's pure properties database '''
     def __init__(self,inputfile='properties_binaries_database.xlsx',sheet_name='pure_properties'):
-        with importlib.resources.path('Chem','__init__.py') as f:
+        with importlib.resources.path('ThermoProblems','__init__.py') as f:
             inst_root=os.path.split(os.path.abspath(f))[0]
         self.data_abs_path=os.path.join(inst_root,'Chem/data/'+inputfile)
         self.inputfile=self.data_abs_path
