@@ -88,16 +88,15 @@ class Compound:
         retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][3],mantissa_fmt='{:.4e}')+r') $T^3$'
         return(retstr)
     def Cp_as_tex(self):
-        retstr=r'$C_p^\circ$ = '+f"{self.thermoChemicalData['Cp'][0]:.3f} + "
-        retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][1],mantissa_fmt='{:.4e}')+r') $T$ + '
-        retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][2],mantissa_fmt='{:.4e}')+r') $T^2$ + '
-        retstr+=r'('+sci_notation_as_tex(self.thermoChemicalData['Cp'][3],mantissa_fmt='{:.4e}')+r') $T^3$'
-        return(retstr)
+        Cp=self.thermoChemicalData['Cp']
+        return Cp_as_tex(Cp)
+
     def CpInt_as_tex(self):
-        retstr=f"{self.thermoChemicalData['Cp'][0]:.3f}($T_2-T_1$) + "
-        retstr+=r'$\frac{1}{2}$('+sci_notation_as_tex(self.thermoChemicalData['Cp'][1],mantissa_fmt='{:.4e}')+r') ($T_2^2-T_1^2$) + '
-        retstr+=r'$\frac{1}{3}$('+sci_notation_as_tex(self.thermoChemicalData['Cp'][2],mantissa_fmt='{:.4e}')+r') ($T_2^3-T_1^3$) + '
-        retstr+=r'$\frac{1}{4}$('+sci_notation_as_tex(self.thermoChemicalData['Cp'][3],mantissa_fmt='{:.4e}')+r') ($T_2^4-T_1^4$)'
+        Cp=self.thermoChemicalData['Cp']
+        retstr=f"{Cp[0]:.3f}($T_2-T_1$) + "
+        retstr+=r'$\frac{1}{2}$('+sci_notation_as_tex(Cp[1],mantissa_fmt='{:.4e}')+r') ($T_2^2-T_1^2$) + '
+        retstr+=r'$\frac{1}{3}$('+sci_notation_as_tex(Cp[2],mantissa_fmt='{:.4e}')+r') ($T_2^3-T_1^3$) + '
+        retstr+=r'$\frac{1}{4}$('+sci_notation_as_tex(Cp[3],mantissa_fmt='{:.4e}')+r') ($T_2^4-T_1^4$)'
         return(retstr)
     def computeGoT(self,T):
         ''' Computes the standard state Gibbs energy of formation at arbitrary temperature T '''

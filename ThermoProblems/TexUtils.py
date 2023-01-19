@@ -26,6 +26,13 @@ def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]
         tablestring=tmpstr
     return tablestring
 
+def Cp_as_tex(Cp):
+    retstr=r'$C_p^\circ$ = '+f"{Cp[0]:.3f} + "
+    retstr+=r'('+sci_notation_as_tex(Cp[1],mantissa_fmt='{:.4e}')+r') $T$ + '
+    retstr+=r'('+sci_notation_as_tex(Cp[2],mantissa_fmt='{:.4e}')+r') $T^2$ + '
+    retstr+=r'('+sci_notation_as_tex(Cp[3],mantissa_fmt='{:.4e}')+r') $T^3$'
+    return(retstr)
+
 def sci_notation_as_tex(x,**kwargs):
     ''' Writes a floating point in LaTeX format scientific notation '''
     maglimit=kwargs.get('maglimit',1000)
