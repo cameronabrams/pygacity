@@ -426,10 +426,11 @@ class SANDLER:
                 self.Vapor.__dict__[th]=thV
                 for pp in self._sp:
                     if pp not in ['T','P',f'{th.upper()}V',f'{th.upper()}L']:
-                        ppL=self.satd.interpolators[p][pp](self.__dict__[p])
-                        ppV=self.satd.interpolators[p][pp](self.__dict__[p])
-                        self.Liquid.__dict__[pp[0].lower()]=ppL
-                        self.Vapor.__dict__[pp[0].lower()]=ppV
+                        ppp=self.satd.interpolators[p][pp](self.__dict__[p])
+                        if pp[-1]=='V':
+                            self.Vapor.__dict__[pp[0].lower()]=ppp
+                        elif pp[-1]=='L':
+                            self.Liquid.__dict__[pp[0].lower()]=ppp
                 for pp in self._p:
                     if pp not in [p,cp,'x']:
                         self.__dict__[pp]=self.x*self.Vapor.__dict__[pp]+(1-self.x)*self.Liquid.__dict__[pp]
@@ -499,6 +500,7 @@ class SANDLER:
             for q in self._sp:
                 if q!='T':
                     prop=self.satd.interpolators['T'][q](self.T)
+                    print(q,prop)
                     if q=='P': self.__dict__[q]=prop
                     if q[-1]=='V':
                         self.Vapor.__dict__[q[0].lower()]=prop
