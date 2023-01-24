@@ -246,57 +246,68 @@ class SUPH:
         assert xn=='T'
         xi,yi=specdict.values()
         df=self.data
-        dof=self.data.columns
+        dof=list(df.columns)
+        dof.remove(yn)
+        dof.remove(xn)
+        retdict={}
+        retdict['T']=xi
+        retdict[yn]=yi
         LLdat={}
+        LLdat[yn]=[]
         for d in dof:
-            if d!='T':
-                LLdat[d]=[]
-        for P in self.uniqs['P']:
+            LLdat[d]=[]
+        for P in self.uniqs['P'][::-1]:  # VUSH properties decrease with increasing P
             tdf=df[df['P']==P]
             X=np.array(tdf['T'])
             Y=np.array(tdf[yn])
             if Y.min()<yi<Y.max():
                 LLdat['P'].append(P)
-                for d in 'UVSH':
+                for d in 'VUSH':
                     Y=np.array(tdf[d])
                     LLdat[d].append(np.interp(xi,X,Y))
-        X=LLdat[yn]
-        retdict={}
-        retdict['T']=xi
-        retdict[yn]=yi
-        for d in dof:
-            if d!='T' and d!=yn:
+        X=np.array(LLdat[yn])
+        retdict['P']=np.interp(yi,X,np.array(LLdat['P']))
+        for d in 'VUSH':
+            if d!=yn:
                 retdict[d]=np.interp(yi,X,LLdat[d])
-        # print(f'TThBilinear ret {retdict}')
         return retdict
 
     def PThBilinear(self,specdict):
         xn,yn=specdict.keys()
-        assert xn=='P'
         xi,yi=specdict.values()
+        assert xn=='P'
         df=self.data
-        dof=self.data.columns
-        LLdat={}
-        for d in dof:
-            if d!='P':
-                LLdat[d]=[]
-        for T in self.uniqs['T']:
-            tdf=df[df['T']==T]
-            X=np.array(tdf['P'])
-            Y=np.array(tdf[yn])
-            if Y.min()<yi<Y.max():
-                LLdat['T'].append(T)
-                for d in 'UVSH':
-                    Y=np.array(tdf[d])
-                    LLdat[d].append(np.interp(xi,X,Y))
-        X=LLdat[yn]
+        dof=list(df.columns)
+        dof.remove(yn)
+        dof.remove(xn)
         retdict={}
-        retdict['P']=xi
+        retdict['T']=xi
         retdict[yn]=yi
-        for d in dof:
-            if d!='P' and d!=yn:
-                # print(f'Interp at {yn}={yi} from {d}={LLdat[d]} vs {yn}={X}')
-                retdict[d]=np.interp(yi,X,LLdat[d])
+        if xi in self.uniqs['P']:
+            tdf=df[df['P']==xi]
+            X=np.array(tdf[yn])
+            for pp in dof:
+                Y=np.array(tdf[pp])
+                retdict[pp]=np.interp(yi,X,Y)
+        else:
+            for PL,PR in zip(self.uniqs['P'][:-1],self.uniqs['P'][1:]):
+                if PL<xi<PR:
+                    break
+            else:
+                raise Exception(f'Error: no two blocks bracket P={xi}')
+            ldf,rdf=df[df['P']==PL],df[df['P']==PR]
+            ldict,rdict={},{}
+            ldict['P'],rdict['P']=PL,PR
+            ldict[yn],rdict[yn]=yi,yi
+            for d,xdf in zip([ldict,rdict],[ldf,rdf]):
+                X=xdf[yn]
+                for pp in dof:
+                    Y=np.array(xdf[pp])
+                    d[pp]=np.interp(yi,X,Y)
+            X=np.array([PL,PR])
+            for pp in dof:
+                Y=np.array([ldict[pp],rdict[pp]])
+                retdict[pp]=np.interp(xi,X,Y)
         # print(f'PThBilinear ret {retdict}')
         return retdict
     
