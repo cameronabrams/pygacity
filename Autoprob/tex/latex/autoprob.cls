@@ -178,6 +178,7 @@ numbers=none
 \RequirePackage[font=small,labelfont=bf]{caption}
 \RequirePackage{pythontex}
 \RequirePackage{tikz}
+\usetikzlibrary{patterns}
 \RequirePackage{calc}
 \newlength{\hght}
 \newlength{\wdth}
