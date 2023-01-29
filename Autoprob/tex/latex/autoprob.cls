@@ -7,6 +7,7 @@
 \RequirePackage{amssymb}
 \RequirePackage{amsmath}
 \RequirePackage{amstext}
+\RequirePackage{mathtools}
 \RequirePackage{latexsym}
 \RequirePackage{epic}
 \RequirePackage{eepic}
@@ -139,14 +140,12 @@ numbers=none
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ -- \Termname\ (\Termcode)\\
+        \Coursename\\
+        \Termname\ (\Termcode)\\
         \Instructorname\ -- \Instructoremail\\
         {#1}\ -- {#2}\\*[1em]
         \ifshowsolutions
         \Solutionsheader\\
-        \fi
-        \ifshowsolutions
-        \Solutionsheader\\*[1cm]
         \fi
     \end{centering}
 }
