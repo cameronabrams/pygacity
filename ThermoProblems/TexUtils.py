@@ -52,8 +52,10 @@ def sci_notation_as_tex(x,**kwargs):
     elif exponent[0]=='-' and exponent[1]=='0':
         exponent='-'+exponent[2:]
     if not mathmode:
+        if float(mantissa)==1.0: return r'$10^{'+exponent+r'}$'
         return mantissa+r'$\times10^{'+exponent+r'}$'
     else:
+        if float(mantissa)==1.0: return r'10^{'+exponent+r'}'
         return mantissa+r'\times10^{'+exponent+r'}'
 
 def file_listing(filename,style='mypython'):
