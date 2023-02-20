@@ -17,7 +17,7 @@
 \RequirePackage{accents}
 \RequirePackage{xifthen}
 \RequirePackage{xfp}
-
+\RequirePackage{nccmath}
 \newif\ifshowsolutions
 \showsolutionsfalse
 \newif\ifshowanswers
