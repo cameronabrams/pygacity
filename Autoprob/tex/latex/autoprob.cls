@@ -114,8 +114,7 @@ numbers=none
     \begin{centering}
         \Universityname\\
         \Departmentname\\
-        \Coursename\ -- \Termname\ (\Termcode)\\
-        \Instructorname\\*[1em]
+        \Coursename\ -- \Termname\ (\Termcode)\\*[0.5em]
         {#1}\\
     \end{centering}
 }
@@ -125,7 +124,7 @@ numbers=none
         \Universityname\\
         \Departmentname\\
         \Coursename\ -- \Termname\ (\Termcode)\\
-        \Instructorname\ -- \Instructoremail\\
+        \Instructorname\\
         \so{\sc Assignment {#1}}\\
         Due {#2}\\*[1em]
         \ifshowsolutions
