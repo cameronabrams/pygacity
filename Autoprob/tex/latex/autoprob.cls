@@ -115,7 +115,7 @@ numbers=none
         \Universityname\\
         \Departmentname\\
         \Coursename\ -- \Termname\ (\Termcode)\\
-        \Instructorname\ -- \Instructoremail\\*[1em]
+        \Instructorname\\*[1em]
         {#1}\\
     \end{centering}
 }
