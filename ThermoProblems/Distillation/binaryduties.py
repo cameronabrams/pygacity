@@ -126,7 +126,7 @@ def AllFlows(specs):
         specs['Reboiler']['T']=T_of_x(xB)
         # temperature of condenser producing saturated liquid
         specs['Condenser']['T']=T_of_x(xD)
-        if specs['Reboiler']['Type']=='partial':
+        if specs['Reboiler']['Type']=='Partial':
         # composition of boilup vapor
             ybar=y_of_x(xB)
         else:
@@ -190,9 +190,9 @@ def AllFlows(specs):
         # feed tray phase balances under CMO
         vin,vout,lin,lout=[],[],[],[]
         for f in specs['Column']['FeedOrder']:
+            feed=specs['Streams']['Feeds'][f]
             F=feed['Ndot']
             q=feed['q']
-            feed=specs['Streams']['Feeds'][f]
             feed['V_out']=V
             feed['L_in']=L
             feed['V_in']=V-(1-q)*F
@@ -465,6 +465,73 @@ if __name__=='__main__':
     #         'boilup_ratio':3
     #     }
     # }
+
+    specs={
+        'Streams':{
+            'Feeds':{
+                'F1':{
+                    'Ndot':1000,
+                    'q':0.75,
+                    'Components':{
+                        'A':{'MoleFraction':0.6},
+                        'B':{}
+                    }
+                },
+                'F2':{
+                    'Ndot':500,
+                    'q':1.0,
+                    'Components':{
+                        'A':{'MoleFraction':0.1},
+                        'B':{}
+                    }
+                }
+            },
+            'B':{
+                'Components':{
+                    'A':{'MoleFraction':0.0001},
+                    'B':{}
+                }
+            },
+            'D':{
+                'Components':{
+                    'A':{'MoleFraction':0.85},
+                    'B':{}
+                }
+            }
+        },
+        'Column':{
+            'reflux_ratio':3
+        }
+    }
+    specs={ 'Streams':{
+            'Feeds':{
+                'F':{
+                    'Ndot':100,'q':1,
+                    'Components':{
+                        'A':{'MoleFraction':0.4},
+                        'B':{'MoleFraction':0.6}
+                        }
+                    }
+                },
+            'B':{'Components':{
+                'A':{'MoleFraction':0.05},
+                'B':{'MoleFraction':0.95}
+                }
+            },
+            'D':{'Components':{
+                'A':{'MoleFraction':0.97},
+                'B':{'MoleFraction':0.03}
+                }}
+        }, 
+        'Column':{'boilup_ratio':2.5,'Pressure':1},
+        'Components':{
+            'A':{'Hvap':1000,'Cpv':{'a':25,'b':0.2},'Cpl':{'a':35},'Antoine':{'A':12,'B':4000,'C':45}},
+            'B':{'Hvap':1200,'Cpv':{'a':27,'b':0.1},'Cpl':{'a':38},'Antoine':{'A':10,'B':3800,'C':50}}
+        },
+        'Thermodynamics':{'Tref':200,'Txy_xy_graphic':'Txy-xy.png'},
+        'Condenser':{'Type':'Total'},
+        'Reboiler':{'Type':'Partial'}
+        }
     # VaporPressures(specs)
     specs=process_input(specs)
     specs=Txy(specs)
@@ -474,7 +541,7 @@ if __name__=='__main__':
         print(k,v)
     feeddf=specs['Column']['FeedsSummaryDataFrame']
     print(feeddf.to_string())
-    F1=feeddf.loc['F','N']
-    print(F1)
+    # F1=feeddf.loc['F','N']
+    # print(F1)
 #    res=pick_state(0,specs)
     #print(res)
