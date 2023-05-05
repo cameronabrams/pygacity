@@ -180,7 +180,7 @@ def AllFlows(specs):
     elif 'reflux_ratio' in specs['Column']:
         # sort feed keys along increasing z and tiebreak with increasing q
         feeddf.sort_values(by=['z','q'],ascending=[False,True],inplace=False)
-        specs['Column']['FeedOrder']=feeddf['Feed'].to_list()
+        specs['Column']['FeedOrder']=feeddf.index.to_list()
         rr=specs['Column']['reflux_ratio']
         L=rr*D
         V=D+L
@@ -218,7 +218,7 @@ def AllFlows(specs):
             specs['Column']['xbar']=xbar
     else:
         raise Exception('Must specify either boilup ratio or reflux ratio')
-    specs['Streams']['Feeds']['SummaryDataFrame']=feeddf
+    specs['Column']['FeedsSummaryDataFrame']=feeddf
     return specs
 
 def cpdt(poly,T2,T1):
@@ -277,7 +277,9 @@ def AllDuties(specs):
     # temperature of stage N feeding reboiler
     Tbar=specs['Thermodynamics']['Interpolators']['T_of_x'](xbar)
     specs['Column']['Tbar']=Tbar
+    # print(specs["Streams"]["Feeds"])
     for feed in specs["Streams"]["Feeds"].values():
+        # print(','.join(feed.keys()))
         F=feed["Ndot"]
         z=feed["Components"]["A"]["MoleFraction"]
         q=feed["q"]
@@ -409,69 +411,70 @@ if __name__=='__main__':
         'Condenser':{'Type':'Total'},
         'Reboiler':{'Type':'Partial'}
         }
-    specs={
-        'Streams':{
-            'Feeds':{
-                'F1':{
-                    'Ndot':800,
-                    'q':0.85,
-                    'Components':{
-                        'A':{
-                            'MoleFraction':0.7
-                        },
-                        'B':{
-                            'MoleFraction':0.3
-                        }
-                    }
-                },
-                'F2':{
-                    'Ndot':400,
-                    'q':1,
-                    'Components':{
-                        'A':{
-                            'MoleFraction':0.05
-                        },
-                        'B':{
-                            'MoleFraction':0.95
-                        }
+    # specs={
+    #     'Streams':{
+    #         'Feeds':{
+    #             'F1':{
+    #                 'Ndot':800,
+    #                 'q':0.85,
+    #                 'Components':{
+    #                     'A':{
+    #                         'MoleFraction':0.7
+    #                     },
+    #                     'B':{
+    #                         'MoleFraction':0.3
+    #                     }
+    #                 }
+    #             },
+    #             'F2':{
+    #                 'Ndot':400,
+    #                 'q':1,
+    #                 'Components':{
+    #                     'A':{
+    #                         'MoleFraction':0.05
+    #                     },
+    #                     'B':{
+    #                         'MoleFraction':0.95
+    #                     }
 
-                    }
-                }
-            },
-            'B':{
-                'Components':{
-                    'A':{
-                        'MoleFraction':0.0001
-                    },
-                    'B':{
-                        'MoleFraction':0.9999
-                    }
-                }
-            },
-            'D':{
-                'Components':{
-                    'A':{
-                        'MoleFraction':0.80
-                    },
-                    'B':{
-                        'MoleFraction':0.20
-                    }
-                }
-            }
-        },
-        'Column':{
-            'boilup_ratio':3
-        }
-    }
+    #                 }
+    #             }
+    #         },
+    #         'B':{
+    #             'Components':{
+    #                 'A':{
+    #                     'MoleFraction':0.0001
+    #                 },
+    #                 'B':{
+    #                     'MoleFraction':0.9999
+    #                 }
+    #             }
+    #         },
+    #         'D':{
+    #             'Components':{
+    #                 'A':{
+    #                     'MoleFraction':0.80
+    #                 },
+    #                 'B':{
+    #                     'MoleFraction':0.20
+    #                 }
+    #             }
+    #         }
+    #     },
+    #     'Column':{
+    #         'boilup_ratio':3
+    #     }
+    # }
     # VaporPressures(specs)
+    specs=process_input(specs)
     specs=Txy(specs)
     specs=AllFlows(specs)
     specs=AllDuties(specs)
     for k,v in specs.items():
         print(k,v)
-    feeddf=specs['Streams']['Feeds']['SummaryDataFrame']
+    feeddf=specs['Column']['FeedsSummaryDataFrame']
     print(feeddf.to_string())
-    F1=feeddf.loc['F1','N']
+    F1=feeddf.loc['F','N']
     print(F1)
 #    res=pick_state(0,specs)
     #print(res)
