@@ -40,7 +40,7 @@ def compute_Txy_Raoults(specs):
         plot_Txy(xdomain,y,T,filename=specs["Thermodynamics"]["Txy_xy_graphic"])
     return specs
 
-def plot_Txy(X,Y,T,F,**kwargs):
+def plot_Txy(X,Y,T,**kwargs):
     fig,ax=plt.subplots(1,2,figsize=kwargs.get('figsize',(12,6)))
     filename=kwargs.get('filename','Txy-xy.png')
     ax1,ax2=ax
