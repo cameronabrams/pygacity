@@ -29,7 +29,7 @@ def key_match(sourcedict,row,ldelim='<%',rdelim='%>'):
 
 def make_all(sources,count=1,**kwargs):
     if 'explicit_tags' in kwargs:
-        test_tag=kwargs['explicit_tags']
+        test_tags=kwargs['explicit_tags']
     else:
         test_tags=np.random.randint(10000000,99999999,count)
     for s in sources:
@@ -78,13 +78,21 @@ def make_all(sources,count=1,**kwargs):
 if __name__=='__main__':
     parser=ap.ArgumentParser()
     parser.add_argument('-n',help='number of unique exams',default=1)
+    parser.add_argument('--overwrite',action=ap.BooleanOptionalAction)
+    parser.add_argument('--explicit-tags',nargs='+',default=[],help='one or more explicit tags')
     parser.add_argument('-d',help='directory to put exam pdfs in',default='specific')
     parser.add_argument('f',help='mandatory JSON input file')
     args=parser.parse_args()
     savedir=args.d
     if os.path.exists(savedir):
-        raise Exception(f'Directory "{savedir}" already exists.')
+        if args.overwrite:
+            rmtree(savedir)
+        else:
+            raise Exception(f'Directory "{savedir}" already exists and "--overwrite" was not specified.')
     os.mkdir(savedir)
     with open(args.f,'r') as f:
         sources=json.load(f)
-    make_all(sources,num=args.n)
+    if len(args.explicit_tags)>0:
+        make_all(sources,num=args.n,explicit_tags=args.explicit_tags)
+    else:
+        make_all(sources,num=args.n)
