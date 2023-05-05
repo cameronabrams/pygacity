@@ -77,7 +77,7 @@ def make_all(sources,count=1,**kwargs):
 
 if __name__=='__main__':
     parser=ap.ArgumentParser()
-    parser.add_argument('-n',help='number of unique exams',default=1)
+    parser.add_argument('-n',help='number of unique exams',default=1,type=int)
     parser.add_argument('--overwrite',action=ap.BooleanOptionalAction)
     parser.add_argument('--explicit-tags',nargs='+',default=[],help='one or more explicit tags')
     parser.add_argument('-d',help='directory to put exam pdfs in',default='specific')
@@ -93,6 +93,6 @@ if __name__=='__main__':
     with open(args.f,'r') as f:
         sources=json.load(f)
     if len(args.explicit_tags)>0:
-        make_all(sources,num=args.n,explicit_tags=args.explicit_tags)
+        make_all(sources,count=args.n,explicit_tags=args.explicit_tags)
     else:
-        make_all(sources,num=args.n)
+        make_all(sources,count=args.n)

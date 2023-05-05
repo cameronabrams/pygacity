@@ -383,6 +383,9 @@ def pick_recursive(specs,rng):
                 lims=pickrule['between']
                 r=rng.random()
                 specs[k]=lims[0]+r*(lims[1]-lims[0])
+            elif 'pickfrom' in pickrule:
+                domain=pickrule['pickfrom']
+                specs[k]=rng.choice(domain)
             else:
                 raise Exception('Missing picking rule')
         else:
