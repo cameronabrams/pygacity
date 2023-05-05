@@ -102,7 +102,7 @@ def pick_state(specs):
         Tbub=T_of_x(z)
         span=Tdew-Tbub
         if span<30:
-            print(f'{c1} {c2} at {P_kPa} kPa; less than 20 deg separates Tbub {Tbub} and Tdew {Tdew}')
+            # print(f'{c1} {c2} at {P_kPa} kPa; less than 20 deg separates Tbub {Tbub} and Tdew {Tdew}')
             if c1_idx>0:
                 c1_idx-=1
             elif c2_idx<(C-2):
@@ -121,7 +121,6 @@ def pick_state(specs):
         raise Exception('whoops -- you rounded Tdrum outside the 2-phase envelope (too high)')
     specs.update(dict(z=z,T_drum_C=(T_drum_K-273.15),P_drum_kPa=P_kPa,components=[c1,c2],
     Thermodynamics={'x_of_T':x_of_T,'y_of_T':y_of_T,'T_of_x':T_of_x,'T_of_y':T_of_y},Tdew=Tdew,Tbub=Tbub,Txy=[T,x,y]))
-    plot_Txy(specs)
     return specs
 
 def solve(specs):
@@ -136,6 +135,7 @@ def solve(specs):
     ylr=y_of_T(T_drum_K)
     L_F=(ylr-z)/(ylr-xlr)
     specs.update(dict(x=xlr,y=ylr,L_F=L_F,K=K))
+    plot_Txy(specs)
     return specs
 
 def plot_Txy(specs):
@@ -188,4 +188,4 @@ if __name__=='__main__':
         Y.append(res['y'])
         X.append(res['x'])
     sumdat=pd.DataFrame({'tag':num,'T':T,'P':P,'LF':LF,'Z':Z,'Y':Y,'X':X,'C1':LITE,'C2':HEAVY,'K1':K1,'K2':K2})
-    sumdat.to_csv('results.csv',sep=' ',header=True,index=False)
+    # sumdat.to_csv('results.csv',sep=' ',header=True,index=False)

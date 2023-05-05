@@ -373,6 +373,27 @@ def mf_restraints(component_dict):
         component_dict[unsets[0]]['MoleFraction']=1.0-smf
     return component_dict
 
+def pick_recursive(specs,rng):
+    if not type(specs)==dict:
+        return 
+    for k,v in specs.items():
+        if type(v)==dict and 'pick' in v:
+            pickrule=v['pick']
+            if 'between' in pickrule:
+                lims=pickrule['between']
+                r=rng.random()
+                specs[k]=lims[0]+r*(lims[1]-lims[0])
+            else:
+                raise Exception('Missing picking rule')
+        else:
+            pick_recursive(v,rng)
+        
+def pick_state(specs):
+    num=specs['tag']
+    rng=np.random.default_rng(num)
+    pick_recursive(specs,rng)
+    return specs
+
 def solve(specs):
     specs=process_input(specs)
     specs=Txy(specs)
@@ -381,166 +402,48 @@ def solve(specs):
     return specs
 
 if __name__=='__main__':
-    specs={ 'Streams':{
+    specs={
+        'tag':112233445566,
+        'Streams':{
             'Feeds':{
                 'F':{
                     'Ndot':100,'q':1,
                     'Components':{
-                        'A':{'MoleFraction':0.4},
+                        'A':{'MoleFraction':{'pick':{'between':[0.3,0.7]}}},
                         'B':{}
                         }
-                    }
-                },
+                }
+            },
             'B':{'Components':{
                 'A':{},
-                'B':{'MoleFraction':0.95}
+                'B':{'MoleFraction':{'pick':{'between':[0.8,0.99]}}}
                 }
             },
             'D':{'Components':{
-                'A':{'MoleFraction':0.97},
+                'A':{'MoleFraction':{'pick':{'between':[0.75,0.9]}}},
                 'B':{}
                 }}
         }, 
-        # 'Column':{'boilup_ratio':2.5,'Pressure':1},
-        'Column':{'reflux_ratio':2.5,'Pressure':1},
+        'Column':{'reflux_ratio':{'pick':{'between':[1.5,3.0]}},'Pressure':1},
         'Components':{
-            'A':{'Hvap':1000,'Cpv':{'a':25,'b':0.2},'Cpl':{'a':35},'Antoine':{'A':12,'B':4000,'C':45}},
-            'B':{'Hvap':1200,'Cpv':{'a':27,'b':0.1},'Cpl':{'a':37},'Antoine':{'A':10,'B':3800,'C':50}}
+            'A':{'Hvap':{'pick':{'between':[900,1100]}},'Cpv':{'a':25,'b':0.2},'Cpl':{'a':35},'Antoine':{'A':12,'B':4000,'C':45}},
+            'B':{'Hvap':{'pick':{'between':[900,1100]}},'Cpv':{'a':27,'b':0.1},'Cpl':{'a':37},'Antoine':{'A':10,'B':3800,'C':50}}
         },
         'Thermodynamics':{'Tref':200,'Txy_xy_graphic':'Txy-xy.png'},
         'Condenser':{'Type':'Total'},
         'Reboiler':{'Type':'Partial'}
         }
-    # specs={
-    #     'Streams':{
-    #         'Feeds':{
-    #             'F1':{
-    #                 'Ndot':800,
-    #                 'q':0.85,
-    #                 'Components':{
-    #                     'A':{
-    #                         'MoleFraction':0.7
-    #                     },
-    #                     'B':{
-    #                         'MoleFraction':0.3
-    #                     }
-    #                 }
-    #             },
-    #             'F2':{
-    #                 'Ndot':400,
-    #                 'q':1,
-    #                 'Components':{
-    #                     'A':{
-    #                         'MoleFraction':0.05
-    #                     },
-    #                     'B':{
-    #                         'MoleFraction':0.95
-    #                     }
-
-    #                 }
-    #             }
-    #         },
-    #         'B':{
-    #             'Components':{
-    #                 'A':{
-    #                     'MoleFraction':0.0001
-    #                 },
-    #                 'B':{
-    #                     'MoleFraction':0.9999
-    #                 }
-    #             }
-    #         },
-    #         'D':{
-    #             'Components':{
-    #                 'A':{
-    #                     'MoleFraction':0.80
-    #                 },
-    #                 'B':{
-    #                     'MoleFraction':0.20
-    #                 }
-    #             }
-    #         }
-    #     },
-    #     'Column':{
-    #         'boilup_ratio':3
-    #     }
-    # }
-
-    specs={
-        'Streams':{
-            'Feeds':{
-                'F1':{
-                    'Ndot':1000,
-                    'q':0.75,
-                    'Components':{
-                        'A':{'MoleFraction':0.6},
-                        'B':{}
-                    }
-                },
-                'F2':{
-                    'Ndot':500,
-                    'q':1.0,
-                    'Components':{
-                        'A':{'MoleFraction':0.1},
-                        'B':{}
-                    }
-                }
-            },
-            'B':{
-                'Components':{
-                    'A':{'MoleFraction':0.0001},
-                    'B':{}
-                }
-            },
-            'D':{
-                'Components':{
-                    'A':{'MoleFraction':0.85},
-                    'B':{}
-                }
-            }
-        },
-        'Column':{
-            'reflux_ratio':3
-        }
-    }
-    specs={ 'Streams':{
-            'Feeds':{
-                'F':{
-                    'Ndot':100,'q':1,
-                    'Components':{
-                        'A':{'MoleFraction':0.4},
-                        'B':{'MoleFraction':0.6}
-                        }
-                    }
-                },
-            'B':{'Components':{
-                'A':{'MoleFraction':0.05},
-                'B':{'MoleFraction':0.95}
-                }
-            },
-            'D':{'Components':{
-                'A':{'MoleFraction':0.97},
-                'B':{'MoleFraction':0.03}
-                }}
-        }, 
-        'Column':{'boilup_ratio':2.5,'Pressure':1},
-        'Components':{
-            'A':{'Hvap':1000,'Cpv':{'a':25,'b':0.2},'Cpl':{'a':35},'Antoine':{'A':12,'B':4000,'C':45}},
-            'B':{'Hvap':1200,'Cpv':{'a':27,'b':0.1},'Cpl':{'a':38},'Antoine':{'A':10,'B':3800,'C':50}}
-        },
-        'Thermodynamics':{'Tref':200,'Txy_xy_graphic':'Txy-xy.png'},
-        'Condenser':{'Type':'Total'},
-        'Reboiler':{'Type':'Partial'}
-        }
-    # VaporPressures(specs)
+    specs=pick_state(specs)
     specs=process_input(specs)
     specs=Txy(specs)
     specs=AllFlows(specs)
     specs=AllDuties(specs)
-    for k,v in specs.items():
-        print(k,v)
+    # print(specs['Streams'])
+    # print(specs['Column'])
+    # print(specs['Reboiler'])
+    # print(specs['Condenser'])
     feeddf=specs['Column']['FeedsSummaryDataFrame']
-    print(feeddf.to_string())
+    # print(feeddf.to_string())
     # F1=feeddf.loc['F','N']
     # print(F1)
 #    res=pick_state(0,specs)
