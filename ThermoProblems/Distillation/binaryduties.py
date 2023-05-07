@@ -43,11 +43,15 @@ def compute_Txy_Raoults(specs):
 def plot_Txy(X,Y,T,**kwargs):
     fig,ax=plt.subplots(1,2,figsize=kwargs.get('figsize',(12,6)))
     filename=kwargs.get('filename','Txy-xy.png')
+    T_major_inc=kwargs.get('T_major_inc',5)
+    minT,maxT=min(T),max(T)
+    Tlow=int(np.round(minT,0))-int(np.round(minT,0))%T_major_inc
+    Thi=int(np.round(maxT,0))+(T_major_inc-int(np.round(maxT,0))%T_major_inc)
     ax1,ax2=ax
     ax1.set_xlim([0,1])
-    ax1.set_ylim(kwargs.get('ylim',[285,335]))
+    ax1.set_ylim(kwargs.get('ylim',[Tlow,Thi]))
     ax1.grid()
-    ax1.set_yticks(kwargs.get('yticks',np.arange(285,336,5)))
+    ax1.set_yticks(kwargs.get('yticks',np.arange(Tlow,Thi+1,T_major_inc)))
     ax1.set_xlabel('x')
     ax1.set_ylabel('T (K)')
     ax1.plot(X,T,label='Bubble points')
