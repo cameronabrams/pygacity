@@ -57,29 +57,36 @@ def make_all(sources,count=1,**kwargs):
         Command(f'pythontex {master_source}').run()
         print('...3',end='',flush=True)
         Command(f'pdflatex {master_source}').run()
-        print('...4',end='',flush=True)
-        Command(f'pdflatex -jobname={master_source}_soln {master_source}').run()
-        print('...5',end='',flush=True)
-        Command(f'pythontex {master_source}_soln').run()
-        print('...6',end='',flush=True)
-        Command(f'pdflatex -jobname={master_source}_soln {master_source}.tex').run()
+        make_solutions=kwargs.get('solutions',True)
+        if make_solutions:
+            print('...4',end='',flush=True)
+            Command(f'pdflatex -jobname={master_source}_soln {master_source}').run()
+            print('...5',end='',flush=True)
+            Command(f'pythontex {master_source}_soln').run()
+            print('...6',end='',flush=True)
+            Command(f'pdflatex -jobname={master_source}_soln {master_source}.tex').run()
         print('...moving',end='',flush=True)
         # clean up
-        rmtree(f'pythontex-files-{master_source.lower()}')
-        rmtree(f'pythontex-files-{master_source.lower()}_soln')
-        for suf in ['.tex','.pdf','_soln.pdf']:
+        for d in [f'pythontex-files-{master_source.lower()}',f'pythontex-files-{master_source.lower()}_soln']:
+            if os.path.exists(d):
+                rmtree(d)
+        for suf in ['.tex','.pdf','_soln.pdf','_1.json','_2.json','_3.json','_4.json']:
             if os.path.exists(os.path.join(savedir,f'{master_source}{suf}')):
                 os.remove(os.path.join(savedir,f'{master_source}{suf}'))
-            move(f'{master_source}{suf}',savedir)
+            if os.path.exists(f'{master_source}{suf}'):
+                move(f'{master_source}{suf}',savedir)
         for typ in ['.aux','.log','.pytxcode','_soln.aux','_soln.log','_soln.pytxcode']:
-            os.remove(f'{master_source}{typ}')
+            if os.path.exists(f'{master_source}{typ}'):
+                os.remove(f'{master_source}{typ}')
         print('...done.',flush=True)
 
 if __name__=='__main__':
     parser=ap.ArgumentParser()
     parser.add_argument('-n',help='number of unique exams',default=1,type=int)
     parser.add_argument('--overwrite',action=ap.BooleanOptionalAction)
+    parser.add_argument('--solutions',default=True,action=ap.BooleanOptionalAction)
     parser.add_argument('--explicit-tags',nargs='+',default=[],help='one or more explicit tags')
+    parser.add_argument('--explicit-tags-file',type=str,default='tags.in',help='file containing one or more explicit tags')
     parser.add_argument('-d',help='directory to put exam pdfs in',default='specific')
     parser.add_argument('f',help='mandatory JSON input file')
     args=parser.parse_args()
@@ -93,6 +100,10 @@ if __name__=='__main__':
     with open(args.f,'r') as f:
         sources=json.load(f)
     if len(args.explicit_tags)>0:
-        make_all(sources,count=args.n,explicit_tags=args.explicit_tags)
+        make_all(sources,count=args.n,explicit_tags=args.explicit_tags,solutions=args.solutions)
+    elif os.path.exists(args.explicit_tags_file):
+        with open(args.explicit_tags_file,'r') as f:
+            explicit_tags=list(map(int,f.read().split('\n')))
+        make_all(sources,count=len(explicit_tags),explicit_tags=explicit_tags,solutions=args.solutions)
     else:
-        make_all(sources,count=args.n)
+        make_all(sources,count=args.n,solutions=args.solutions)
