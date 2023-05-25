@@ -21,7 +21,7 @@ def y_of_x(x,*a):
         s+=c*(1-x)**(i+1)
     return x/(x+s)
 
-def xy(dat,fn='xy.png',comp1_name='Comp. 1',comp2_name='Comp. 2',P_label='1 bar',x_label='x',y_label='y',t_label='T(C)',do_fit=False):
+def xy(dat,fn='xy.png',comp1_name='Comp. 1',comp2_name='Comp. 2',P_label='1 bar',x_label='x',y_label='y',t_label='T(C)',do_fit={}):
     fig,ax=plt.subplots(1,1,figsize=(9,9))
     plt.grid(visible=True,which='major',axis='both')
     ax.set_xlim([0,1])
@@ -36,7 +36,8 @@ def xy(dat,fn='xy.png',comp1_name='Comp. 1',comp2_name='Comp. 2',P_label='1 bar'
     ax.plot(dat[x_label],dat[y_label])
     ax.plot(dat[x_label],dat[x_label],'k--')
     if do_fit:
-        coeff,stat=curve_fit(y_of_x,dat[x_label],dat['y'],p0=[1,1])
+        Nterms=do_fit.get('N',2)
+        coeff,stat=curve_fit(y_of_x,dat[x_label],dat['y'],p0=np.ones(Nterms))
         ax.plot(dat[x_label],y_of_x(dat[x_label],*coeff),'r--')
         print(coeff)
     plt.savefig(fn)
@@ -50,7 +51,7 @@ def T_of_x(x,*a):
     l=(1-x)*a[0]+x*a[1]
     return l+s*x*(1-x)
 
-def Txy(dat,fn='Txy.png',comp1_name='Comp. 1',comp2_name='Comp. 2',P_label='1 bar',x_label='x',y_label='y',t_label='T(C)',do_fit=False):
+def Txy(dat,fn='Txy.png',comp1_name='Comp. 1',comp2_name='Comp. 2',P_label='1 bar',x_label='x',y_label='y',t_label='T(C)',do_fit={}):
     fig,ax=plt.subplots(1,1,figsize=(9,9))
     plt.grid(visible=True,which='major',axis='both')
     ax.set_xlim([0,1])
@@ -64,11 +65,15 @@ def Txy(dat,fn='Txy.png',comp1_name='Comp. 1',comp2_name='Comp. 2',P_label='1 ba
     ax.plot(dat[x_label],dat[t_label])
     ax.plot(dat[y_label],dat[t_label])
     if do_fit:
-        ep=1.e-10
-        coeffx,stat=curve_fit(T_of_x,dat[x_label],dat[t_label],p0=[dat[t_label][0],dat[t_label][dat.shape[0]-1],1,1,1,1,1],bounds=([dat[t_label][0],dat[t_label][dat.shape[0]-1],-np.inf,-np.inf,-np.inf,-np.inf,-np.inf],[dat[t_label][0]+ep,dat[t_label][dat.shape[0]-1]+ep,np.inf,np.inf,np.inf,np.inf,np.inf]))
+        ep=do_fit.get('epsilon',1.e-10)
+        Nterms=do_fit.get('N',5)
+        p0=np.concatenate(([dat[t_label][0],dat[t_label][dat.shape[0]-1]],np.ones(Nterms)))
+        lower=np.concatenate(([dat[t_label][0],dat[t_label][dat.shape[0]-1]],-np.inf*np.ones(Nterms)))
+        upper=np.concatenate(([dat[t_label][0]+ep,dat[t_label][dat.shape[0]-1]+ep],np.inf*np.ones(Nterms)))
+        coeffx,stat=curve_fit(T_of_x,dat[x_label],dat[t_label],p0=p0,bounds=(lower,upper))
         ax.plot(dat[x_label],T_of_x(dat[x_label],*coeffx),'r--')
         print(coeffx)
-        coeffy,stat=curve_fit(T_of_x,dat[y_label],dat[t_label],p0=[dat[t_label][0],dat[t_label][dat.shape[0]-1],1,1,1,1,1],bounds=([dat[t_label][0],dat[t_label][dat.shape[0]-1],-np.inf,-np.inf,-np.inf,-np.inf,-np.inf],[dat[t_label][0]+ep,dat[t_label][dat.shape[0]-1]+ep,np.inf,np.inf,np.inf,np.inf,np.inf]))
+        coeffy,stat=curve_fit(T_of_x,dat[y_label],dat[t_label],p0=p0,bounds=(lower,upper))
         ax.plot(dat[y_label],T_of_x(dat[y_label],*coeffy),'g--')
         print(coeffy)
     plt.savefig(fn)
