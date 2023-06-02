@@ -108,7 +108,7 @@ def get_xy(xyfile=None,l=None):
         # equilibrium data is just a line
         return {'y_of_x':l.y,'x_of_y':l.inv}
     
-def plot_xy(y_of_x,outfile=None,lines=[],steps=[],annotation={},**kwargs):
+def plot_xy(y_of_x,data=[],lines=[],steps=[],annotation={},**kwargs):
     fig,ax=plt.subplots(1,1,figsize=kwargs.get('figsize',(8,8)))
     plt.rcParams.update({'font.size': kwargs.get('fontsize',16)})
     ax.set_xlabel('x')
@@ -118,9 +118,11 @@ def plot_xy(y_of_x,outfile=None,lines=[],steps=[],annotation={},**kwargs):
     ax.set_xlim(kwargs.get('xlim',[0,1]))
     ax.set_ylim(kwargs.get('ylim',[0,1]))
     ax.grid(which='major')
-    xdomain=np.linspace(*(kwargs.get('xlim',[0,1])),101)
-    ax.plot(xdomain,y_of_x(xdomain),'b-',label='equilibrium')
-
+    if not type(data)==pd.core.frame.DataFrame:
+        xdomain=np.linspace(*(kwargs.get('xlim',[0,1])),101)
+        ax.plot(xdomain,y_of_x(xdomain),'b-',label='equilibrium',linewidth=kwargs.get('linewidth',1.0))
+    else:
+        ax.plot(data['x'],data['y'],'b-',label='equilibrium',linewidth=kwargs.get('linewidth',1.0))
     for L in lines:
         p0=L['p0']
         p1=L['p1']
@@ -136,12 +138,7 @@ def plot_xy(y_of_x,outfile=None,lines=[],steps=[],annotation={},**kwargs):
         x,y=annotation['xy']
         label=annotation['label']
         ax.text(x,y,label)
-    if not outfile:
-        plt.show()
-        return plt
-    else:
-        plt.savefig(outfile)
-        plt.clf()
+    return fig,ax
 
 def stepoff(x_of_y,top=[0,1],bot=[1,0],lines=[],lim=200):
     xtop,ytop=top
