@@ -1,8 +1,6 @@
+# Author: Cameron F. Abrams, <cfa22@drexel.edu>
 """
 Binary distillation column sizing using the McCabe-Thiele approach
-
-Cameron F Abrams cfa22@drexel.edu
-
 """
 import json
 import pandas as pd
@@ -11,23 +9,29 @@ from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse as ap
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+
+class point:
+    def __init__(self,x=0,y=0):
+        self.x=x
+        self.y=y
 
 class line:
-    def __init__(self,m=None,b=None,p1=None,p2=None,x=None,vert=False):
+    def __init__(self,m=None,b=None,p1:point=None,p2:point=None,x=None,vert=False):
         self.vert=vert
         self.x=x
         if m!=None and b!=None:
             self.m=m
             self.b=b
         elif m!=None and p1!=None:
-            self.b=p1[1]-m*p1[0]
+            self.b=p1.y-m*p1.x
             self.m=m
         elif p1!=None and p2!=None:
-            if p1[0]!=p2[0]:
-                self.m=(p2[1]-p1[1])/(p2[0]-p1[0])
-                self.b=p1[1]-self.m*p1[0]
+            if p1.x!=p2.x:
+                self.m=(p2.y-p1.y)/(p2.x-p1.x)
+                self.b=p1.y-self.m*p1.x
             else:
-                self.x=p1[0]
+                self.x=p1.x
         elif vert!=None and x!=None:
             self.vert=True
             self.x=x
@@ -45,27 +49,66 @@ class line:
             m,b=self.m,self.b
             n,c=other.m,other.b
             x=(c-b)/(m-n)
-            return x,self.y(x)
+            return point(x,self.y(x))
         elif self.m==other.m:
+            # parallel lines cannot intersect
             return None
         elif self.vert and not other.vert:
-            return self.x,other.y(self.x)
+            return point(self.x,other.y(self.x))
         elif not self.vert and other.vert:
-            return other.x,self.y(other.x)
+            return point(other.x,self.y(other.x))
     def intersect_interp(self,interp):
         if self.vert:
-            return [[self.x,float(interp(self.x))]]
+            return [point(self.x,float(interp(self.x)))]
         ipts=[]
         z=interp
         for xl,xr,yl,yr in zip(z.x[:-1],z.x[1:],z.y[0:-1],z.y[1:]):
             lyl=self.y(xl)
             lyr=self.y(xr)
             if (yl>lyl and yr<lyr) or (yl<lyl and yr>lyr):
-                seg=line(p1=[xl,yl],p2=[xr,yr])
+                seg=line(p1=point(xl,yl),p2=point(xr,yr))
                 ipt=self.intersect(seg)
                 ipts.append(ipt)
         return ipts
-        
+
+class OperatingLineEnvelope:
+    def __init__(self,lines=[],xdom=[0,1],start_from='TOP'):
+        assert start_from in ['TOP','BOTTOM'],f'Error: unrecognized value {start_from} for parameter "start_from"'
+        self.lines=lines
+        self.start_from=start_from
+        self.vertices=[]
+        for l1,l2 in zip(lines[:-1],lines[1:]):
+            self.vertices.append(l1.intersect(l2))
+        if start_from=='TOP':
+            self.vertices.insert(0,point(xdom[0],lines[0].y(xdom[0])))
+            self.vertices.append(point(xdom[1],lines[-1].y(xdom[1])))
+        elif start_from=='BOTTOM':
+            self.vertices.append(point(xdom[0],lines[0].y(xdom[0])))
+            self.vertices.insert(0,point(xdom[1],lines[-1].y(xdom[1])))
+            
+    def y_of_x(self,x):
+        for i,p in enumerate(self.vertices):
+            if self.start_from=='TOP':
+                if x>p.x:
+                    return self.lines[i-1].y(x)
+            else:
+                if x<p.x:
+                    return self.lines[i-1].y(x)
+        return None
+    def x_of_y(self,y):
+        for i,p in enumerate(self.vertices):
+            if self.start_from=='TOP':
+                if y>p.y:
+                    return self.lines[i-1].inv(y)
+            else:
+                if y<p.y:
+                    return self.lines[i-1].inv(y)
+        return None
+    def plot(self,ax):
+        for i,l in enumerate(self.lines):
+            x=np.linspace(self.vertices[i].x,self.vertices[i+1].x,100)
+            ax.plot(x,l.y(x))
+
 def get_specs(jfile):
     with open(jfile,'r') as f:
         return complete_specs(json.load(f))
@@ -110,14 +153,17 @@ def get_xy(xyfile=None,l=None):
     
 def plot_xy(y_of_x,data=[],lines=[],steps=[],annotation={},**kwargs):
     fig,ax=plt.subplots(1,1,figsize=kwargs.get('figsize',(8,8)))
+    plt.grid(visible=True,which='major',axis='both',color='k',linestyle='-',linewidth=0.8,alpha=0.6)
+    plt.grid(visible=True,which='minor',axis='both',color='k',linestyle='-',linewidth=0.5,alpha=0.4)
     plt.rcParams.update({'font.size': kwargs.get('fontsize',16)})
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_xticks(kwargs.get('xticks',np.arange(0,1.1,0.1)))
     ax.set_yticks(kwargs.get('yticks',np.arange(0,1.1,0.1)))
+    ax.xaxis.set_minor_locator(MultipleLocator(0.02))
+    ax.yaxis.set_minor_locator(MultipleLocator(0.02))
     ax.set_xlim(kwargs.get('xlim',[0,1]))
     ax.set_ylim(kwargs.get('ylim',[0,1]))
-    ax.grid(which='major')
     if not type(data)==pd.core.frame.DataFrame:
         xdomain=np.linspace(*(kwargs.get('xlim',[0,1])),101)
         ax.plot(xdomain,y_of_x(xdomain),'b-',label='equilibrium',linewidth=kwargs.get('linewidth',1.0))
@@ -140,40 +186,57 @@ def plot_xy(y_of_x,data=[],lines=[],steps=[],annotation={},**kwargs):
         ax.text(x,y,label)
     return fig,ax
 
-def stepoff(x_of_y,top=[0,1],bot=[1,0],lines=[],lim=200):
+def stepoff(equilibrium={},top=[1,1],bot=[0,0],lines=[],lim=200,start_from='TOP'):
+    assert start_from in ['TOP','BOTTOM'],f'Error: unrecognized value {start_from} for parameter "start_from"'
     xtop,ytop=top
     xbot,ybot=bot
-    # compute intersections of adjacent section operating lines
-    joints=[]
-    for l1,l2 in zip(lines[:-1],lines[1:]):
-        joints.append(l1.intersect(l2))
 
-    # step off from top
-    steps=[[xtop,ytop]]
-    nstages=0
-    # curr_jidx=0
-    curr_lidx=0
-    while steps[-1][0]>xbot and nstages<lim:
-        y=steps[-1][1]
-        x=x_of_y(y)
-        steps.append([x,y])
-        if curr_lidx<len(joints) and x<joints[curr_lidx][0]:
-            # curr_jidx+=1
-            curr_lidx+=1
-        ol=lines[curr_lidx]
-        y=ol.y(x)
-        steps.append([x,y])
-        nstages+=1
-    if nstages>lim:
-        raise Exception('Too many stages')
-#    determine the fractional stage
-    f=0
-    if steps[-1][0]<xbot:
-        f=(steps[-3][0]-xbot)/(steps[-3][0]-steps[-1][0])
-        nstages-=1
-        nstages+=f
-        steps[-2][0]=xbot
-        steps[-1]=[xbot,lines[-1].y(xbot)]
+    x_of_y=equilibrium.get('x_of_y',None)
+    y_of_x=equilibrium.get('y_of_x',None)
+    ole=OperatingLineEnvelope(lines=lines,top=top,bot=bot)
+
+    if start_from=='TOP':
+        # step off from top
+        steps=[[xtop,ytop]]
+        nstages=0
+        while steps[-1][0]>xbot and nstages<lim:
+            y=steps[-1][1]
+            x=x_of_y(y)
+            steps.append([x,y])
+            y=ole.y_of_x(x)
+            steps.append([x,y])
+            nstages+=1
+        if nstages>lim:
+            raise Exception('Too many stages')
+    #    determine the fractional stage
+        f=0
+        if steps[-1][0]<xbot:
+            f=(steps[-3][0]-xbot)/(steps[-3][0]-steps[-1][0])
+            nstages-=1
+            nstages+=f
+            steps[-2][0]=xbot
+            steps[-1]=[xbot,lines[-1].y(xbot)]
+    elif start_from=='BOTTOM':
+        # step off from bottom
+        steps=[[xbot,ybot]]
+        nstages=0
+        while steps[-1][0]<xtop and nstages<lim:
+            x=steps[-1][0]
+            y=y_of_x(x)
+            steps.append([x,y]) # step up to equilibrium curve
+            newx=ole.x_of_y(y)
+            steps.append([newx,y])
+            nstages+=1
+        if nstages>lim:
+            raise Exception('Too many stages')
+    #    determine the fractional stage
+        # f=0
+        # if steps[-1][0]>xtop:
+        #     f=(steps[-3][0]-xbot)/(steps[-3][0]-steps[-1][0])
+        #     nstages-=1
+        #     nstages+=f
+        #     steps[-2][0]=xbot
+        #     steps[-1]=[xbot,lines[-1].y(xbot)]
     return steps,nstages
 
 def get_feedstage(steps,p0):
@@ -183,46 +246,47 @@ def get_feedstage(steps,p0):
     return 0
 
 if __name__=='__main__':
-    parser=ap.ArgumentParser()
-    parser.add_argument('-f',default='example-LLE.json',help='input JSON file')
-    args=parser.parse_args()
+    pass
+    # parser=ap.ArgumentParser()
+    # parser.add_argument('-f',default='example-LLE.json',help='input JSON file')
+    # args=parser.parse_args()
 
-    # get specifications from input file
-    specs=get_specs(args.f)
-    q=specs['Feed']['q']
-    F=specs['Feed']['F']
-    z=specs['Feed']['z']
+    # # get specifications from input file
+    # specs=get_specs(args.f)
+    # q=specs['Feed']['q']
+    # F=specs['Feed']['F']
+    # z=specs['Feed']['z']
 
-    Ein=specs['Extract']['Ein']
-    yin=specs['Extract']['yin']
-    Eout=specs['Extract']['Eout']
-    yout=specs['Extract']['yout']
-    Rin=specs['Raffinate']['Rin']
-    xin=specs['Raffinate']['xin']
-    Rout=specs['Raffinate']['Rout']
-    xout=specs['Raffinate']['xout']
+    # Ein=specs['Extract']['Ein']
+    # yin=specs['Extract']['yin']
+    # Eout=specs['Extract']['Eout']
+    # yout=specs['Extract']['yout']
+    # Rin=specs['Raffinate']['Rin']
+    # xin=specs['Raffinate']['xin']
+    # Rout=specs['Raffinate']['Rout']
+    # xout=specs['Raffinate']['xout']
 
-    # parameterize the feed line and operating lines
-    feed_line=line(m=q/(q-1),b=z/(1-q))
-    top_line=line(m=Rin/Eout,p1=(xin,yout))
-    bot_line=line(m=Rout/Ein,p1=(xout,yin))
-    print(f'Top:',str(top_line))
-    print(f'Bottom:',str(bot_line))
+    # # parameterize the feed line and operating lines
+    # feed_line=line(m=q/(q-1),b=z/(1-q))
+    # top_line=line(m=Rin/Eout,p1=(xin,yout))
+    # bot_line=line(m=Rout/Ein,p1=(xout,yin))
+    # print(f'Top:',str(top_line))
+    # print(f'Bottom:',str(bot_line))
 
-    intersection_point=top_line.intersect(bot_line)
-    # get the equilibrium data and two interpolators y(x) and x(y)
-    fdict=get_xy(l=line(m=specs['Data']['Kd'],p1=[0,0]))
+    # intersection_point=top_line.intersect(bot_line)
+    # # get the equilibrium data and two interpolators y(x) and x(y)
+    # fdict=get_xy(l=line(m=specs['Data']['Kd'],p1=[0,0]))
 
-    # step off stages using equilibrium data and operating lines; get feed stage
-    nstages,steps=stepoff(fdict,specs,lines=[top_line,bot_line])
-    feed_stage=get_feedstage(steps,intersection_point)
+    # # step off stages using equilibrium data and operating lines; get feed stage
+    # nstages,steps=stepoff(fdict,specs,lines=[top_line,bot_line])
+    # feed_stage=get_feedstage(steps,intersection_point)
     
-    # generate the plot
-    plot_xy(fdict,outfile=specs['Output']['plotfile'],
-            lines=[
-                {'label':'feed',  'line':feed_line,  'p0':(z,z),  'p1':intersection_point},
-                {'label':'top',   'line':top_line,   'p0':(xin,yout),'p1':intersection_point},
-                {'label':'bottom','line':bot_line,'p0':(xout,yin),'p1':intersection_point}
-                ],
-            steps=steps,annotation={'xy':(0.01,0.01),'label':f'{nstages:.2f} stages\nfeed at stage {feed_stage}'},
-            xlim=[0,0.013],ylim=[0,0.020],xticks=np.arange(0,0.013,0.002),yticks=np.arange(0,0.020,0.002))
+    # # generate the plot
+    # plot_xy(fdict,outfile=specs['Output']['plotfile'],
+    #         lines=[
+    #             {'label':'feed',  'line':feed_line,  'p0':(z,z),  'p1':intersection_point},
+    #             {'label':'top',   'line':top_line,   'p0':(xin,yout),'p1':intersection_point},
+    #             {'label':'bottom','line':bot_line,'p0':(xout,yin),'p1':intersection_point}
+    #             ],
+    #         steps=steps,annotation={'xy':(0.01,0.01),'label':f'{nstages:.2f} stages\nfeed at stage {feed_stage}'},
+    #         xlim=[0,0.013],ylim=[0,0.020],xticks=np.arange(0,0.013,0.002),yticks=np.arange(0,0.020,0.002))
