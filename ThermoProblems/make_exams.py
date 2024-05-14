@@ -5,6 +5,7 @@ import numpy as np
 import argparse as ap
 from ThermoProblems.command import Command
 import json
+import glob
 
 def get_keys(template,ldelim='<%',rdelim='%>'):
     ldelim_idx=[]
@@ -41,8 +42,12 @@ def make_all(sources,count=1,**kwargs):
     for tag in test_tags:
         print(f'Compiling exam for tag {tag}...',end='',flush=True)
         master_source=f'{tag}'
+        questions=[]
         with open(master_source+'.tex','w') as f:
             for s in sources:
+                if s['source'].startswith('Q_'):
+                    d,fn=os.path.split(s['source'])
+                    questions.append(d[2:])
                 if s['customize']:
                     source=key_match(s,{'tag':tag})
                 else:
@@ -51,6 +56,7 @@ def make_all(sources,count=1,**kwargs):
                     pts=s['points']
                     source=r'\item ('+f'{pts}'+r' pts)'+'\n'+source
                 f.write(source)
+        # print(questions)
         print('...1',end='',flush=True)
         Command(f'pdflatex --interaction=nonstopmode {master_source}').run(ignore_codes=[1])
         print('...2',end='',flush=True)
@@ -70,7 +76,8 @@ def make_all(sources,count=1,**kwargs):
         for d in [f'pythontex-files-{master_source.lower()}',f'pythontex-files-{master_source.lower()}_soln']:
             if os.path.exists(d):
                 rmtree(d)
-        for suf in ['.tex','.pdf','_soln.pdf','_1.json','_2.json','_3.json','_4.json']:
+        # print(['.tex','.pdf','_soln.pdf']+[f'{q}_soln.json' for q in questions])
+        for suf in ['.tex','.pdf','_soln.pdf']+[f'_{q}_soln.json' for q in questions]:
             if os.path.exists(os.path.join(savedir,f'{master_source}{suf}')):
                 os.remove(os.path.join(savedir,f'{master_source}{suf}'))
             if os.path.exists(f'{master_source}{suf}'):

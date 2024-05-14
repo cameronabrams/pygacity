@@ -5,20 +5,28 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 from io import StringIO
 data=StringIO("""name,aT1,aT2,aT6,aP1,aP2,aP3
-methane,    -292860,     0,       8.2445, -0.8951, 59.8465,  0
-ethylene,   -600076.875, 0,       7.90595,-0.84677,42.94594, 0
-ethane,     -687248.25,  0,       7.90694,-0.88600,49.02654, 0
-propylene,  -923484.6875,0,       7.71725,-0.87871,47.67624, 0
-propane,    -970688.5625,0,       7.15059,-0.76984, 0,       6.90224
 isobutane, -1166846,     0,       7.72668,-0.92213, 0,       0
 n-butane,  -1280557,     0,       7.94986,-0.93159, 0,       0
 isopentane,-1481583,     0,       7.58071,-0.93159, 0,       0
 n-pentane, -1524891,     0,       7.33129,-0.89143, 0,       0
 n-hexane,  -1778901,     0,       6.96783,-0.84634, 0,       0
 n-heptane, -2013803,     0,       6.52914,-0.79543, 0,       0
-n-octane,   0,       -7646.81641,12.48457,-0.73152, 0,       0
-n-nonane,  -2551040,     0,       5.69313,-0.67818, 0,       0
-n-decane,   0,       -9760.45703,13.80354,-0.71470, 0,       0""")
+n-octane,   0,       -7646.81641,12.48457,-0.73152, 0,       0""")
+# data=StringIO("""name,aT1,aT2,aT6,aP1,aP2,aP3
+# methane,    -292860,     0,       8.2445, -0.8951, 59.8465,  0
+# ethylene,   -600076.875, 0,       7.90595,-0.84677,42.94594, 0
+# ethane,     -687248.25,  0,       7.90694,-0.88600,49.02654, 0
+# propylene,  -923484.6875,0,       7.71725,-0.87871,47.67624, 0
+# propane,    -970688.5625,0,       7.15059,-0.76984, 0,       6.90224
+# isobutane, -1166846,     0,       7.72668,-0.92213, 0,       0
+# n-butane,  -1280557,     0,       7.94986,-0.93159, 0,       0
+# isopentane,-1481583,     0,       7.58071,-0.93159, 0,       0
+# n-pentane, -1524891,     0,       7.33129,-0.89143, 0,       0
+# n-hexane,  -1778901,     0,       6.96783,-0.84634, 0,       0
+# n-heptane, -2013803,     0,       6.52914,-0.79543, 0,       0
+# n-octane,   0,       -7646.81641,12.48457,-0.73152, 0,       0
+# n-nonane,  -2551040,     0,       5.69313,-0.67818, 0,       0
+# n-decane,   0,       -9760.45703,13.80354,-0.71470, 0,       0""")
 dpdf=pd.read_csv(data,header=0,index_col=0)
 C=dpdf.shape[0]
 
@@ -90,7 +98,11 @@ def pick_state(specs):
     span=0
     c1=all_components[c1_idx]
     c2=all_components[c2_idx]
-    P_kPa=50+(idx[2]//10)*20
+    P_kPa_lim=np.array([400,1000.0])
+    log_lim=np.log(P_kPa_lim)
+    fac=idx[2]/100
+    logP=log_lim[0]+fac*(log_lim[1]-log_lim[0])
+    P_kPa=np.exp(logP)
     z=np.around(0.4+0.2*(idx[3]/100),2)
     while span<30:
         T,x,y=get_Txy([c1,c2],P_kPa,npts=501)
@@ -109,12 +121,15 @@ def pick_state(specs):
                 c2_idx+=1
             c1=all_components[c1_idx]
             c2=all_components[c2_idx]
-    T_drum_K=0.5*(Tdew+Tbub)
-    offset=0.5*(-0.5+idx[3]/100)*span
-    T_drum_K+=offset
+    T_drum_K=Tdew-10-idx[3]/100*(span-20)
     T_drum_C=T_drum_K-273.15
     T_drum_C=np.around(T_drum_C,-1)
-    T_drum_K=T_drum_C+273.15
+    # print(Tdew,Tbub,T_drum_K,T_drum_C)
+    if T_drum_C>200:
+        raise Exception(f'You picked a T {Tbub-273.15} < {T_drum_C} < {Tdew-273.15}C at {P_kPa} kPa off the chart for {c1}/{c2} -- too high')
+    if T_drum_C<-70:
+        raise Exception('You picked a T off the chart -- too low')
+    # T_drum_K=T_drum_C+273.15
     if T_drum_K<Tbub:
         raise Exception('whoops -- you rounded Tdrum outside the 2-phase envelope (too low)')
     if T_drum_K>Tdew:

@@ -119,7 +119,7 @@ class OperatingLineEnvelope:
             ax.plot([x1,x2],[y1,y2],l.shortcode,label=l.label)
 
 class EquilibriumEnvelope:
-    def __init__(self,csv_filename='',a_line=None,a_fake=1):
+    def __init__(self,interpolators={},csv_filename='',a_line=None,a_fake=1):
         self.y_of_x=None
         self.x_of_y=None
         self.data=None
@@ -129,6 +129,11 @@ class EquilibriumEnvelope:
             assert 'x' in self.data and 'y' in self.data,f'file {csv_filename} does not have either an x or y column'
             self.y_of_x=interp1d(self.data['x'],self.data['y'])
             self.x_of_y=interp1d(self.data['y'],self.data['x'])
+        elif interpolators:
+            self.y_of_x=interpolators['y_of_x']
+            self.x_of_y=interpolators['x_of_y']
+            self.data=pd.DataFrame({'x':np.linspace(0,1,101)})
+            self.data['y']=self.y_of_x(self.data['x'])
         elif a_line:
             # equilibrium data is just a line
             self.y_of_x=a_line.y
@@ -150,6 +155,8 @@ class Stages:
         self.eq=eq
         self.op=op
     def step_off(self,**kwargs):
+        op=self.op
+        eq=self.eq
         limit=kwargs.get('limit',100)
         tol=kwargs.get('tolerance',0.001)
         self.points=[op.vertices[0]]
@@ -157,16 +164,13 @@ class Stages:
         n=0
         if op.start_from=='BOTTOM':
             next_x=this_x=self.points[-1].x
-            while this_x<=op.vertices[-1].x and n<limit:
-                next_y=eq.y_of_x(this_x)
-                if next_y>=op.vertices[-1].y:
-                    break
+            next_y=eq.y_of_x(this_x)
+            while this_x<=op.vertices[-1].x and next_y<op.vertices[-1].y and n<limit:
                 self.points.append(point(this_x,next_y))
-                # print(n,this_x,next_y)
                 next_x=op.x_of_y(next_y)
                 self.points.append(point(next_x,next_y))
-                # print(n,next_x,next_y)
                 this_x=next_x
+                next_y=eq.y_of_x(this_x)
                 n+=1
             f=0.0
             if next_y-op.vertices[-1].y>tol:
@@ -176,14 +180,13 @@ class Stages:
             self.nstages=float(n+f)
         else:
             next_y=this_y=self.points[-1].y
-            while this_y>=op.vertices[-1].y and n<limit:
-                next_x=eq.x_of_y(this_y)
-                if next_x<op.vertices[-1].x:
-                    break
+            next_x=eq.x_of_y(this_y)
+            while this_y>=op.vertices[-1].y and next_x>=op.vertices[-1].x and n<limit:
                 self.points.append(point(next_x,this_y))
                 next_y=op.y_of_x(next_x)
                 self.points.append(point(next_x,next_y))
                 this_y=next_y
+                next_x=eq.x_of_y(this_y)
                 n+=1
             f=0.0
             if op.vertices[-1].x-next_x>tol:
@@ -192,6 +195,7 @@ class Stages:
                 self.points.append(op.vertices[-1])
             self.nstages=float(n+f)
     def feed_stages(self):
+        op=self.op
         feeds=[]
         if len(self.points)>0:
             # look for interior vertices of the operating envelope
@@ -209,35 +213,35 @@ class Stages:
         for v1,v2 in zip(self.points[:-1],self.points[1:]):
             ax.plot([v1.x,v2.x],[v1.y,v2.y],kwargs.get('shortcode','k-'))
 
-def get_specs(jfile):
-    with open(jfile,'r') as f:
-        return complete_specs(json.load(f))
+# def get_specs(jfile):
+#     with open(jfile,'r') as f:
+#         return complete_specs(json.load(f))
 
-def complete_specs(specs):
-    """ complete_specs performs all allowed mass balance calculations based on specifications 
-        currently it can only handle the standard case where Feed rate and composition are given
-        along with the distillate and bottoms compositions """
+# def complete_specs(specs):
+#     """ complete_specs performs all allowed mass balance calculations based on specifications 
+#         currently it can only handle the standard case where Feed rate and composition are given
+#         along with the distillate and bottoms compositions """
     
-    Feeds=[]
-    for f in specs.keys():
-        if 'Feed' in f:
-            Feeds.append(f)
-    if len(Feeds)==1:
-        if not 'F' in specs['Feed']:
-            if 'Bottoms' in specs and 'Distillate' in specs:
-                if not 'B' in specs['Bottoms'] and not 'D' in specs['Distillate']:
-                    specs['Feed']['F']=1.0 # basis
-            elif 'Raffinate' in specs and 'Extract' in specs:
-                if not 'R' in specs['Raffinate'] and not 'E' in specs['Extract']:
-                    specs['Feed']['F']=1.0 # basis
-        if 'F' in specs['Feed'] and 'z' in specs['Feed']:
-            if 'Bottoms' in specs and 'Distillate' in specs:
-                if not 'B' in specs['Bottoms'] and not 'D' in specs['Distillate']:
-                    # z F = x_D D + x_B B = x_D (F-B) + x_B B = x_D F + (x_B-x_D) B
-                    # B = F (z-x_D)/(x_B-x_D)
-                    specs['Bottoms']['B']=specs['Feed']['F']*(specs['Feed']['z']-specs['Distillate']['x'])/(specs['Bottoms']['x']-specs['Distillate']['x'])
-                    specs['Distillate']['D']=specs['Feed']['F']-specs['Bottoms']['B']
-    return specs
+#     Feeds=[]
+#     for f in specs.keys():
+#         if 'Feed' in f:
+#             Feeds.append(f)
+#     if len(Feeds)==1:
+#         if not 'F' in specs['Feed']:
+#             if 'Bottoms' in specs and 'Distillate' in specs:
+#                 if not 'B' in specs['Bottoms'] and not 'D' in specs['Distillate']:
+#                     specs['Feed']['F']=1.0 # basis
+#             elif 'Raffinate' in specs and 'Extract' in specs:
+#                 if not 'R' in specs['Raffinate'] and not 'E' in specs['Extract']:
+#                     specs['Feed']['F']=1.0 # basis
+#         if 'F' in specs['Feed'] and 'z' in specs['Feed']:
+#             if 'Bottoms' in specs and 'Distillate' in specs:
+#                 if not 'B' in specs['Bottoms'] and not 'D' in specs['Distillate']:
+#                     # z F = x_D D + x_B B = x_D (F-B) + x_B B = x_D F + (x_B-x_D) B
+#                     # B = F (z-x_D)/(x_B-x_D)
+#                     specs['Bottoms']['B']=specs['Feed']['F']*(specs['Feed']['z']-specs['Distillate']['x'])/(specs['Bottoms']['x']-specs['Distillate']['x'])
+#                     specs['Distillate']['D']=specs['Feed']['F']-specs['Bottoms']['B']
+#     return specs
 
 def xy_diagram(ax,eq=None,op=None,st=None,annotation={},**kwargs):
     ax.grid(visible=True,which='major',axis='both',color='k',linestyle='-',linewidth=0.8,alpha=0.6)
@@ -255,13 +259,16 @@ def xy_diagram(ax,eq=None,op=None,st=None,annotation={},**kwargs):
     ax.plot([0,1],[0,1],'k--',linewidth=0.6,alpha=0.4)
 
     # plot equilibrium envelope
-    eq.plot(ax)
+    if eq:
+        eq.plot(ax)
 
     # plot the operating line envelope
-    op.plot(ax)
+    if op:
+        op.plot(ax)
 
     # plot stages
-    st.plot(ax)
+    if eq and op:
+        st.plot(ax)
 
     ax.legend()
     if len(annotation)>0:

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
 import pandas as pd
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 
 def Antoine(T,pardict):
     A,B,C=pardict['A'],pardict['B'],pardict['C']
@@ -49,8 +50,14 @@ def plot_Txy(X,Y,T,**kwargs):
     Thi=int(np.round(maxT,0))+(T_major_inc-int(np.round(maxT,0))%T_major_inc)
     ax1,ax2=ax
     ax1.set_xlim([0,1])
+    ax1.xaxis.set_minor_locator(MultipleLocator(0.02))
+    ax1.yaxis.set_minor_locator(MultipleLocator(1))
     ax1.set_ylim(kwargs.get('ylim',[Tlow,Thi]))
-    ax1.grid()
+    ax1.grid(visible=True,which='major',axis='both',color='k',linestyle='-',linewidth=0.8,alpha=0.6)
+    ax1.grid(visible=True,which='minor',axis='both',color='k',linestyle='-',linewidth=0.5,alpha=0.4)    
+    ax2.grid(visible=True,which='major',axis='both',color='k',linestyle='-',linewidth=0.8,alpha=0.6)
+    ax2.grid(visible=True,which='minor',axis='both',color='k',linestyle='-',linewidth=0.5,alpha=0.4)
+
     ax1.set_yticks(kwargs.get('yticks',np.arange(Tlow,Thi+1,T_major_inc)))
     ax1.set_xlabel('x')
     ax1.set_ylabel('T (K)')
@@ -60,7 +67,8 @@ def plot_Txy(X,Y,T,**kwargs):
     ax2.set_xticks(np.linspace(0,1,11))
     ax2.set_yticks(np.linspace(0,1,11))
     ax1.legend()
-    ax2.grid()
+    ax2.xaxis.set_minor_locator(MultipleLocator(0.02))
+    ax2.yaxis.set_minor_locator(MultipleLocator(0.02))
     ax2.set_xlim([0,1])
     ax2.set_ylim([0,1])
     ax2.set_xlabel('x')
@@ -387,9 +395,13 @@ def pick_recursive(specs,rng):
                 lims=pickrule['between']
                 r=rng.random()
                 specs[k]=lims[0]+r*(lims[1]-lims[0])
+                if 'round' in pickrule:
+                    specs[k]=np.round(specs[k],pickrule['round'])
             elif 'pickfrom' in pickrule:
                 domain=pickrule['pickfrom']
                 specs[k]=rng.choice(domain)
+                if 'round' in pickrule:
+                    specs[k]=np.round(specs[k],pickrule['round'])
             else:
                 raise Exception('Missing picking rule')
         else:
