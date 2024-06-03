@@ -4,6 +4,7 @@ from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
 import pandas as pd
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+from ThermoProblems.pick import *
 
 def Antoine(T,pardict):
     A,B,C=pardict['A'],pardict['B'],pardict['C']
@@ -191,7 +192,7 @@ def AllFlows(specs):
         specs['Column']['reflux_ratio_calc']=L/D
     elif 'reflux_ratio' in specs['Column']:
         # sort feed keys along increasing z and tiebreak with increasing q
-        feeddf.sort_values(by=['z','q'],ascending=[False,True],inplace=False)
+        feeddf.sort_values(by=['z','q'],ascending=[False,True],inplace=True)
         specs['Column']['FeedOrder']=feeddf.index.to_list()
         rr=specs['Column']['reflux_ratio']
         L=rr*D
@@ -385,39 +386,13 @@ def mf_restraints(component_dict):
         component_dict[unsets[0]]['MoleFraction']=1.0-smf
     return component_dict
 
-def pick_recursive(specs,rng):
-    if not type(specs)==dict:
-        return 
-    for k,v in specs.items():
-        if type(v)==dict and 'pick' in v:
-            pickrule=v['pick']
-            if 'between' in pickrule:
-                lims=pickrule['between']
-                r=rng.random()
-                specs[k]=lims[0]+r*(lims[1]-lims[0])
-                if 'round' in pickrule:
-                    specs[k]=np.round(specs[k],pickrule['round'])
-            elif 'pickfrom' in pickrule:
-                domain=pickrule['pickfrom']
-                specs[k]=rng.choice(domain)
-                if 'round' in pickrule:
-                    specs[k]=np.round(specs[k],pickrule['round'])
-            else:
-                raise Exception('Missing picking rule')
-        else:
-            pick_recursive(v,rng)
-        
-def pick_state(specs):
-    num=specs['tag']
-    rng=np.random.default_rng(num)
-    pick_recursive(specs,rng)
-    return specs
 
-def solve(specs):
+def solve(specs,duties=True):
     specs=process_input(specs)
     specs=Txy(specs)
     specs=AllFlows(specs)
-    specs=AllDuties(specs)
+    if duties:
+        specs=AllDuties(specs)
     return specs
 
 if __name__=='__main__':

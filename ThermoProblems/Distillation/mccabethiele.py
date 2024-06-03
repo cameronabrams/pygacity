@@ -39,9 +39,10 @@ class line:
                 self.b=p1.y-self.m*p1.x
             else:
                 self.vert=True
+                self.x=p1.x
         elif vert and p1!=None:
             self.vert=True
-            # self.x=x
+            self.x=p1.x
         else:
             raise Exception('Not enough info to parameterize a line')
     def __str__(self):
@@ -57,13 +58,13 @@ class line:
             n,c=other.m,other.b
             x=(c-b)/(m-n)
             return point(x,self.y(x))
-        elif self.m==other.m:
-            # parallel lines cannot intersect
-            return None
         elif self.vert and not other.vert:
             return point(self.x,other.y(self.x))
         elif not self.vert and other.vert:
             return point(other.x,self.y(other.x))
+        elif self.m==other.m:
+            # parallel lines cannot intersect
+            return None
     def intersect_interp(self,interp):
         if self.vert:
             return [point(self.x,float(interp(self.x)))]
@@ -269,6 +270,18 @@ class Stages:
 #                     specs['Bottoms']['B']=specs['Feed']['F']*(specs['Feed']['z']-specs['Distillate']['x'])/(specs['Bottoms']['x']-specs['Distillate']['x'])
 #                     specs['Distillate']['D']=specs['Feed']['F']-specs['Bottoms']['B']
 #     return specs
+
+def feed_message(q,digits=3):
+    if q==1.0:
+        return 'saturated liquid'
+    elif q==0.0:
+        return 'saturated vapor'
+    elif 0<q<1:
+        return f'two-phase mixture with liquid fraction {np.round(1-q,digits):f}'
+    elif q<0:
+        return f'superheated vapor (q = {np.round(q,digits)})'
+    else:
+        return f'subcooled liquid (q = {np.round(q,digits)})'
 
 def min_ratios(eq,z,q,xD,xB):
     if q==1:
