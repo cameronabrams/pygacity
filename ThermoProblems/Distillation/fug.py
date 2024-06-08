@@ -59,7 +59,7 @@ if __name__=='__main__':
     xB=Bx/B
     xD=Dx/D
     phi=Underwood_Phi(alpha,z,q)
-    LDmin=Underwood(alpha,z,q,D,xD)
+    LDmin=Underwood_LDmin(alpha,z,q,D,xD)
     N=Gilliland(LD,LDmin,Nmin)
     NFmin=Fenske_mf(xD[0],xB[1],alpha[0])
     NF=NFmin/Nmin*N

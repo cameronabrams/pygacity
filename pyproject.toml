@@ -15,7 +15,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
-    "importlib",
     "numpy",
     "pandas",
     "scipy",

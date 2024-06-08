@@ -43,10 +43,8 @@ def make_one(master_source,make_solutions=True):
         Command(f'pdflatex -jobname={master_source}_soln {master_source}.tex').run()
 
 def make_all(sources,count=1,**kwargs):
-    if 'explicit_tags' in kwargs:
-        test_tags=kwargs['explicit_tags']
-    else:
-        test_tags=np.random.randint(10000000,99999999,count)
+    savedir=kwargs.get('savedir','.')
+    test_tags=kwargs.get('explicit_tags',np.random.randint(10000000,99999999,count))
     for s in sources:
         with open(s['source'],'r') as f:
             s['template']=f.read()
@@ -73,7 +71,7 @@ def make_all(sources,count=1,**kwargs):
                 f.write(source)
         # print(questions)
         make_one(master_source,make_solutions=make_solutions)
-        print('...moving',end='',flush=True)
+        print(f'...moving to {savedir}',end='',flush=True)
         # clean up
         for d in [f'pythontex-files-{master_source.lower()}',f'pythontex-files-{master_source.lower()}_soln']:
             if os.path.exists(d):
@@ -84,6 +82,8 @@ def make_all(sources,count=1,**kwargs):
                 os.remove(os.path.join(savedir,f'{master_source}{suf}'))
             if os.path.exists(f'{master_source}{suf}'):
                 move(f'{master_source}{suf}',savedir)
+            else:
+                print(f'warning: could not find {master_source}{suf}')
         for typ in ['.aux','.log','.pytxcode','_soln.aux','_soln.log','_soln.pytxcode']:
             if os.path.exists(f'{master_source}{typ}'):
                 os.remove(f'{master_source}{typ}')
@@ -109,14 +109,13 @@ def cli():
     with open(args.f,'r') as f:
         sources=json.load(f)
     if len(args.explicit_tags)>0:
-        make_all(sources,count=args.n,explicit_tags=args.explicit_tags,solutions=args.solutions)
+        make_all(sources,count=args.n,explicit_tags=args.explicit_tags,solutions=args.solutions,savedir=savedir)
     elif os.path.exists(args.explicit_tags_file):
         with open(args.explicit_tags_file,'r') as f:
             explicit_tags=list(map(int,f.read().split('\n')))
-        make_all(sources,count=len(explicit_tags),explicit_tags=explicit_tags,solutions=args.solutions)
+        make_all(sources,count=len(explicit_tags),explicit_tags=explicit_tags,solutions=args.solutions,savedir=savedir)
     else:
         make_all(sources,count=args.n,solutions=args.solutions)
 
 if __name__=='__main__':
     cli()
-    
