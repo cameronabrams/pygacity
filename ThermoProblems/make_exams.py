@@ -1,11 +1,10 @@
-import pandas as pd
+# Author: Cameron F. Abrams, <cfa22@drexel.edu>
 from shutil import move, rmtree
 import os
 import numpy as np
 import argparse as ap
 from ThermoProblems.command import Command
 import json
-import glob
 
 def get_keys(template,ldelim='<%',rdelim='%>'):
     ldelim_idx=[]
@@ -28,6 +27,21 @@ def key_match(sourcedict,row,ldelim='<%',rdelim='%>'):
         template=tmp
     return template
 
+def make_one(master_source,make_solutions=True):
+    print('...1',end='',flush=True)
+    Command(f'pdflatex --interaction=nonstopmode {master_source}').run(ignore_codes=[1])
+    print('...2',end='',flush=True)
+    Command(f'pythontex {master_source}').run()
+    print('...3',end='',flush=True)
+    Command(f'pdflatex {master_source}').run()
+    if make_solutions:
+        print('...4',end='',flush=True)
+        Command(f'pdflatex -jobname={master_source}_soln {master_source}').run()
+        print('...5',end='',flush=True)
+        Command(f'pythontex {master_source}_soln').run()
+        print('...6',end='',flush=True)
+        Command(f'pdflatex -jobname={master_source}_soln {master_source}.tex').run()
+
 def make_all(sources,count=1,**kwargs):
     if 'explicit_tags' in kwargs:
         test_tags=kwargs['explicit_tags']
@@ -42,6 +56,7 @@ def make_all(sources,count=1,**kwargs):
     for tag in test_tags:
         print(f'Compiling exam for tag {tag}...',end='',flush=True)
         master_source=f'{tag}'
+        make_solutions=kwargs.get('solutions',True)
         questions=[]
         with open(master_source+'.tex','w') as f:
             for s in sources:
@@ -57,20 +72,7 @@ def make_all(sources,count=1,**kwargs):
                     source=r'\item ('+f'{pts}'+r' pts)'+'\n'+source
                 f.write(source)
         # print(questions)
-        print('...1',end='',flush=True)
-        Command(f'pdflatex --interaction=nonstopmode {master_source}').run(ignore_codes=[1])
-        print('...2',end='',flush=True)
-        Command(f'pythontex {master_source}').run()
-        print('...3',end='',flush=True)
-        Command(f'pdflatex {master_source}').run()
-        make_solutions=kwargs.get('solutions',True)
-        if make_solutions:
-            print('...4',end='',flush=True)
-            Command(f'pdflatex -jobname={master_source}_soln {master_source}').run()
-            print('...5',end='',flush=True)
-            Command(f'pythontex {master_source}_soln').run()
-            print('...6',end='',flush=True)
-            Command(f'pdflatex -jobname={master_source}_soln {master_source}.tex').run()
+        make_one(master_source,make_solutions=make_solutions)
         print('...moving',end='',flush=True)
         # clean up
         for d in [f'pythontex-files-{master_source.lower()}',f'pythontex-files-{master_source.lower()}_soln']:
@@ -87,7 +89,7 @@ def make_all(sources,count=1,**kwargs):
                 os.remove(f'{master_source}{typ}')
         print('...done.',flush=True)
 
-if __name__=='__main__':
+def cli():
     parser=ap.ArgumentParser()
     parser.add_argument('-n',help='number of unique exams',default=1,type=int)
     parser.add_argument('--overwrite',action=ap.BooleanOptionalAction)
@@ -114,3 +116,7 @@ if __name__=='__main__':
         make_all(sources,count=len(explicit_tags),explicit_tags=explicit_tags,solutions=args.solutions)
     else:
         make_all(sources,count=args.n,solutions=args.solutions)
+
+if __name__=='__main__':
+    cli()
+    

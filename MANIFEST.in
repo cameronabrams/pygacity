@@ -1,0 +1,2 @@
+recursive-include Autoprob
+recursive-include ThermoProblems data

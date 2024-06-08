@@ -17,9 +17,13 @@ def Underwood_Phi(airef,Z,q):
     phi=fsolve(Underwood_ZeroMe,0.5*np.sum(airef),args=(airef,Z,q))[0]
     return phi
 
-def Underwood(airef,Z,q,D,XD):
+def Underwood_Vmin(airef,Z,q,D,XD):
     phi=Underwood_Phi(airef,Z,q)
     Vmin=np.sum(D*airef*XD/(airef-phi))
+    return Vmin 
+
+def Underwood_LDmin(airef,Z,q,D,XD):
+    Vmin=Underwood_Vmin(airef,Z,q,D,XD)
     Lmin=Vmin-D
     LDmin=Lmin/D
     return LDmin
