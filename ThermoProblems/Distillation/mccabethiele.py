@@ -272,16 +272,20 @@ class Stages:
 #     return specs
 
 def feed_message(q,digits=3):
+    fmt=r'{:.'+str(digits)+r'}'
     if q==1.0:
         return 'saturated liquid'
     elif q==0.0:
         return 'saturated vapor'
     elif 0<q<1:
-        return f'two-phase mixture with liquid fraction {np.round(1-q,digits):f}'
+        qstr=fmt.format(np.round(q,digits))
+        return f'two-phase mixture with liquid fraction {qstr}'
     elif q<0:
-        return f'superheated vapor (q = {np.round(q,digits)})'
+        qstr=fmt.format(np.round(q,digits))
+        return f'superheated vapor ($q$ = {qstr})'
     else:
-        return f'subcooled liquid (q = {np.round(q,digits)})'
+        qstr=fmt.format(np.round(q,digits))
+        return f'subcooled liquid ($q$ = {qstr})'
 
 def min_ratios(eq,z,q,xD,xB):
     if q==1:
@@ -299,7 +303,7 @@ def min_ratios(eq,z,q,xD,xB):
     LDmin=LV/(1-LV)
     botline=line(p1=point(xB,xB),p2=eint)
     LbarVbar=botline.m
-    # Lbar/Vbar = (Vbar + B)/Vbar = ((Vbar/B) + 1)/(Vbar/B)
+    # Lbar/Vbar = (Vbar + B)/Vbar = ((Vbar/B) + 1)/(VbaFr/B)
     # (Lbar/Vbar)(Vbar/B) = (Vbar/B) + 1
     # (Vbar/B)((Lbar/Vbar) - 1) = 1
     # Vbar/B = 1 / ((Lbar/Vbar) - 1)

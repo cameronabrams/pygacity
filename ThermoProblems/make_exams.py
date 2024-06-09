@@ -115,7 +115,7 @@ def cli():
             explicit_tags=list(map(int,f.read().split('\n')))
         make_all(sources,count=len(explicit_tags),explicit_tags=explicit_tags,solutions=args.solutions,savedir=savedir)
     else:
-        make_all(sources,count=args.n,solutions=args.solutions)
+        make_all(sources,count=args.n,solutions=args.solutions,savedir=savedir)
 
 if __name__=='__main__':
     cli()

@@ -145,6 +145,9 @@ def AllFlows(specs):
         else:
             ybar=xB
         specs['Column']['ybar']=ybar
+    # sumFz = D xD + B xB = (sumF-B) xD + B xB
+    # sumFz = sumF xD + B (xB - xD)
+    # (sumFz - sumF xD)/(xB - xD) = B = (sumF xD - sumFz)/(xD - xB)
     B=(sumF*xD-sumFz)/(xD-xB)
     # what={'sumF':sumF,'sumFz':sumFz,'xD':xD,'sumFz*xD':sumFz*xD,'numerator':(sumF*xD-sumFz),'denominator':(xD-xB),'B':B}
     # print(what)
@@ -191,8 +194,8 @@ def AllFlows(specs):
         specs['Column']['L_calc']=L
         specs['Column']['reflux_ratio_calc']=L/D
     elif 'reflux_ratio' in specs['Column']:
-        # sort feed keys along increasing z and tiebreak with increasing q
-        feeddf.sort_values(by=['z','q'],ascending=[False,True],inplace=True)
+        # apply CMO down the column; feed with highest z topmost
+        feeddf.sort_values(by=['z','q'],ascending=[False,False],inplace=True)
         specs['Column']['FeedOrder']=feeddf.index.to_list()
         rr=specs['Column']['reflux_ratio']
         L=rr*D
@@ -204,6 +207,7 @@ def AllFlows(specs):
         vin,vout,lin,lout=[],[],[],[]
         for f in specs['Column']['FeedOrder']:
             feed=specs['Streams']['Feeds'][f]
+            # print(f'feed {f}')
             F=feed['Ndot']
             q=feed['q']
             feed['V_out']=V
@@ -397,47 +401,56 @@ def solve(specs,duties=True):
 
 if __name__=='__main__':
     specs={
-        'tag':112233445566,
+        'tag':13424726,
         'Streams':{
             'Feeds':{
-                'F':{
-                    'Ndot':100,'q':1,
+                'F1':{
+                    'Ndot':{'pick':{'pickfrom':[90,100,110]}},'q':{'pick':{'pickfrom':[0,1]}},
                     'Components':{
-                        'A':{'MoleFraction':{'pick':{'between':[0.3,0.7]}}},
+                        'A':{'MoleFraction':{'pick':{'between':[0.6,0.7],'round':2}}},
                         'B':{}
                         }
-                }
-            },
+                    },
+                'F2':{
+                    'Ndot':{'pick':{'pickfrom':[90,100,110]}},'q':{'pick':{'pickfrom':[0.25,0.75]}},
+                    'Components':{
+                        'A':{'MoleFraction':{'pick':{'between':[0.35,0.55],'round':2}}},
+                        'B':{}
+                        }
+                    }
+                },
             'B':{'Components':{
                 'A':{},
-                'B':{'MoleFraction':{'pick':{'between':[0.8,0.99]}}}
+                'B':{'MoleFraction':{'pick':{'between':[0.85,0.95],'round':2}}}
                 }
             },
             'D':{'Components':{
-                'A':{'MoleFraction':{'pick':{'between':[0.75,0.9]}}},
+                'A':{'MoleFraction':{'pick':{'between':[0.85,0.99],'round':2}}},
                 'B':{}
                 }}
         }, 
-        'Column':{'reflux_ratio':{'pick':{'between':[1.5,3.0]}},'Pressure':1},
+        'Column':{'reflux_ratio':{'pick':{'between':[1.3,2.7]}},'Pressure':1},
         'Components':{
-            'A':{'Hvap':{'pick':{'between':[900,1100]}},'Cpv':{'a':25,'b':0.2},'Cpl':{'a':35},'Antoine':{'A':12,'B':4000,'C':45}},
-            'B':{'Hvap':{'pick':{'between':[900,1100]}},'Cpv':{'a':27,'b':0.1},'Cpl':{'a':37},'Antoine':{'A':10,'B':3800,'C':50}}
+            'A':{'name':'1','Hvap':{'pick':{'pickfrom':[990,1000,1100]}},'Cpv':{'a':{'pick':{'pickfrom':[34,35,36]}},'b':{'pick':{'pickfrom':[0.15,0.20,0.25]}}},'Cpl':{'a':{'pick':{'pickfrom':[34,35,36]}}},
+            'Antoine':{'A':{'pick':{'pickfrom':[11.9,12,12.1]}},'B':{'pick':{'pickfrom':[3975,4000,4025]}},'C':{'pick':{'pickfrom':[44,45,46]}}}},
+            'B':{'name':'2','Hvap':{'pick':{'pickfrom':[1175,1200,1225]}},'Cpv':{'a':{'pick':{'pickfrom':[26,27,28]}},'b':{'pick':{'pickfrom':[0.05,0.1,0.15]}}},'Cpl':{'a':{'pick':{'pickfrom':[31,32,33]}}},
+            'Antoine':{'A':{'pick':{'pickfrom':[9.9,10,10.1]}},'B':{'pick':{'pickfrom':[3775,3800,3825]}},'C':{'pick':{'pickfrom':[49,50,51]}}}}
         },
-        'Thermodynamics':{'Tref':200,'Txy_xy_graphic':'Txy-xy.png'},
+        'Thermodynamics':{'Tref':200},
         'Condenser':{'Type':'Total'},
-        'Reboiler':{'Type':'Partial'}
-        }
+        'Reboiler':{'Type':'Partial'},
+    }
     specs=pick_state(specs)
     specs=process_input(specs)
     specs=Txy(specs)
     specs=AllFlows(specs)
-    specs=AllDuties(specs)
+    # specs=AllDuties(specs)
     # print(specs['Streams'])
     # print(specs['Column'])
     # print(specs['Reboiler'])
     # print(specs['Condenser'])
     feeddf=specs['Column']['FeedsSummaryDataFrame']
-    # print(feeddf.to_string())
+    print(feeddf.to_string())
     # F1=feeddf.loc['F','N']
     # print(F1)
 #    res=pick_state(0,specs)
