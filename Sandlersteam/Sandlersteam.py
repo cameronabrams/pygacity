@@ -28,10 +28,10 @@ class SATD:
         self.colFirstTwoTexLabels={}
         self.colFirstTwoTexLabels['T']=['$T$ (C)', '$P$ (MPa)']
         self.colFirstTwoTexLabels['P']=['$P$ (MPa)', '$T$ (C)']
-        self.colRestTexLabels=['$\hat{V}^L$', '$\hat{V}^V$', 
-                        '$\hat{U}^L$', '$\Delta\hat{U}$', '$\hat{U}^V$',
-                        '$\hat{H}^L$', '$\Delta\hat{H}$', '$\hat{H}^V$',
-                        '$\hat{S}^L$', '$\Delta\hat{S}$', '$\hat{S}^V$'
+        self.colRestTexLabels=[r'$\hat{V}^L$', r'$\hat{V}^V$', 
+                        r'$\hat{U}^L$', r'$\Delta\hat{U}$', r'$\hat{U}^V$',
+                        r'$\hat{H}^L$', r'$\Delta\hat{H}$', r'$\hat{H}^V$',
+                        r'$\hat{S}^L$', r'$\Delta\hat{S}$', r'$\hat{S}^V$'
                       ]
         self.colFirstTwoTexFormatters={}
         self.colFirstTwoTexFormatters['T']=[pformatter,pformatter]
@@ -41,7 +41,7 @@ class SATD:
         D=[]
         for f,pu in zip(pfn,punits):
             data_abs_path=os.path.join(inst_root,'data',f)
-            df=pd.read_csv(data_abs_path,sep='\s+',header=0,index_col=None)
+            df=pd.read_csv(data_abs_path,sep=r'\s+',header=0,index_col=None)
             if pu=='kPa':
                 df['P']=df['P']/1000.0
             ndf=df[colorder]
@@ -58,7 +58,7 @@ class SATD:
         D=[]
         for f,pu in zip(tfn,punits):
             data_abs_path=os.path.join(inst_root,'data',f)
-            df=pd.read_csv(data_abs_path,sep='\s+',header=0,index_col=None)
+            df=pd.read_csv(data_abs_path,sep=r'\s+',header=0,index_col=None)
             if pu=='kPa':
                 df['P']=df['P']/1000.0
             ndf=df[colorder]
@@ -186,7 +186,7 @@ class SATD:
                 strsplits.append(block_floatsplit)
             title=r'\begin{minipage}{\textwidth}'+'\n'+r'\tiny'+'\n'+r'\begin{center}'+'\n'
             ht1=[r'\multicolumn{2}{c}{~}',r'\multicolumn{2}{c}{~}',r'\multicolumn{4}{c}{Specific Volume}',r'\multicolumn{6}{c}{Internal Energy}',r'\multicolumn{6}{c}{Enthalpy}',r'\multicolumn{6}{c}{Entropy}']
-            htst11='\cmidrule(lr){5-8}\cmidrule(lr){9-14}\cmidrule(lr){15-20}\cmidrule(lr){21-26}'
+            htst11=r'\cmidrule(lr){5-8}\cmidrule(lr){9-14}\cmidrule(lr){15-20}\cmidrule(lr){21-26}'
             if by=='T':
                 first2=[r'\multicolumn{2}{c}{Temp.}',r'\multicolumn{2}{c}{Press.}']
             else:
@@ -260,7 +260,7 @@ def my_split(data,hder,P,Tsat,fixw=False):
             df=pd.read_fwf(f,colspecs=((0,4),(6,15), (17,24),(25,32),(34,40),(42,51), (53,60),(62,69),(71,77),(79,88),(90,97),(99,106),(108,114)),header=None,index_col=None)
             # print(df.head())
         else:
-            df=pd.read_csv(f,sep='\s+',header=None,index_col=None)
+            df=pd.read_csv(f,sep=r'\s+',header=None,index_col=None)
         df.columns=hder
         i=1
         for p,ts in zip(P,Tsat):
@@ -743,7 +743,7 @@ class SANDLER:
             for q in self._sp:
                 if q!='T':
                     prop=self.satd.interpolators['T'][q](self.T)
-                    print(q,prop)
+                    # print(q,prop)
                     if q=='P': self.__dict__[q]=prop
                     if q[-1]=='V':
                         self.Vapor.__dict__[q[0].lower()]=prop

@@ -5,6 +5,7 @@ import numpy as np
 import argparse as ap
 from ThermoProblems.command import Command
 import json
+import glob
 
 def get_keys(template,ldelim='<%',rdelim='%>'):
     ldelim_idx=[]
@@ -92,24 +93,31 @@ def make_all(sources,count=1,**kwargs):
 def cli():
     parser=ap.ArgumentParser()
     parser.add_argument('-n',help='number of unique exams',default=1,type=int)
-    parser.add_argument('--overwrite',action=ap.BooleanOptionalAction)
-    parser.add_argument('--solutions',default=True,action=ap.BooleanOptionalAction)
+    parser.add_argument('--overwrite',action=ap.BooleanOptionalAction,help='completely remove old save dir and build new exams')
+    parser.add_argument('--solutions',default=True,action=ap.BooleanOptionalAction,help='build solutions')
+    parser.add_argument('--rebuild',default=False,action=ap.BooleanOptionalAction,help='Rebuild all exams found in a previous save directory')
     parser.add_argument('--explicit-tags',nargs='+',default=[],help='one or more explicit tags')
     parser.add_argument('--explicit-tags-file',type=str,default='tags.in',help='file containing one or more explicit tags')
-    parser.add_argument('-d',help='directory to put exam pdfs in',default='specific')
+    parser.add_argument('-d',help='directory to save exam pdfs and solution JSON files in',default='specific')
     parser.add_argument('f',help='mandatory JSON input file')
     args=parser.parse_args()
     savedir=args.d
     if os.path.exists(savedir):
         if args.overwrite:
             rmtree(savedir)
-        else:
-            raise Exception(f'Directory "{savedir}" already exists and "--overwrite" was not specified.')
-    os.mkdir(savedir)
+        elif not args.rebuild:
+            raise Exception(f'Directory "{savedir}" already exists and "--overwrite" or "--rebuild" was not specified.')
+    if not args.rebuild:
+        os.mkdir(savedir)
     with open(args.f,'r') as f:
         sources=json.load(f)
     if len(args.explicit_tags)>0:
         make_all(sources,count=args.n,explicit_tags=args.explicit_tags,solutions=args.solutions,savedir=savedir)
+    elif args.rebuild:
+        taglist=[x.split('\\')[1].split('_')[0] for x in glob.glob(f'{savedir}/*_soln.pdf')]
+        rmtree(savedir)
+        os.mkdir(savedir)
+        make_all(sources,count=len(taglist),explicit_tags=taglist,solutions=args.solutions,savedir=savedir)
     elif os.path.exists(args.explicit_tags_file):
         with open(args.explicit_tags_file,'r') as f:
             explicit_tags=list(map(int,f.read().split('\n')))

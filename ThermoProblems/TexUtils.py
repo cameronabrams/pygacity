@@ -105,3 +105,28 @@ def frac_or_int_as_tex(f):
             return ''
         else:
             return '{:d}'.format(f.numerator)
+        
+def polynomial_as_tex(p,x='x',coeff_round=0):
+    coeff=p.coef
+    if coeff_round==0:
+        coeff=coeff.astype(int)
+    term_strings=[]
+    for i,c in enumerate(coeff):
+        sgn='+' if c>=0 else '-'
+        if i==0 and sgn=='+': sgn=''
+        power=len(coeff)-1-i
+        cstr=str(np.abs(c))
+        if coeff_round!=0:
+            cstr=str(np.round(np.abs(c),coeff_round))
+        if power>0:
+            pstr='' if power==1 else r'^{'+f'{power}'+r'}'
+            cst='' if np.abs(c)==1 else cstr
+            xstr=x
+        else:
+            pstr=''
+            xstr=''
+            cst=cstr
+        if c!=0:
+            term_strings.append(f'{sgn}{cst}{xstr}{pstr}')
+    polystr=''.join(term_strings)
+    return polystr

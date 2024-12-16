@@ -5,8 +5,8 @@ import numpy as np
 def Fenske_rec(FRD_LK,FRR_HK,alpha):
     return np.log(FRD_LK/(1-FRD_LK)*FRR_HK/(1-FRR_HK))/np.log(alpha)
 
-def Fenske_mf(xD_LK,xB_HK,alpha):
-    return np.log((xD_LK/(1-xD_LK))/(xB_HK/(1-xB_HK)))/np.log(alpha)
+def Fenske_mf(xD,xB,lk_idx,hk_idx,alpha):
+    return np.log((xD[lk_idx]/(xD[hk_idx]))/(xB[lk_idx]/xB[hk_idx]))/np.log(alpha)
 
 def Underwood_Phi(airef,Z,q):
     def Underwood_ZeroMe(phi,airef,Z,q):
@@ -61,10 +61,11 @@ if __name__=='__main__':
     phi=Underwood_Phi(alpha,z,q)
     LDmin=Underwood_LDmin(alpha,z,q,D,xD)
     N=Gilliland(LD,LDmin,Nmin)
-    NFmin=Fenske_mf(xD[0],xB[1],alpha[0])
+    NFmin=Fenske_mf(xD,z,0,1,alpha[0])
     NF=NFmin/Nmin*N
     print(f'D={D}, B={B}')
     print(f'phi={phi}')
     print(f'LDmin={LDmin}')
+    print(f'NFmin={NFmin}')
     print(f'N={N}, NF={NF}')
 
