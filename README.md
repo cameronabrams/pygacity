@@ -51,10 +51,12 @@ pdflatex Example1
 ```
 yields:
 
-![](docs/Example1-PDFshot.png)
+![](Example1-PDFshot.png)
 
 ## Release History
 
+* 0.1.1
+    * reorganized package
 * 0.0.1
     * Initial version
 
