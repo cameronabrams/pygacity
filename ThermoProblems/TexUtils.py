@@ -1,16 +1,21 @@
+# Author: Cameron F. Abrams, <cfa22@drexel.edu>
 import pandas as pd
 import fractions as fr
-# from math import fabs
 import numpy as np
-''' 
-    TexUtils for ThermoProblems 
-    Cameron F. Abrams cfa22@drexel.edu
 
-    These functions are used to produce LaTeX-syntax strings relevant
-    for preparing documents containing homework and exam problems for
-    thermodynamics (and beyond).
+def header(documentclass='autoprob',packages=[{'name':'array'},{'name':'geometry','options':['margins=1in']}],renewcommands=[],**kwargs):
+    res=r'\documentclass{'+documentclass+r'}'+'\n'
+    for p in packages+kwargs.get('extrapackages',[]):
+        res+=r'\usepackage'
+        if 'options' in p and len(p['options']>0):
+            opstring=','.join(p['options'])
+            res+=r'['+opstring+r']'
+        res+=r'{'+p['name']+r'}'+'\n'
+    for rc in renewcommands+kwargs.get('extrarenewcommands',[]):
+        cname,newval=rc
+        res+=r'\renewcommand{'+cname+r'}{'+newval+r'}'+'\n'
+    return res
 
-'''
 def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
         items and generates a table '''

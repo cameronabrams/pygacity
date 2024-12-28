@@ -3,7 +3,7 @@ from shutil import move, rmtree
 import os
 import numpy as np
 import argparse as ap
-from ThermoProblems.command import Command
+from .command import Command
 import json
 import glob
 

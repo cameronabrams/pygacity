@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import fsolve
 import roman
-from ThermoProblems.TexUtils import *
+from ..texutils import *
 
 class ChemEqSystem:
     R=8.314 # J/mol.K
@@ -120,8 +120,8 @@ class ChemEqSystem:
         self.ys=self.N/sum(self.N)
 
 if __name__=='__main__':
-    from Properties import PureProperties
-    from Reaction import Reaction
+    from .properties import PureProperties
+    from .reaction import Reaction
     Prop=PureProperties()
     my_compounds={
         'A':Prop.get_compound('hydrogen (equilib)'),

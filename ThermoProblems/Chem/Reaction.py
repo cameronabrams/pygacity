@@ -109,7 +109,7 @@ class Reaction:
             for i,c in enumerate(self.R+self.P):
                 self.stoProps[p]+=c.thermoChemicalData[p]*self.nu[i]
 if __name__=='__main__':
-    from Compound import Compound
+    from .compound import Compound
     rxn=Reaction(R=[Compound('AgNO3'),Compound('CoCl2')],P=[Compound('AgCl'),Compound('Co(NO3)2')])
     print(str(rxn))
     rxn=Reaction(R=[Compound('AgCl'),Compound('NH3')],P=[Compound('Ag(NH3)2^{+1}'),Compound('Cl^{-1}')])

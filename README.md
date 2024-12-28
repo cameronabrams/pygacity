@@ -13,11 +13,18 @@ cd ThermoProblems
 pip install -e .
 ```
 
-Then, you need to add the TeX tree under `Autoprob` to the TeXLive list of auxiliary trees:
+Then, you need to add the TeX tree under `autoprob-package` to the your LaTeX search path. 
 
-```sh
-tlmgr conf auxtrees add "path-to-ThermoProblems/Autoprob"
-```
+* TeXLive:
+
+   ```sh
+   tlmgr conf auxtrees add "path-to-ThermoProblems/autoprob-package"
+   ```
+
+* MikTeX:
+
+  Use the MikTeX console to register ``path-to-ThermoProblems/autoprob-package`` as a user-managed ``TEXMF`` root directory.
+
 
 
 ## Usage example

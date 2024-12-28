@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 import importlib.resources
-from ThermoProblems.Chem.Compound import Compound
+from .compound import Compound
+
 class PureProperties:
     ''' simple class for handling Sandler's pure properties database '''
     def __init__(self,inputfile='properties_binaries_database.xlsx',sheet_name='pure_properties'):

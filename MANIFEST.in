@@ -1,2 +1,2 @@
-recursive-include Autoprob
-recursive-include ThermoProblems data
+recursive-include autoprob-package
+recursive-include thermoproblems resources
