@@ -1,2 +1,1 @@
-recursive-include autoprob-package
 recursive-include thermoproblems resources
