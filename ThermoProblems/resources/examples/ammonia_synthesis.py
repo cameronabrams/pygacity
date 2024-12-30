@@ -1,8 +1,8 @@
 import numpy as np
-from ThermoProblems.Chem.Properties import PureProperties
-from ThermoProblems.Chem.System import ChemEqSystem
-from ThermoProblems.Chem.Reaction import Reaction
-from ThermoProblems.Latex.TexUtils import *
+from thermoproblems.chem.properties import PureProperties
+from thermoproblems.chem.system import ChemEqSystem
+from thermoproblems.chem.reaction import Reaction
+from thermoproblems.texutils import *
 Prop=PureProperties()
 my_compounds={
     'A':Prop.get_compound('hydrogen (equilib)'),

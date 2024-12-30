@@ -1,0 +1,28 @@
+metadata:
+  Termcode: 202425
+  Termname: "Winter 2024-2025"
+  date: February 11, 2025
+  description: Midterm Exam
+document:
+  - include: head.tex
+  - items:
+    - template: 
+        source: true_false.tex
+        data: true_false.yaml
+        points: 15
+    - template: 
+        source: tank_volume.tex
+        points: 15
+    - template: 
+        source: adiabatic_compressor.tex
+        points: 35
+    - template: 
+        source: steam_release.tex
+        points: 35
+  - include: tail.tex
+build:
+  copies: 1
+  serials: 
+    - 12345678
+  output-dir: output
+  output-name: exam
