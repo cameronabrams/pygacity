@@ -15,50 +15,77 @@ directives:
         type: str
         text: Path for build directory
         default: .\build
-  - name: metadata
-    type: dict
-    text: Document metadata
-    directives:
-      - name: Termcode
-        type: str
-        text: term code
-        default: 202425
-      - name: Termname
-        type: str
-        text: term name
-        default: Winter 2024-2025
-      - name: date
-        type: str
-        text: date to put on document
-        default: UNSET-DATE
-      - name: description
-        type: str
-        text: a descriptive title for the document
-        default: UNSET-DESCRIPTION
   - name: document
-    type: list
+    type: dict
     text: Specification of document structure
     directives:
-      - name: items
-        type: list
-        text: Item specifications; things that carry points
-        directives:
-          - name: template
-            type: dict
-            text: Description of a template for an item
-            directives:
-              - name: source
-                type: str
-                text: file name of tex template to include
-              - name: data
-                type: str
-                text: name of data file read during template resolution
-              - name: points
-                type: int
-                text: number of points to assign item
-      - name: include
+      - name: type
         type: str
-        text: raw tex file to include
+        text: Document type (assignment, exam, plain)
+        options:
+          - assignment
+          - exam
+          - plain
+        default: plain
+      - name: structure
+        type: list
+        text: Document structure specification
+        directives:
+          - name: items
+            type: list
+            text: Item specifications; things that carry points
+            directives:
+              - name: template
+                type: dict
+                text: Description of a template for an item
+                directives:
+                  - name: source
+                    type: str
+                    text: file name of tex template to include
+                  - name: config
+                    type: str
+                    text: name of YAML config file read during template resolution
+                  - name: points
+                    type: int
+                    text: number of points to assign item
+          - name: include
+            type: str
+            text: raw tex file to include
+      - name: class
+        type: dict
+        text: document class
+        default: 
+          classname: autoprob
+          options: 
+            - 12pt
+      - name: packages
+        type: list
+        text: default packages
+        default:
+          - package_name: geometry
+            options: 
+              - margins=1in
+          - package_name: array
+      - name: metadata
+        type: dict
+        text: Document metadata
+        directives:
+          - name: Termcode
+            type: str
+            text: term code
+            default: 202425
+          - name: Termname
+            type: str
+            text: term name
+            default: Winter 2024-2025
+          - name: date
+            type: str
+            text: date to put on document
+            default: UNSET-DATE
+          - name: description
+            type: str
+            text: a descriptive title for the document
+            default: UNSET-DESCRIPTION
   - name: build
     type: dict
     text: build specifications

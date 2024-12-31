@@ -1,15 +1,13 @@
 import pandas as pd
 import numpy as np
 import os
-import importlib.resources
 from .compound import Compound
+from .. import resources
 
 class PureProperties:
     ''' simple class for handling Sandler's pure properties database '''
     def __init__(self,inputfile='properties_binaries_database.xlsx',sheet_name='pure_properties'):
-        with importlib.resources.path('ThermoProblems','__init__.py') as f:
-            inst_root=os.path.split(os.path.abspath(f))[0]
-        self.data_abs_path=os.path.join(inst_root,'Chem/data/'+inputfile)
+        self.data_abs_path=os.path.join(os.path.split(resources.__file__)[0],'data/'+inputfile)
         self.inputfile=self.data_abs_path
         self.df=pd.read_excel(self.inputfile,sheet_name=sheet_name,index_col=2)
         self.df.fillna(0,inplace=True)

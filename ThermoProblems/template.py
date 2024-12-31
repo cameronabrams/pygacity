@@ -1,10 +1,27 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+import os
+import logging
+from . import resources
+logger=logging.getLogger(__name__)
+_template_dir_=os.path.join(os.path.split(resources.__file__)[0],'templates')
+assert os.path.isdir(_template_dir_)
+
 class Template:
-    def __init__(self,templatefile='',keydelim=(r'<%',r'%>'),**kwargs):
+    def __init__(self,specs={},keydelim=(r'<%',r'%>'),**kwargs):
+        self.specs=specs
         self.template=None
-        if templatefile:
-            with open(templatefile,'r') as f:
-                self.template=f.read()
+        self.inst_map={}
+        self.local_serial=0
+        self.templatefile=specs.get('source',None)
+        self.local_file=self.templatefile
+        tmp=os.path.join(_template_dir_,self.templatefile)
+        if os.path.exists(tmp):
+            self.filepath=tmp
+        else:
+            if os.path.exists(self.templatefile):
+                self.filepath=os.path.realpath(self.templatefile)
+        with open(self.filepath,'r') as f:
+            self.template=f.read()
         ldelim_idx=[]
         rdelim_idx=[]
         self.ldelim,self.rdelim=keydelim
@@ -17,9 +34,25 @@ class Template:
         for l,r in zip(ldelim_idx,rdelim_idx):
             keys.append(self.template[l+2:r])
         self.keys=list(set(keys))
-    def substitute_keys(self,map):
-        template_local=self.template[:] # copy!
+
+    def resolve(self,map):
+        local_map=map.copy()
+        local_map.update(self.inst_map)
+        assert all([x in local_map for x in self.keys]),f'Not all keys in template are in the applied map'
+        self.local_serial=local_map.get('serial',0)
+        self.resolved_template=self.template[:] # copy!
         for k in self.keys:
-            tmp=template_local.replace(self.ldelim+k+self.rdelim,str(map[k]))
-            template_local=tmp
-        return template_local
+            tmp=self.resolved_template.replace(self.ldelim+k+self.rdelim,str(local_map[k]))
+            self.resolved_template=tmp
+
+    def write_local(self):
+        tf,ext=os.path.splitext(self.templatefile)
+        self.local_file=tf+f'-{self.local_serial}'+ext
+        if os.path.exists(self.local_file):
+            logger.warning(f'Overwriting {self.local_file}')
+        with open(self.local_file,'w') as f:
+            f.write(self.resolved_template)
+
+
+    def __str__(self):
+        return r'\input{'+self.local_file+r'}'

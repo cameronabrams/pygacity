@@ -1,18 +1,16 @@
 % Author: Cameron F. Abrams, <cfa22@drexel.edu>
 %
-% some TF questions
-%
 \begin{pycode}
 import numpy as np
 import yaml
-rng=np.random.default_rng(seed=<%tag%>)
-with open('<%data%>','r') as f:
+rng=np.random.default_rng(seed=<%serial%>)
+with open('<%config%>','r') as f:
     TF=yaml.load(f)
 rng.shuffle(TF)
 answers=[x['A'] for x in TF]
-soln='<%tag%>_<%qno%>_soln.yaml'
+soln='<%serial%>_<%qno%>_soln.yaml'
 with open(soln,'w') as f:
-    yaml.dump(dict(source='true_false.tex',tag=<%tag%>,answers=answers),f)
+    yaml.dump(dict(source='true_false.tex',serial=<%serial%>,answers=answers),f)
 \end{pycode}
 True/False questions. Write ``T'' for ``True'' or ``F'' for ``False'' in the blank space.
 \newcommand{\fillblank}{\ul{\ \ \ \ \ \ }}

@@ -107,7 +107,7 @@ numbers=none
 \newcommand{\Instructoremail}{cfa22@drexel.edu}
 \newcommand{\Subjectname}{Thermodynamics}
 \newcommand{\Solutionscolor}{blue}
-\newcommand{\Solutionsheader}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
+\newcommand{\Solutionstitle}{\color{\Solutionscolor}\so{\sc SOLUTIONS}\color{black}}
 \newcommand{\Solutionheader}{\color{\Solutionscolor}{\sc SOLUTION}\color{black}}
 
 \newcommand{\plainheader}[1]{
@@ -144,7 +144,7 @@ numbers=none
         \Instructorname\ -- \Instructoremail\\
         {#1}\ -- {#2}\\*[1em]
         \ifshowsolutions
-        \Solutionsheader\\
+        \Solutionstitle\\
         \fi
     \end{centering}
 }
@@ -157,7 +157,7 @@ numbers=none
         \Subjectname\\
         {#1}\\*[5mm]
         \ifshowsolutions
-        \Solutionsheader\\*[1cm]
+        \Solutionstitle\\*[1cm]
         \fi
     \end{centering}
 }

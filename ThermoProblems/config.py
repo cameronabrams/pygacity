@@ -81,12 +81,17 @@ class Config(Yclept):
         assert 'build' in user,f'Your config file does not specify document build parameters'
         self.build=user['build']
         self.ncopies=self.build['copies']
+        serial_file=self.build.get('serial-file',None)
         if len(self.build['serials'])==0:
-            serial_file=self.build.get('serial-file',None)
             if serial_file and os.path.exists(serial_file):
                 with open(serial_file,'r') as f:
                     serial_str=f.read()
-                self.build['serials']=list(map(serial_str.split(),int))
+                self.build['serials']=list(map(int,serial_str.split()))
+                if len(self.build['serials'])!=self.ncopies:
+                    logger.debug(f'Warning: config requested {self.ncopies} copies but serial file {serial_file} only contained {len(self.build["serials"])} entries')
+                    logger.debug(f'I will only make {len(self.build["serials"])} copies')
+                    self.ncopies=len(self.build['serials'])
+                logger.info(f'{len(self.build["serials"])} serials read in from {serial_file}')
             else:
                 self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)
                 while len(self.build['serials'])>len(set(self.build['serials'])):
@@ -96,9 +101,10 @@ class Config(Yclept):
                         for s in self.build['serials']:
                             f.write(f'{s}\n')
         else:
-            if serial_file:
-                    with open(serial_file,'w') as f:
-                        for s in self.build['serials']:
-                            f.write(f'{s}\n')    
+            if serial_file and not os.path.exists(serial_file):
+                with open(serial_file,'w') as f:
+                    for s in self.build['serials']:
+                        f.write(f'{s}\n')    
+        self.serials=self.build['serials']
         assert self.ncopies==len(self.build['serials']),f'Expected {self.ncopies} unique serial numbers'
         assert len(self.build['serials'])==len(set(self.build['serials'])),f'Expected {self.ncopies} unique serial numbers'

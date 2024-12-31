@@ -2,6 +2,11 @@
 
 import pytest
 import os
+import logging
+
+logging.getLogger("ycleptic").setLevel(logging.WARNING)
+logging.getLogger("numexpr").setLevel(logging.WARNING)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 @pytest.fixture(autouse=True)
 def change_test_dir(request, monkeypatch):
