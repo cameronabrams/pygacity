@@ -1,31 +1,45 @@
 \begin{pycode}
-from ThermoProblems.Latex import TexUtils as tu
-from iapws import IAPWS97
-P1=3200
-T1=355
-Psat=2900
-TL=50
-mdot=15
-P1MPa=P1/1000
-PsatMpa=Psat/1000
-T1K=T1+273.15
-TLK=TL+273.15
+import thermoproblems.texutils as tu
+from sandlersteam import state as SANDLER
+from thermoproblems.pick import Picker
+serial=<%serial%>
+P_u='MPa'
+if serial==0:
+    state=dict(
+        P1=3.2, # MPa
+        T1C=355,
+        Psat=2.9, # MPa
+        TLC=50,
+        mdot=15)
+else:
+    P=Picker(serial)
+    state=P.pick_state({'P1':   {'pick':{'between':[2.9,3.9],'round':1}},
+                        'T1C':  {'pick':{'between':[340,360],'round':0}},
+                        'Psat': {'pick':{'between':[2.7,2.9],'round':3}},
+                        'TLC':  {'pick':{'between':[45,55],'round':0}},
+                        'mdot': {'pick':{'between':[10,50],'round':0}}})
 
-inlet=IAPWS97(T=T1K,P=P1MPa)
-outlet=IAPWS97(P=PsatMpa,x=1.0)
-inL=IAPWS97(T=TLK,x=0.0)
+P1=state['P1']
+T1C=state['T1C']
+Psat=state['Psat']
+TLC=state['TLC']
+mdot=state['mdot']
+
+inlet=SANDLER(T=T1C,P=P1)
+outlet=SANDLER(P=Psat,x=1.0)
+inL=SANDLER(T=TLC,x=0.0)
 
 mLdot=mdot*((inlet.h-outlet.h)/(inlet.h-inL.h))
 
 \end{pycode}
 
-Superheated steam at \py{f'{P1:,.0f}'} kPa and \py{T1}$^\circ$C is to be converted to saturated steam at \py{f'{Psat:,.0f}'} kPa in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{TL}$^\circ$C.  The unit should produce saturated steam at a rate of \py{mdot} kg~s$^{-1}$.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
+Superheated steam at \py{f'{P1:,.0f}'} \py{P_u} and \py{T1}$^\circ$C is to be converted to saturated steam at \py{f'{Psat:,.0f}'} \py{P_u} in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{TL}$^\circ$C.  The unit should produce saturated steam at a rate of \py{mdot} kg~s$^{-1}$.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
 
 The following enthalpies will be useful:
 \begin{itemize}
-\item[] Superheated steam at \py{T1}$^\circ$C and \py{f'{P1:,.0f}'}~kPa: $\hat{H}$ = \py{f'{inlet.h:,.2f}'} kJ/kg;
+\item[] Superheated steam at \py{T1}$^\circ$C and \py{f'{P1:,.0f}'}~\py{P_u}: $\hat{H}$ = \py{f'{inlet.h:,.2f}'} kJ/kg;
 \item[] Saturated liquid water at \py{TL}$^\circ$C: $\hat{H}^{\rm L}$ = \py{f'{inL.h:,.2f}'} kJ/kg; and
-\item[] Saturated water vapor at \py{f'{Psat:,.0f}'} kPa: $\hat{H}^{\rm V}$ = \py{f'{outlet.h:,.2f}'} kJ/kg.
+\item[] Saturated water vapor at \py{f'{Psat:,.0f}'}~\py{P_u}: $\hat{H}^{\rm V}$ = \py{f'{outlet.h:,.2f}'} kJ/kg.
 \end{itemize}
 
 \ifshowsolutions\Solutionheader

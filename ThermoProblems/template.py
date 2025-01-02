@@ -14,26 +14,33 @@ class Template:
         self.local_serial=0
         self.templatefile=specs.get('source',None)
         self.local_file=self.templatefile
-        tmp=os.path.join(_template_dir_,self.templatefile)
-        if os.path.exists(tmp):
-            self.filepath=tmp
+        self.filepath=None
+        self.keys=[]
+        # search local directory for template first
+        if os.path.exists(self.local_file):
+            self.filepath=os.path.realpath(self.local_file)
         else:
-            if os.path.exists(self.templatefile):
-                self.filepath=os.path.realpath(self.templatefile)
-        with open(self.filepath,'r') as f:
-            self.template=f.read()
-        ldelim_idx=[]
-        rdelim_idx=[]
-        self.ldelim,self.rdelim=keydelim
-        for i,c in enumerate(self.template):
-            if self.template[i:i+2]==self.ldelim:
-                ldelim_idx.append(i)
-            if self.template[i:i+2]==self.rdelim:
-                rdelim_idx.append(i)
-        keys=[]
-        for l,r in zip(ldelim_idx,rdelim_idx):
-            keys.append(self.template[l+2:r])
-        self.keys=list(set(keys))
+            # search installed templates
+            tmp=os.path.join(_template_dir_,self.templatefile)
+            if os.path.exists(tmp):
+                self.filepath=tmp
+        if not self.filepath:
+            logger.warning(f'No template file found for {self.templatefile}')
+        else:
+            with open(self.filepath,'r') as f:
+                self.template=f.read()
+            ldelim_idx=[]
+            rdelim_idx=[]
+            self.ldelim,self.rdelim=keydelim
+            for i,c in enumerate(self.template):
+                if self.template[i:i+2]==self.ldelim:
+                    ldelim_idx.append(i)
+                if self.template[i:i+2]==self.rdelim:
+                    rdelim_idx.append(i)
+            keys=[]
+            for l,r in zip(ldelim_idx,rdelim_idx):
+                keys.append(self.template[l+2:r])
+            self.keys=list(set(keys))
 
     def resolve(self,map):
         local_map=map.copy()

@@ -25,4 +25,4 @@ dependencies = [
 [tool.pytest.ini_options]
 log_cli = true
 [project.scripts]
-make_exams = "ThermoProblems.make_exams:cli"
+tpbuild="thermoproblems.tpuild:cli"

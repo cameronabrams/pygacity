@@ -1,7 +1,15 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
 import numpy as np
 
-def pick_recursive(specs,rng):
+class Picker:
+    def __init__(self,serial=0):
+        self.rng=np.random.default_rng(serial)
+    def pick_state(self,specs):
+        _pick_recursive(specs,self.rng)
+        return specs
+    
+
+def _pick_recursive(specs,rng):
     if not type(specs)==dict:
         return 
     for k,v in specs.items():
@@ -21,10 +29,6 @@ def pick_recursive(specs,rng):
             else:
                 raise Exception('Missing picking rule')
         else:
-            pick_recursive(v,rng)
+            _pick_recursive(v,rng)
         
-def pick_state(specs):
-    num=specs['tag']
-    rng=np.random.default_rng(num)
-    pick_recursive(specs,rng)
-    return specs
+
