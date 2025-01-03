@@ -1,0 +1,22 @@
+document:
+  type: exam
+  structure:
+    - include: example_head.tex
+    - items:
+      - template: 
+          source: example_problem_template.tex
+          points: 15
+      - template: 
+          source: example_problem2_template.tex
+          points: 16
+    - include: example_tail.tex
+  metadata:
+    Termcode: 202425
+    Termname: "Winter 2024-2025"
+    date: February 11, 2025
+    description: Midterm Exam
+build:
+  copies: 2
+  output-dir: output
+  output-name: exam
+  serial-file: serials5.dat

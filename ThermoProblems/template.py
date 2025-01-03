@@ -9,6 +9,7 @@ assert os.path.isdir(_template_dir_)
 class Template:
     def __init__(self,specs={},keydelim=(r'<%',r'%>'),**kwargs):
         self.specs=specs
+        self.has_pycode=False
         self.template=None
         self.inst_map={}
         self.local_serial=0
@@ -29,6 +30,7 @@ class Template:
         else:
             with open(self.filepath,'r') as f:
                 self.template=f.read()
+            self.has_pycode=r'\begin{pycode}' in self.template
             ldelim_idx=[]
             rdelim_idx=[]
             self.ldelim,self.rdelim=keydelim
@@ -62,4 +64,8 @@ class Template:
 
 
     def __str__(self):
-        return r'\input{'+self.local_file+r'}'
+        ptstr=''
+        if 'points' in self.specs:
+            ess='s' if self.specs['points']>1 or self.specs['pts']==0 else ''
+            ptstr=f'({self.specs["points"]} pt{ess}) '
+        return ptstr+r'\input{'+self.local_file+r'}'

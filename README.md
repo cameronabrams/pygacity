@@ -13,45 +13,7 @@ cd ThermoProblems
 pip install -e .
 ```
 
-Then, you need to add the TeX tree under `autoprob-package` to the your LaTeX search path. 
-
-* TeXLive:
-
-   ```sh
-   tlmgr conf auxtrees add "path-to-ThermoProblems/autoprob-package"
-   ```
-
-* MikTeX:
-
-  Use the MikTeX console to register ``path-to-ThermoProblems/autoprob-package`` as a user-managed ``TEXMF`` root directory.
-
-
-
-## Usage example
-
-Consider the following file `Example1.tex`:
-```
-\input{SimpleHeader}
-\begin{pycode}
-from ThermoProblems.Chem.Properties import PureProperties
-Prop=PureProperties()
-A=Prop.get_compound('n-butane')
-restr=A.report_as_tex()
-\end{pycode}
-\begin{document}
-\noindent Here is some information about \py{A.name}:\\*[2em]
-\py{restr}
-\end{document}
-```
-Compiling this like so:
-```sh
-pdflatex Example1
-pythontex Example1
-pdflatex Example1
-```
-yields:
-
-![](Example1-PDFshot.png)
+`Thermoproblems` includes the LaTeX class file `autoprob.cls` under `[INSTALL-DIR]/thermoproblems/resources/autoprob-package/tex/latex/`.  All `latex` commands append this directory as a ``--include-directory`` argument.  If you would like to use `autoprob.cls` outside of `thermoproblems`, you will need to make your LaTeX installation aware of this directory.
 
 ## Release History
 

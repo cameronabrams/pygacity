@@ -20,7 +20,8 @@ dependencies = [
     "scipy",
     "iapws",
     "sandlersteam",
-    "roman"
+    "roman",
+    "progressbar"
 ]
 [tool.pytest.ini_options]
 log_cli = true

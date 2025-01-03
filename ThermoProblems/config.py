@@ -7,6 +7,8 @@ from importlib.metadata import version
 from ycleptic.yclept import Yclept
 from . import resources
 from .stringthings import my_logger
+from .document import Document
+from .texutils import LatexBuilder
 
 logger=logging.getLogger(__name__)
 
@@ -56,30 +58,32 @@ class Config(Yclept):
         assert os.path.exists(basefile)
         super().__init__(basefile,userfile=userfile)
         self['Resources']=r
+        self.resource_root=self['Resources']['root']
         self._set_internal_shortcuts(**kwargs)
         self._set_external_apps(verify_access=(userfile!=''))
 
     def _set_external_apps(self,verify_access=True):
         user=self['user']
         paths=user['paths']
+        self.autoprob_package_root=os.path.join(self.resource_root,'autoprob-package')
+        logger.debug(f'autoprob_package_root {self.autoprob_package_root}')
+        self.LB=LatexBuilder(paths,localdirs=[os.path.join(self.autoprob_package_root,'tex','latex')])
+        if verify_access:
+            self.LB.verify_access()
         self.pdflatex=paths['pdflatex']
         self.pythontex=paths['pythontex']
-        if verify_access:
-            assert os.access(self.pdflatex,os.X_OK)
-            assert os.access(self.pythontex,os.X_OK)
 
     def _set_internal_shortcuts(self,**kwargs):
         self.progress=kwargs.get('progress',False)
-        self.resource_root=self['Resources']['root']
         self.templates_root=os.path.join(self.resource_root,'templates')
         assert os.path.exists(self.templates_root)
         self.data_root=os.path.join(self.resource_root,'data')
-        self.autoprob_package_root=os.path.join(self.resource_root,'autoprob-package')
+        
         user=self['user']
         assert 'document' in user,f'Your config file does not specify a document structure'
-        self.document=user['document']
         assert 'build' in user,f'Your config file does not specify document build parameters'
         self.build=user['build']
+        self.document=Document(user['document'],buildspecs=self.build)
         self.ncopies=self.build['copies']
         serial_file=self.build.get('serial-file',None)
         if len(self.build['serials'])==0:

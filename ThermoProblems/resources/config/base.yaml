@@ -50,7 +50,7 @@ directives:
                     text: number of points to assign item
           - name: include
             type: str
-            text: raw tex file to include
+            text: raw tex file to include via an input directive
       - name: class
         type: dict
         text: document class
@@ -64,7 +64,7 @@ directives:
         default:
           - package_name: geometry
             options: 
-              - margins=1in
+              - margin=1in
           - package_name: array
       - name: metadata
         type: dict
@@ -86,6 +86,13 @@ directives:
             type: str
             text: a descriptive title for the document
             default: UNSET-DESCRIPTION
+          - name: assignment_number
+            type: int
+            text: the assignment number (only used for doc type assignment)
+            default: 1
+          - name: message
+            type: str
+            text: A message for the assignment
   - name: build
     type: dict
     text: build specifications

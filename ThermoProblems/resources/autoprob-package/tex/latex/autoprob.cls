@@ -18,6 +18,7 @@
 \RequirePackage{xifthen}
 \RequirePackage{xfp}
 \RequirePackage{nccmath}
+\RequirePackage{currfile}
 \newif\ifshowsolutions
 \showsolutionsfalse
 \newif\ifshowanswers
@@ -128,9 +129,9 @@ numbers=none
         \so{\sc Assignment {#1}}\\
         Due {#2}\\*[1em]
         \ifshowsolutions
-        \Solutionsheader\\
+        \Solutionstitle\\*[1em]
         \else
-        \noindent {#3}\\
+        \noindent {#3}\\*[1em]
         \fi
     \end{centering}
 }
@@ -144,7 +145,7 @@ numbers=none
         \Instructorname\ -- \Instructoremail\\
         {#1}\ -- {#2}\\*[1em]
         \ifshowsolutions
-        \Solutionstitle\\
+        \Solutionstitle\\*[2em]
         \fi
     \end{centering}
 }

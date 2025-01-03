@@ -1,7 +1,60 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
-import pandas as pd
+import os
 import fractions as fr
 import numpy as np
+import pandas as pd
+import logging
+from .command import Command
+from .stringthings import FileCollector
+logger=logging.getLogger(__name__)
+
+class LatexBuilder:
+    def __init__(self,exepaths={},localdirs=[]):
+        self.exepaths=exepaths
+        self.localdirs=localdirs
+        self.FC=FileCollector()
+        logger.debug(f'localdirs {self.localdirs}')
+
+    def verify_access(self):
+        assert os.access(self.exepaths.get('pdflatex',None),os.X_OK)
+        assert os.access(self.exepaths.get('pythontex',None),os.X_OK)
+
+    def build_commands(self,document=None,make_solutions=False):
+        commands=[]
+        output_name=document.output_name
+        if output_name:
+            pdflatex_cmd=self.exepaths['pdflatex']
+            pythontex_cmd=self.exepaths['pythontex']
+            includedirs=''
+            for d in self.localdirs:
+                includedirs=includedirs+' --include-directory='+d
+            logger.debug(f'includedirs {includedirs}')
+            has_pycode=document.has_pycode
+            commands.append(Command(f'{pdflatex_cmd} --interaction=nonstopmode {includedirs} {output_name}',ignore_codes=[1]))
+            self.FC.append(f'{output_name}.aux')
+            self.FC.append(f'{output_name}.log')
+            if has_pycode:
+                self.FC.append(f'{output_name}.pytxcode')
+                self.FC.append(f'pythontex-files-{output_name}')
+                commands.append(Command(f'{pythontex_cmd} {output_name}'))
+            commands.append(Command(f'{pdflatex_cmd} {includedirs} {output_name}'))
+            if make_solutions:
+                commands.append(Command(f'{pdflatex_cmd} -jobname={output_name}_soln {includedirs} {output_name}'))
+                self.FC.append(f'{output_name}_soln.aux')
+                self.FC.append(f'{output_name}_soln.log')
+                if has_pycode:
+                    self.FC.append(f'{output_name}_soln.pytxcode')
+                    self.FC.append(f'pythontex-files-{output_name}_soln')
+                    commands.append(Command(f'{pythontex_cmd} {output_name}_soln'))
+                commands.append(Command(f'{pdflatex_cmd} -jobname={output_name}_soln {includedirs} {output_name}'))
+        return commands
+
+    def build_document(self,document=None,make_solutions=False,cleanup=True):
+        commands=self.build_commands(document,make_solutions=make_solutions)
+        for c in commands:
+            c.run()
+        if cleanup:
+            self.FC.flush()
 
 def header(documentclass='autoprob',packages=[{'name':'array'},{'name':'geometry','options':['margins=1in']}],renewcommands=[],**kwargs):
     res=r'\documentclass{'+documentclass+r'}'+'\n'

@@ -280,12 +280,15 @@ class FileCollector(UserList):
        make a tarball of the collection
     """
     def flush(self):
-        logger.debug(f'Flushing file collector: {len(self)} files.')
+        logger.debug(f'Flushing file collector: {len(self)} entries.')
         for f in self:
-            if os.path.exists(f):
-                os.remove(f)
+            if os.path.isdir(f):
+                shutil.rmtree(f)
             else:
-                logger.debug(f'{f}: not found.')
+                if os.path.exists(f):
+                    os.remove(f)
+                else:
+                    logger.debug(f'{f}: not found.')
         self.clear()
 
     def tarball(self,basename):
