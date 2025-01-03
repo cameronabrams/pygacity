@@ -19,6 +19,7 @@
 \RequirePackage{xfp}
 \RequirePackage{nccmath}
 \RequirePackage{currfile}
+\RequirePackage{fancyhdr}
 \newif\ifshowsolutions
 \showsolutionsfalse
 \newif\ifshowanswers

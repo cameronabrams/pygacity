@@ -14,6 +14,8 @@ class Input:
     def __init__(self,specs={}):
         self.filename=specs['include']
         self.has_pycode=False
+        self.filepath=''
+        self.contents=None
         tmp=os.path.join(_template_dir_,self.filename)
         if os.path.exists(tmp):
             self.filepath=tmp
@@ -21,11 +23,19 @@ class Input:
         else:
             if os.path.exists(self.filename):
                 self.filepath=os.path.realpath(self.filename)
-                with open(self.filepath,'r') as f:
-                    teststr=f.read()
-                self.has_pycode=r'\begin{pycode}' in teststr
             else:
                 logger.warning(f'Could not local input file {self.filename}')
+        if self.filepath:
+            with open(self.filepath,'r') as f:
+                self.contents=f.read()
+            self.has_pycode=r'\begin{pycode}' in self.contents
+    def resolve(self,serial=0):
+        pass
+    def write_local(self):
+        if not os.path.exists(self.filename) and self.contents!=None:
+            with open(self.filename,'w') as f:
+                f.write(self.contents)
+
     def __str__(self):
         return r'\input{'+self.filename+r'}'
     
@@ -45,7 +55,7 @@ class Document:
                 for item in s['items']:
                     itemlabel=list(item.keys())[0]
                     cls=_classmap[itemlabel]
-                    itemlist.append(cls(item[itemlabel]))
+                    itemlist.append(cls(item))
                     itemlist[-1].inst_map['qno']=qno
                     if hasattr(itemlist[-1],'has_pycode') and itemlist[-1].has_pycode:
                         self.has_pycode=True

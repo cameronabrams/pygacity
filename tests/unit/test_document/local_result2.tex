@@ -1,11 +1,15 @@
 \documentclass[11pt,foobar]{farticle}
 \usepackage[abc1,abc2]{package_abc}
 \usepackage[xyz1]{package_xyz}
+\ifthenelse{\equal{\detokenize{local_result2_soln}}{\jobname}}{\showsolutionstrue}{}
 \begin{document}
+
+\examheader{test2}{no-date2}
+
 \input{head.tex}
 \begin{enumerate}
-    \item \input{problem_abc.tex}
-    \item \input{problem_def.tex}
+    \item (50 pts) \input{problem_abc.tex}
+    \item (50 pts) \input{problem_def.tex}
 \end{enumerate}
 \input{tail.tex}
 \end{document}

@@ -24,3 +24,6 @@ packages:
   - package_name: package_xyz
     options:
       - xyz1
+metadata:
+  description: test2
+  date: no-date2

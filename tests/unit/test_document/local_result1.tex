@@ -1,7 +1,11 @@
 \documentclass[11pt,foobar]{farticle}
 \usepackage[abc1,abc2]{package_abc}
 \usepackage[xyz1]{package_xyz}
+\ifthenelse{\equal{\detokenize{local_result1_soln}}{\jobname}}{\showsolutionstrue}{}
 \begin{document}
+
+\examheader{test1}{no-date}
+
 \input{head.tex}
 \input{tail.tex}
 \end{document}

@@ -1,7 +1,8 @@
 document:
   type: exam
   structure:
-    - include: example_head.tex
+    - template: 
+        source: example_head.tex
     - items:
       - template: 
           source: example_problem_template.tex

@@ -31,6 +31,13 @@ directives:
         type: list
         text: Document structure specification
         directives:
+          - name: template
+            type: dict
+            text: template specification
+            directives:
+              - name: source
+                type: str
+                text: name of template file
           - name: items
             type: list
             text: Item specifications; things that carry points

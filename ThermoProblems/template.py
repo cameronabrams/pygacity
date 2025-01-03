@@ -8,12 +8,13 @@ assert os.path.isdir(_template_dir_)
 
 class Template:
     def __init__(self,specs={},keydelim=(r'<%',r'%>'),**kwargs):
-        self.specs=specs
+        assert len(specs)==1,f'Bad template specs: {specs}'
+        self.specs=specs['template']
         self.has_pycode=False
         self.template=None
         self.inst_map={}
         self.local_serial=0
-        self.templatefile=specs.get('source',None)
+        self.templatefile=self.specs.get('source',None)
         self.local_file=self.templatefile
         self.filepath=None
         self.keys=[]
@@ -61,7 +62,6 @@ class Template:
             logger.warning(f'Overwriting {self.local_file}')
         with open(self.local_file,'w') as f:
             f.write(self.resolved_template)
-
 
     def __str__(self):
         ptstr=''
