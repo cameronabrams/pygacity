@@ -1,0 +1,27 @@
+\begin{pycode}
+import numpy as np
+from thermoproblems.pick import Picker
+serial=38618812
+if serial==0:
+    state=dict(A=5,B=8)
+else:
+    P=Picker(serial)
+    state=P.pick_state({'A':   {'pick':{'between':[2.9,3.9],'round':1}},
+                        'B':  {'pick':{'between':[340,360],'round':0}}})
+A=state['A']
+B=state['B']
+C=A/B
+\end{pycode}
+
+This is an example problem named \textcolor{red}{\tt \currfilename}.  
+
+Determine the quotient of \py{A} and \py{B}.
+
+\ifshowsolutions\Solutionheader
+
+$$
+\py{A}\ \div \py{B}\ =\ \py{np.round(C,3)}
+$$
+
+The serial number is \py{serial}.  This is labeled as question number 2.
+\fi
