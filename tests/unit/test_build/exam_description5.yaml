@@ -10,6 +10,9 @@ document:
       - template: 
           source: example_problem2_template.tex
           points: 16
+      - template:
+          source: desuperheater.tex
+          points: 17
     - include: example_tail.tex
   metadata:
     Termcode: 202425
