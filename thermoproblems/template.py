@@ -15,6 +15,8 @@ class Template:
         self.inst_map={}
         self.local_serial=0
         self.templatefile=self.specs.get('source',None)
+        if 'config' in self.specs:
+            self.inst_map['config']=self.specs['config']
         self.local_file=self.templatefile
         self.filepath=None
         self.keys=[]

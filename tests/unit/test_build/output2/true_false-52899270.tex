@@ -1,26 +1,16 @@
 % Author: Cameron F. Abrams, <cfa22@drexel.edu>
 %
-% To use this template, create a yaml file containing a list
-% of items, each of which needs the following key:value pairs:
-%
-%  Q: the question text
-%  A: the answer (T or F)
-%  text: an explanation to be included in the solutions
-%  
-% refer to this in as the 'config' in the exam description yaml file.  If you
-% are building a series of exams in a subdirectory, prepend the name with 
-% '../' 
 \begin{pycode}
 import numpy as np
 import yaml
-rng=np.random.default_rng(seed=<%serial%>)
-with open('<%config%>','r') as f:
+rng=np.random.default_rng(seed=52899270)
+with open('../my-TF-questions.yaml','r') as f:
     TF=yaml.safe_load(f)
 rng.shuffle(TF)
 answers=[x['A'] for x in TF]
-soln='<%serial%>_<%qno%>_soln.yaml'
+soln='52899270_2_soln.yaml'
 with open(soln,'w') as f:
-    yaml.dump(dict(source='true_false.tex',serial=<%serial%>,answers=answers),f)
+    yaml.dump(dict(source='true_false.tex',serial=52899270,answers=answers),f)
 \end{pycode}
 True/False questions. Write ``T'' for ``True'' or ``F'' for ``False'' in the blank space.
 \newcommand{\fillblank}{\ul{\ \ \ \ \ \ }}

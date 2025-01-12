@@ -33,3 +33,22 @@ class BuildTests(unittest.TestCase):
             os.chdir('..')
             self.assertTrue(os.path.isdir(outputdir))
             # shutil.rmtree(outputdir)
+    def test_build3(self):
+        c=Config('exam_description6.yaml')
+        self.assertEqual(len(c.serials),3)
+        outputdir=c.build.get('output-dir','.')
+        if outputdir!='.':
+            if os.path.exists(outputdir):
+                shutil.rmtree(outputdir)
+            os.mkdir(outputdir)
+            os.chdir(outputdir)
+        for serial in c.serials:
+            keymap=dict(serial=serial)
+            c.document.resolve_instance(keymap)
+            c.LB.build_document(c.document,make_solutions=True)
+            self.assertTrue(os.path.exists(f'exam-{serial}.pdf'))
+            self.assertTrue(os.path.exists(f'exam-{serial}_soln.pdf'))
+        if outputdir!='.':
+            os.chdir('..')
+            self.assertTrue(os.path.isdir(outputdir))
+            # shutil.rmtree(outputdir)

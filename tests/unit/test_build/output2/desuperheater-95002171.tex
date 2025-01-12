@@ -1,0 +1,66 @@
+\begin{pycode}
+import thermoproblems.texutils as tu
+from sandlersteam.state import State as SANDLER
+from thermoproblems.pick import Picker
+serial=95002171
+P_u='MPa'
+if serial==0:
+    state=dict(
+        P1=3.2, # MPa
+        T1C=355,
+        Psat=2.9, # MPa
+        TLC=50,
+        mdot=15)
+else:
+    P=Picker(serial)
+    state=P.pick_state({'P1':   {'pick':{'between':[2.9,3.9],'round':1}},
+                        'T1C':  {'pick':{'between':[340,360],'round':0}},
+                        'Psat': {'pick':{'between':[2.7,2.9],'round':3}},
+                        'TLC':  {'pick':{'between':[45,55],'round':0}},
+                        'mdot': {'pick':{'between':[10,50],'round':0}}})
+
+P1=state['P1']
+T1C=state['T1C']
+Psat=state['Psat']
+TLC=state['TLC']
+mdot=state['mdot']
+
+inlet=SANDLER(T=T1C,P=P1)
+outlet=SANDLER(P=Psat,x=1.0)
+inL=SANDLER(T=TLC,x=0.0)
+
+mLdot=mdot*((inlet.h-outlet.h)/(inlet.h-inL.h))
+
+\end{pycode}
+
+Superheated steam at \py{f'{P1:,.0f}'} \py{P_u} and \py{T1C}$^\circ$C is to be converted to saturated steam at \py{f'{Psat:,.0f}'} \py{P_u} in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{TLC}$^\circ$C.  The unit should produce saturated steam at a rate of \py{mdot} kg~s$^{-1}$.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
+
+The following enthalpies will be useful:
+\begin{itemize}
+\item[] Superheated steam at \py{T1C}$^\circ$C and \py{f'{P1:,.0f}'}~\py{P_u}: $\hat{H}$ = \py{f'{inlet.h:,.2f}'} kJ/kg;
+\item[] Saturated liquid water at \py{TLC}$^\circ$C: $\hat{H}^{\rm L}$ = \py{f'{inL.h:,.2f}'} kJ/kg; and
+\item[] Saturated water vapor at \py{f'{Psat:,.0f}'}~\py{P_u}: $\hat{H}^{\rm V}$ = \py{f'{outlet.h:,.2f}'} kJ/kg.
+\end{itemize}
+
+\ifshowsolutions\Solutionheader
+
+Let stream 1 be the liquid water stream, which we assume is saturated liquid, stream 2 be the superheated steam inlet, and stream 3 be the saturated steam outlet.  Hence, $\dot{m}_3$ = 15 kg~s$^{-1}$ as given.  The mass and energy balance yield the two unknowns $\dot{m}_1$ and $\dot{m}_2$:
+
+\begin{align*}
+\dot{m}_1 + \dot{m}_2 & = \dot{m}_3\\
+\dot{m}_1\hat{H}_1 + \dot{m}_2\hat{H}_2 & = \dot{m}_3\hat{H}_3\\
+\end{align*}
+
+Solving these two simultaneously yields 
+
+\begin{align*}
+\dot{m}_1 & = \dot{m}_3\left(\frac{\hat{H}_2-\hat{H}_3}{\hat{H}_2-\hat{H}_1}\right)\\
+& = (15)\left(\frac{\py{f'{inlet.h:,.2f}'}-\py{f'{outlet.h:,.2f}'}}{\py{f'{inlet.h:,.2f}'}-\py{f'{inL.h:,.2f}'}}\right) = \fbox{\py{f'{mLdot:.2f}'}\ \mbox{kg~s$^{-1}$}}.
+\end{align*}
+\clearpage
+\else
+\ifgivespace
+\clearpage
+\fi
+\fi
+
