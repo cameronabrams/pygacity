@@ -8,8 +8,8 @@ else:
     P=Picker(serial)
     state=P.pick_state({'A':   {'pick':{'between':[2.9,3.9],'round':1}},
                         'B':  {'pick':{'between':[340,360],'round':0}}})
-A=state['A']
-B=state['B']
+A=state.A
+B=state.B
 C=A/B
 \end{pycode}
 

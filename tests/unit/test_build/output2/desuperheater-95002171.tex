@@ -19,11 +19,11 @@ else:
                         'TLC':  {'pick':{'between':[45,55],'round':0}},
                         'mdot': {'pick':{'between':[10,50],'round':0}}})
 
-P1=state['P1']
-T1C=state['T1C']
-Psat=state['Psat']
-TLC=state['TLC']
-mdot=state['mdot']
+P1=state.P1
+T1C=state.T1C
+Psat=state.Psat
+TLC=state.TLC
+mdot=state.mdot
 
 inlet=SANDLER(T=T1C,P=P1)
 outlet=SANDLER(P=Psat,x=1.0)

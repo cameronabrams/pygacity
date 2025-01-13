@@ -8,6 +8,9 @@ document:
           source: desuperheater.tex
           points: 17
       - template:
+          source: air_mixing.tex
+          points: 21
+      - template:
           source: true_false.tex
           config: ../my-TF-questions.yaml
           points: 19
