@@ -4,21 +4,14 @@ from sandlersteam.state import State as SANDLER
 from thermoproblems.pick import Picker
 serial=<%serial%>
 P_u='MPa'
-if serial==0:
-    state=dict(
-        P1=3.2, # MPa
-        T1C=355,
-        Psat=2.9, # MPa
-        TLC=50,
-        mdot=15)
-else:
-    P=Picker(serial)
-    state=P.pick_state({'P1':   {'pick':{'between':[2.9,3.9],'round':1}},
-                        'T1C':  {'pick':{'between':[340,360],'round':0}},
-                        'Psat': {'pick':{'between':[2.7,2.9],'round':3}},
-                        'TLC':  {'pick':{'between':[45,55],'round':0}},
-                        'mdot': {'pick':{'between':[10,50],'round':0}}})
-
+P=Picker(serial)
+DSUH=P.pick_state(
+    dict(
+        P1={'default':3.2,{'pick':{'between':[2.9,3.9],'round':1}}}, # MPa
+        T1C={'default'355,{'pick':{'between':[340,360],'round':0}}},
+        Psat={'default':2.9,{'pick':{'between':[2.7,2.9],'round':3}}}, # MPa
+        TLC={'default':50,{'pick':{'between':[45,55],'round':0}}},
+        mdot={'default':15,{'pick':{'between':[10,50],'round':0}}}))
 P1=state.P1
 T1C=state.T1C
 Psat=state.Psat
