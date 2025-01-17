@@ -26,4 +26,4 @@ dependencies = [
 [tool.pytest.ini_options]
 log_cli = true
 [project.scripts]
-tpbuild="thermoproblems.tpuild:cli"
+tpbuild="thermoproblems.tpbuild:cli"

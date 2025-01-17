@@ -18,7 +18,6 @@ def cli():
     args=parser.parse_args()
     c=Config(args.f)
     savedir=c.build.get('output-dir','.')
-    savedir=args.d
     if os.path.exists(savedir):
         if args.overwrite:
             rmtree(savedir)
@@ -31,6 +30,7 @@ def cli():
         keymap=dict(serial=serial)
         c.document.resolve_instance(keymap)
         c.LB.build_document(c.document,make_solutions=args.solutions)
+        print(f'{serial}')
     if savedir!='.':
         os.chdir(basedir)
 
