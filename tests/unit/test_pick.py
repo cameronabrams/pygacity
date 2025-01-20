@@ -62,3 +62,14 @@ class PickTest(unittest.TestCase):
             self.assertEqual(N.P1,2.9)
             self.assertEqual(N.TLC,45)
             self.assertEqual(N.mdot,xx[i])
+    def test_stepper2(self):
+        S=Stepper({'P1':   {'pick':{'between':[2.9,3.9],'round':1}},
+                            'T1C':  {'pick':{'between':[340,360],'round':0,'intervals':11}},
+                            'Psat': {'pick':{'between':[2.7,2.9],'round':3}},
+                            'TLC':  {'pick':{'between':[45,55],'round':0}},
+                            'mdot': 100.0})
+        xx=np.linspace(10,50,10)
+        for i,N in enumerate(S):
+            # if i>9: break
+            # self.assertEqual(N.P1,2.9)
+            self.assertEqual(N.mdot,100.0)

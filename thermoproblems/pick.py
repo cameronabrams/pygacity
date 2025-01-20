@@ -15,7 +15,12 @@ class Stepper:
     def __init__(self,specs):
         _space_recursive(specs)
         self.space=Namespace(**specs)
-        allv=[k for k in vars(self.space).values()]
+        allv=[]
+        for k in vars(self.space).values():
+            if not hasattr(k,'__len__'):
+                allv.append([k])
+            else:
+                allv.append(k)
         self.T=product(*allv)
     def __iter__(self):
         return self
