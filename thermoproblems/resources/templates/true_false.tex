@@ -15,7 +15,14 @@ import numpy as np
 import yaml
 rng=np.random.default_rng(seed=<%serial%>)
 with open('<%config%>','r') as f:
-    TF=yaml.safe_load(f)
+    TFC=yaml.safe_load(f)
+if 'content' in TFC and 'config' in TFC:
+    c=TFC['config']
+    TF=TFC['content']
+    count=c.get('count',len(TF))
+    TF=TF[:count]
+else:
+    TF=TFC
 rng.shuffle(TF)
 answers=[x['A'] for x in TF]
 if 'solutions' in locals():
