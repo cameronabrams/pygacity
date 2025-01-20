@@ -5,6 +5,7 @@ import logging
 import os
 import subprocess
 import shutil
+import stat
 
 import pandas as pd
 
@@ -283,7 +284,12 @@ class FileCollector(UserList):
         logger.debug(f'Flushing file collector: {len(self)} entries.')
         for f in self:
             if os.path.isdir(f):
-                shutil.rmtree(f)
+                try:
+                    permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+                    chmod_recursive(f, permissions)
+                    shutil.rmtree(f)
+                except:
+                    logger.debug(f'{f} could not be removed.')
             else:
                 if os.path.exists(f):
                     os.remove(f)
@@ -334,3 +340,24 @@ def striplist(L):
     while '' in l:
         l.remove('')
     return l
+
+def chmod_recursive(path, mode):
+    """
+    Recursively changes permissions of a directory and its contents.
+    
+    :param path: The root directory to change permissions for.
+    :param mode: The mode (permissions) to apply.
+    """
+    for root, dirs, files in os.walk(path):
+        # Change permissions for directories
+        for dirname in dirs:
+            dir_path = os.path.join(root, dirname)
+            os.chmod(dir_path, mode)
+        
+        # Change permissions for files
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            os.chmod(file_path, mode)
+    
+    # Change permissions for the root directory itself
+    os.chmod(path, mode)

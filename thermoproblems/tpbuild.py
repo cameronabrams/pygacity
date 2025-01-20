@@ -4,6 +4,8 @@ import os
 import argparse as ap
 from .config import Config
 import logging
+import stat
+from .stringthings import chmod_recursive
 
 logger=logging.getLogger(__name__)
 
@@ -20,6 +22,8 @@ def cli():
     savedir=c.build.get('output-dir','.')
     if os.path.exists(savedir):
         if args.overwrite:
+            permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+            chmod_recursive(savedir,permissions)
             rmtree(savedir)
         else:
             raise Exception(f'Directory "{savedir}" already exists and "--overwrite" was not specified.')
