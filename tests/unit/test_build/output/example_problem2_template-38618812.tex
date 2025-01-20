@@ -1,16 +1,12 @@
 \begin{pycode}
-import numpy as np
-from thermoproblems.pick import Picker
-serial=38618812
-if serial==0:
-    state=dict(A=5,B=8)
-else:
-    P=Picker(serial)
-    state=P.pick_state({'A':   {'pick':{'between':[2.9,3.9],'round':1}},
-                        'B':  {'pick':{'between':[340,360],'round':0}}})
+state=P.pick_state({'A':   {'default':5,'pick':{'between':[2.9,3.9],'round':1}},
+                    'B':  {'default':8,'pick':{'between':[340,360],'round':0}}})
 A=state.A
 B=state.B
 C=A/B
+C_show=float(np.round(C,4))
+if 'solutions' in locals():
+    solutions.append(dict(C=C_show))
 \end{pycode}
 
 This is an example problem named \textcolor{red}{\tt \currfilename}.  

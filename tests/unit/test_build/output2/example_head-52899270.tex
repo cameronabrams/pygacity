@@ -2,3 +2,18 @@
 \fancyfoot[CE,CO]{p. \thepage\hfill\tiny{52899270}}
 
 \noindent This is an example header named \textcolor{blue}{\tt \currfilename}.
+
+\begin{pycode}
+from sandlersteam.state import State as SANDLER
+from sandlersteam.state import SteamTables as st
+import thermoproblems.texutils as tu
+import numpy as np
+import fractions as fr
+import yaml
+from argparse import Namespace
+from math import pow
+from thermoproblems.pick import Picker
+P=Picker(52899270)
+suphPavail=st['suph'].uniqs['P']
+solutions=[]
+\end{pycode}

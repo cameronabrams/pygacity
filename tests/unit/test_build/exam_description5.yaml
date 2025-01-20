@@ -13,7 +13,8 @@ document:
       - template:
           source: desuperheater.tex
           points: 17
-    - include: example_tail.tex
+    - template:
+        source: example_tail.tex
   metadata:
     Termcode: 202425
     Termname: "Winter 2024-2025"

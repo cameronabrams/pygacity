@@ -18,9 +18,12 @@ with open('../my-TF-questions.yaml','r') as f:
     TF=yaml.safe_load(f)
 rng.shuffle(TF)
 answers=[x['A'] for x in TF]
-soln='95002171_3_soln.yaml'
-with open(soln,'w') as f:
-    yaml.dump(dict(source='true_false.tex',serial=95002171,answers=answers),f)
+if 'solutions' in locals():
+    solutions.append(dict(answers=answers))
+else:
+    soln='95002171_3_soln.yaml'
+    with open(soln,'w') as f:
+        yaml.dump(dict(source='true_false.tex',serial=95002171,answers=answers),f)
 \end{pycode}
 True/False questions. Write ``T'' for ``True'' or ``F'' for ``False'' in the blank space.
 \newcommand{\fillblank}{\ul{\ \ \ \ \ \ }}

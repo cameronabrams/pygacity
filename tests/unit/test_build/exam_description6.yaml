@@ -14,7 +14,8 @@ document:
           source: true_false.tex
           config: ../my-TF-questions.yaml
           points: 19
-    - include: example_tail.tex
+    - template: 
+        source: example_tail.tex
   metadata:
     Termcode: 202425
     Termname: "Winter 2024-2025"
