@@ -52,15 +52,15 @@ class AnswerSuperSet(UserList):
 
     def to_pdf(self,config):
         LB=config.LB
+        incfile='tmp-table-'+config['user']['build']['answer-file']+'.tex'
         metadata=config['user']['document']['metadata']
         doctype=config['user']['document']['type']
-        docspecs={'structure':[{'include':'tmp-table.tex'}],
+        docspecs={'structure':[{'include':incfile}],
                   'class':{'classname':'autoprob'},
                   'type':doctype,
                   'metadata':metadata}
         buildspecs={'output-name':config['user']['build']['answer-file']}
         tbl=self.to_latex()
-        incfile='tmp-table-'+config['user']['build']['answer-file']+'.tex'
         with open(incfile,'w') as f:
             f.write('\n\n'+r'\vspace{1em}\begin{center}'+'\nANSWERS\n'+r'\end{center}'+'\n\n')
             f.write(r'\hspace{-1.5in} '+tbl)
