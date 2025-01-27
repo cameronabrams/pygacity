@@ -17,6 +17,8 @@ pip install -e .
 
 ## Release History
 
+* 0.1.3
+    * `tpbuild` command
 * 0.1.1
     * reorganized package
 * 0.0.1
