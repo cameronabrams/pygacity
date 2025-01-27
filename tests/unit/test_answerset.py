@@ -11,7 +11,7 @@ class AnswerSetTests(unittest.TestCase):
     def test_answerset_init(self):
         A=AnswerSet(1234567)
         self.assertEqual(A.serial,1234567)
-        self.assertEqual(A.dumpname,'solutions-01234567.yaml')
+        self.assertEqual(A.dumpname,'answers-01234567.yaml')
         self.assertTrue(A.D=={})
     def test_answerset_register(self):
         A=AnswerSet(999)
@@ -32,9 +32,9 @@ class AnswerSetTests(unittest.TestCase):
         A.register(3,label='TF',units=None,value=False)
         A.register(3,label='TF',units=None,value=True)
         A.to_yaml()
-        self.assertTrue(os.path.exists('solutions-00000999.yaml'))
+        self.assertTrue(os.path.exists('answers-00000999.yaml'))
     def test_answerset_read(self):
-        A=AnswerSet.from_yaml('solutions-00000999.yaml')
+        A=AnswerSet.from_yaml('answers-00000999.yaml')
         self.assertEqual(A.serial,999)
         self.assertEqual(len(A.D),3)
         self.assertEqual(len(A.D[3]),5)
@@ -57,7 +57,7 @@ class AnswerSuperSetTests(unittest.TestCase):
         return files
     
     def test_superset(self):
-        oldfiles=glob('solutions-*.yaml')
+        oldfiles=glob('answers-*.yaml')
         for f in oldfiles:
             os.remove(f)
         files=self.make_superset()

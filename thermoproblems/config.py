@@ -85,6 +85,7 @@ class Config(Yclept):
         self.build=user['build']
         self.document=Document(user['document'],buildspecs=self.build)
         self.ncopies=self.build['copies']
+        np.random.seed(self.build.get('seed',10214596))
         serial_file=self.build.get('serial-file',None)
         if len(self.build['serials'])==0:
             if serial_file and os.path.exists(serial_file):

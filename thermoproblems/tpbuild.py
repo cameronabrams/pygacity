@@ -6,6 +6,7 @@ from .config import Config
 import logging
 import stat
 from .stringthings import chmod_recursive
+from .answerset import AnswerSuperSet
 
 logger=logging.getLogger(__name__)
 
@@ -35,6 +36,10 @@ def cli():
         c.document.resolve_instance(keymap)
         c.LB.build_document(c.document,make_solutions=args.solutions)
         print(f'{serial}')
+    if len(c.serials)>1:
+        AS=AnswerSuperSet([f'answers-{serial}.yaml' for serial in c.serials])
+        AS.to_pdf(c)
+
     if savedir!='.':
         os.chdir(basedir)
 

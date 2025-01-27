@@ -4,12 +4,14 @@ import os
 from collections import UserList
 import pandas as pd
 import logging
+from .document import Document
+
 logger=logging.getLogger(__name__)
 
 class AnswerSet:
     def __init__(self,serial=0):
         self.serial=serial
-        self.dumpname=f'solutions-{serial:08d}.yaml'
+        self.dumpname=f'answers-{serial:08d}.yaml'
         self.D={}
 
     @classmethod
@@ -17,7 +19,7 @@ class AnswerSet:
         root,ext=os.path.splitext(filename)
         assert ext in ['.yaml','.yml'],f'{filename} does not end in .yaml or .yml'
         tokens=root.split('-')
-        assert len(tokens)==2,f'{filename} should be of the format "solutions-<serial#>.yaml"'
+        assert len(tokens)==2,f'{filename} should be of the format "answers-<serial#>.yaml"'
         serial=int(tokens[1])
         R=cls(serial)
         with open(filename,'r') as f:
@@ -46,7 +48,25 @@ class AnswerSuperSet(UserList):
         self._make_df()
 
     def to_latex(self):
-        return self.DF.to_latex(formatters=self.formatters,index=False,header=self.headings)
+        return self.DF.to_latex(formatters=self.formatters,index=False)#,header=self.headings)
+
+    def to_pdf(self,config):
+        LB=config.LB
+        metadata=config['user']['document']['metadata']
+        doctype=config['user']['document']['type']
+        docspecs={'structure':[{'include':'tmp-table.tex'}],
+                  'class':{'classname':'autoprob'},
+                  'type':doctype,
+                  'metadata':metadata}
+        buildspecs={'output-name':config['user']['build']['answer-file']}
+        tbl=self.to_latex()
+        incfile='tmp-table-'+config['user']['build']['answer-file']+'.tex'
+        with open(incfile,'w') as f:
+            f.write('\n\n'+r'\vspace{1em}\begin{center}'+'\nANSWERS\n'+r'\end{center}'+'\n\n')
+            f.write(r'\hspace{-1.5in} '+tbl)
+        D=Document(docspecs=docspecs,buildspecs=buildspecs)
+        D.resolve_instance()
+        LB.build_document(D)
 
     def _check_congruency(self):
         if len(self)>0:
@@ -94,5 +114,6 @@ class AnswerSuperSet(UserList):
         # logger.debug(values)
         self.DF=pd.DataFrame(values)
         self.DF.sort_values(by='serials',inplace=True)
+        # print(self.DF)
 
 

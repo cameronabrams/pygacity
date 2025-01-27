@@ -25,8 +25,9 @@ else:
     TF=TFC
 rng.shuffle(TF)
 answers=[x['A'] for x in TF]
-if 'solutions' in locals():
-    solutions.append(dict(answers=answers))
+if 'AnsSet' in locals():
+    for l,t in zip([chr(ord('a')+x) for x in range(len(answers))],answers):
+        AnsSet.register(<%qno%>,label=l,value=t)
 else:
     soln='<%serial%>_<%qno%>_soln.yaml'
     with open(soln,'w') as f:

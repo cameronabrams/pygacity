@@ -1,6 +1,7 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
 import logging
 import os
+import random
 import shutil
 from .template import Template
 from . import resources
@@ -24,7 +25,7 @@ class Input:
             if os.path.exists(self.filename):
                 self.filepath=os.path.realpath(self.filename)
             else:
-                logger.warning(f'Could not local input file {self.filename}')
+                logger.warning(f'Could not locate input file {self.filename} in {os.getcwd()}')
         if self.filepath:
             with open(self.filepath,'r') as f:
                 self.contents=f.read()
@@ -60,6 +61,17 @@ class Document:
                     if hasattr(itemlist[-1],'has_pycode') and itemlist[-1].has_pycode:
                         self.has_pycode=True
                     qno+=1
+                shuffleridx=[]
+                for i,item in enumerate(itemlist):
+                    if item.specs.get('shuffleable',False):
+                        shuffleridx.append(i)
+                shufflers=[]
+                if len(shuffleridx)>1:
+                    for i in shuffleridx:
+                        shufflers.append(itemlist[i])
+                    random.shuffle(shufflers)
+                    for i,s in enumerate(shuffleridx,shufflers):
+                        itemlist[i]=s
                 self.structure.append(itemlist)
             else:
                 cls=_classmap[label]
@@ -92,9 +104,10 @@ class Document:
                         f.write(r'\usepackage['+','.join(p['options'])+r']{'+p['package_name']+r'}'+'\n')
 
             metadata=self.specs.get('metadata',{})
-            for mdelem in ['Universityname','Departmentname','Coursename','Termname','Termcode','Instructorname','Instructoremail','Subjectname']:
-                if mdelem in metadata:
-                    f.write(r'\renewcommand{'+'\\'+mdelem+r'}{'+str(metadata[mdelem])+r'}'+'\n')
+            if self.specs['class']['classname']=='autoprob':
+                for mdelem in ['Universityname','Departmentname','Coursename','Termname','Termcode','Instructorname','Instructoremail','Subjectname']:
+                    if mdelem in metadata:
+                        f.write(r'\renewcommand{'+'\\'+mdelem+r'}{'+str(metadata[mdelem])+r'}'+'\n')
 
             f.write(r'\ifthenelse{\equal{\detokenize{'+local_output_name+'_soln'+r'}}{\jobname}}{\showsolutionstrue}{}'+'\n')
             f.write(r'\begin{document}'+'\n')

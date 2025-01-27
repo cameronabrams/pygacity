@@ -56,18 +56,18 @@ class LatexBuilder:
         if cleanup:
             self.FC.flush()
 
-def header(documentclass='autoprob',packages=[{'name':'array'},{'name':'geometry','options':['margins=1in']}],renewcommands=[],**kwargs):
-    res=r'\documentclass{'+documentclass+r'}'+'\n'
-    for p in packages+kwargs.get('extrapackages',[]):
-        res+=r'\usepackage'
-        if 'options' in p and len(p['options']>0):
-            opstring=','.join(p['options'])
-            res+=r'['+opstring+r']'
-        res+=r'{'+p['name']+r'}'+'\n'
-    for rc in renewcommands+kwargs.get('extrarenewcommands',[]):
-        cname,newval=rc
-        res+=r'\renewcommand{'+cname+r'}{'+newval+r'}'+'\n'
-    return res
+# def header(documentclass='autoprob',packages=[{'name':'array'},{'name':'geometry','options':['margins=1in']}],renewcommands=[],**kwargs):
+#     res=r'\documentclass{'+documentclass+r'}'+'\n'
+#     for p in packages+kwargs.get('extrapackages',[]):
+#         res+=r'\usepackage'
+#         if 'options' in p and len(p['options']>0):
+#             opstring=','.join(p['options'])
+#             res+=r'['+opstring+r']'
+#         res+=r'{'+p['name']+r'}'+'\n'
+#     for rc in renewcommands+kwargs.get('extrarenewcommands',[]):
+#         cname,newval=rc
+#         res+=r'\renewcommand{'+cname+r'}{'+newval+r'}'+'\n'
+#     return res
 
 def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column

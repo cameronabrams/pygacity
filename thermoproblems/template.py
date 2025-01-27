@@ -44,13 +44,16 @@ class Template:
                     rdelim_idx.append(i)
             keys=[]
             for l,r in zip(ldelim_idx,rdelim_idx):
-                keys.append(self.template[l+2:r])
-            self.keys=list(set(keys))
+                key=self.template[l+2:r]
+                if not key in keys:
+                    keys.append(key)
+            # print(self.filepath,keys)
+            self.keys=keys
 
     def resolve(self,map):
         local_map=map.copy()
         local_map.update(self.inst_map)
-        assert all([x in local_map for x in self.keys]),f'Not all keys in template are in the applied map'
+        assert all([x in local_map for x in self.keys]),f'Not all keys in template ({self.keys}) are in the applied map ({local_map})'
         self.local_serial=local_map.get('serial',0)
         self.resolved_template=self.template[:] # copy!
         for k in self.keys:

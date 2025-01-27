@@ -108,6 +108,9 @@ directives:
         type: int
         text: number of unique copies to generate
         default: 1
+      - name: seed
+        type: int
+        text: rng seed (optional)
       - name: serials
         type: list
         text: list of individual unique serial numbers; each serial number uniquely determines the content of any customizable items in templates; if unset, these are randomly-generated 8-digit integers
@@ -130,3 +133,8 @@ directives:
         type: str
         text: string prepended to all file names generated
         default: tpdoc
+      - name: answer-file
+        type: str
+        text: name of answer file (tex and pdf)
+        default: answerset
+        
