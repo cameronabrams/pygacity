@@ -2,7 +2,7 @@ import unittest
 import os
 import shutil
 import random
-from thermoproblems.answerset import AnswerSet,AnswerSuperSet
+from pygacity.answerset import AnswerSet,AnswerSuperSet
 import logging
 from glob import glob
 

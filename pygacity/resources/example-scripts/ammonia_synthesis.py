@@ -1,8 +1,8 @@
 import numpy as np
-from thermoproblems.chem.properties import PureProperties
-from thermoproblems.chem.system import ChemEqSystem
-from thermoproblems.chem.reaction import Reaction
-from thermoproblems.texutils import *
+from pygacity.chem.properties import PureProperties
+from pygacity.chem.system import ChemEqSystem
+from pygacity.chem.reaction import Reaction
+from pygacity.texutils import *
 Prop=PureProperties()
 my_compounds={
     'A':Prop.get_compound('hydrogen (equilib)'),

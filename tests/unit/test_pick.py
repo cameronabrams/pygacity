@@ -1,5 +1,5 @@
 import unittest
-from thermoproblems.pick import Picker, Stepper
+from pygacity.pick import Picker, Stepper
 import numpy as np
 from itertools import product
 from argparse import Namespace

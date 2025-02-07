@@ -26,14 +26,22 @@ _UNITS_={
 
 import importlib.metadata
 
-__thermoproblems_version__ = importlib.metadata.version("thermoproblems")
+__pygacity_version__ = importlib.metadata.version("pygacity")
 
 banner_message="""
+
+░       ░░░  ░░░░  ░░░      ░░░░      ░░░░      ░░░        ░░        ░░  ░░░░  ░
+▒  ▒▒▒▒  ▒▒▒  ▒▒  ▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒  ▒▒  ▒▒
+▓       ▓▓▓▓▓    ▓▓▓▓  ▓▓▓   ▓▓  ▓▓▓▓  ▓▓  ▓▓▓▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓    ▓▓▓
+█  ███████████  █████  ████  ██        ██  ████  █████  ████████  ████████  ████
+█  ███████████  ██████      ███  ████  ███      ███        █████  ████████  ████                                                           
+    (\"pie-GAS-ity\")
+    
     {} v. {}
 
     Cameron F. Abrams <cfa22@drexel.edu>
 
-""".format(__package__.title(),__thermoproblems_version__)
+""".format(__package__.title(),__pygacity_version__)
 
 
 def banner(logf):

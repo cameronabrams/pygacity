@@ -1,6 +1,6 @@
 import unittest
 import os
-from thermoproblems.document import Input, Document
+from pygacity.document import Input, Document
 import yaml
 
 class DocumentTest(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 import os
 import shutil
-from thermoproblems.config import Config
+from pygacity.config import Config
 
 class BuildTests(unittest.TestCase):
     def test_build1(self):

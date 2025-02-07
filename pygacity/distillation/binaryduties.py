@@ -4,7 +4,7 @@ from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
 import pandas as pd
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
-from thermoproblems.pick import *
+from pygacity.pick import *
 
 def Antoine(T,pardict):
     A,B,C=pardict['A'],pardict['B'],pardict['C']

@@ -1,6 +1,6 @@
 import unittest
 import os
-from thermoproblems.config import Config, ResourceManager
+from pygacity.config import Config, ResourceManager
 
 class ConfigTest(unittest.TestCase):
     def test_resource_manager(self):

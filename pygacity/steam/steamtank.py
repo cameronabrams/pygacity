@@ -1,6 +1,6 @@
 import numpy as np
 from iapws import IAPWS97
-from thermoproblems.texutils import *
+from pygacity.texutils import *
 
 def st_report(R):
     r=f'{R.T:.2f} {R.P:.2f} {R.x:.2f} {R.v:.4f} {R.h:.4f} {R.s:.4f} {R.u:.4f}'

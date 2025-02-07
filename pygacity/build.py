@@ -13,12 +13,7 @@ logger=logging.getLogger(__name__)
 logging.getLogger("ycleptic").setLevel(logging.WARNING)
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
-def cli():
-    parser=ap.ArgumentParser()
-    parser.add_argument('--overwrite',default=False,action=ap.BooleanOptionalAction,help='completely remove old save dir and build new exams')
-    parser.add_argument('--solutions',default=True,action=ap.BooleanOptionalAction,help='build solutions')
-    parser.add_argument('f',help='mandatory YAML input file')
-    args=parser.parse_args()
+def build(args):
     c=Config(args.f)
     savedir=c.build.get('output-dir','.')
     if os.path.exists(savedir):
@@ -43,5 +38,3 @@ def cli():
     if savedir!='.':
         os.chdir(basedir)
 
-if __name__=='__main__':
-    cli()
