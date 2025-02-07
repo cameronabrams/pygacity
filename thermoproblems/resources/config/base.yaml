@@ -73,6 +73,7 @@ directives:
             options: 
               - margin=1in
           - package_name: array
+          - package_name: fancyhdr
       - name: metadata
         type: dict
         text: Document metadata

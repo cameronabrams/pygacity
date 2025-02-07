@@ -55,20 +55,7 @@ class LatexBuilder:
             c.run()
         if cleanup:
             self.FC.flush()
-
-# def header(documentclass='autoprob',packages=[{'name':'array'},{'name':'geometry','options':['margins=1in']}],renewcommands=[],**kwargs):
-#     res=r'\documentclass{'+documentclass+r'}'+'\n'
-#     for p in packages+kwargs.get('extrapackages',[]):
-#         res+=r'\usepackage'
-#         if 'options' in p and len(p['options']>0):
-#             opstring=','.join(p['options'])
-#             res+=r'['+opstring+r']'
-#         res+=r'{'+p['name']+r'}'+'\n'
-#     for rc in renewcommands+kwargs.get('extrarenewcommands',[]):
-#         cname,newval=rc
-#         res+=r'\renewcommand{'+cname+r'}{'+newval+r'}'+'\n'
-#     return res
-
+            
 def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
         items and generates a table '''
@@ -84,11 +71,17 @@ def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]
         tablestring=tmpstr
     return tablestring
 
-def Cp_as_tex(Cp):
-    retstr=r'$C_p^\circ$ = '+f"{Cp[0]:.3f} + "
-    retstr+=r'('+sci_notation_as_tex(Cp[1],mantissa_fmt='{:.4e}')+r') $T$ + '
-    retstr+=r'('+sci_notation_as_tex(Cp[2],mantissa_fmt='{:.4e}')+r') $T^2$ + '
-    retstr+=r'('+sci_notation_as_tex(Cp[3],mantissa_fmt='{:.4e}')+r') $T^3$'
+def Cp_as_tex(Cp,letters=True,decoration='*'):
+    idx=[0,1,2,3]
+    if letters:
+        idx='abcd'
+    sgns=[]
+    for i in range(4):
+        sgns.append('-' if Cp[idx[i]]<0 else '+')
+    retstr=r'$C_p^'+f'{decoration}'+r'$ = '+f'{Cp[idx[0]]:.3f} {sgns[1]} '
+    retstr+=sci_notation_as_tex(np.abs(Cp[idx[1]]),mantissa_fmt='{:.4e}')+r' $T$ '+f'{sgns[2]} '
+    retstr+=sci_notation_as_tex(np.abs(Cp[idx[2]]),mantissa_fmt='{:.4e}')+r' $T^2$ '+f'{sgns[3]} '
+    retstr+=sci_notation_as_tex(np.abs(Cp[idx[3]]),mantissa_fmt='{:.4e}')+r' $T^3$'
     return(retstr)
 
 def sci_notation_as_tex(x,**kwargs):
