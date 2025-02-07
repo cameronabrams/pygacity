@@ -138,4 +138,14 @@ directives:
         type: str
         text: name of answer file (tex and pdf)
         default: answerset
+      - name: combine
+        type: dict
+        text: combine all PDFs into a single PDF
+        directives:
+          - name: name
+            type: str
+            text: name of output file to generate
+          - name: sort
+            type: bool
+            text: sort files by name when combining
         

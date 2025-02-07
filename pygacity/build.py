@@ -1,12 +1,12 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
 from shutil import rmtree
 import os
-import argparse as ap
 from .config import Config
 import logging
 import stat
-from .stringthings import chmod_recursive
+from .stringthings import chmod_recursive, FileCollector
 from .answerset import AnswerSuperSet
+from .pdfutils import combine_pdfs
 
 logger=logging.getLogger(__name__)
 
@@ -14,6 +14,8 @@ logging.getLogger("ycleptic").setLevel(logging.WARNING)
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 def build(args):
+    FC=FileCollector()
+    print(f'Building exams as specified in {args.f}...')
     c=Config(args.f)
     savedir=c.build.get('output-dir','.')
     if os.path.exists(savedir):
@@ -26,14 +28,23 @@ def build(args):
     os.mkdir(savedir)
     basedir=os.getcwd()
     os.chdir(savedir)
-    for serial in c.serials:
+    for i,serial in enumerate(c.serials):
         keymap=dict(serial=serial)
         c.document.resolve_instance(keymap)
         c.LB.build_document(c.document,make_solutions=args.solutions)
-        print(f'{serial}')
+        FC.append(f'{c.document.output_name}.pdf')
+        print(f'serial # {serial} ({i+1}/{len(c.serials)}) => {c.document.output_name}.pdf')
     if len(c.serials)>1:
         AS=AnswerSuperSet([f'answers-{serial}.yaml' for serial in c.serials])
         AS.to_pdf(c)
+
+    if 'combine' in c.build:
+        outname=c.build['combine']['name']
+        args.i=FC.data
+        if c.build['combine']['sort']:
+            args.i.sort()
+        args.o=outname
+        combine_pdfs(args)
 
     if savedir!='.':
         os.chdir(basedir)

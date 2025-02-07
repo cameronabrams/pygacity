@@ -305,6 +305,9 @@ class FileCollector(UserList):
                     logger.debug(f'{f}: not found.')
         self.clear()
 
+    def __str__(self):
+        return ' '.join([x for x in self])
+
     def tarball(self,basename):
         """Makes a tarball of the files in the collection
         

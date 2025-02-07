@@ -1,6 +1,4 @@
 import argparse as ap
-import os
-import textwrap
 
 from .build import build
 from .pdfutils import combine_pdfs
@@ -9,7 +7,7 @@ from .stringthings import oxford, banner
 def cli():
     subcommands={
         'build': dict(func=build,help='build document',desc='builds a document according to specs in a YAML config file'),
-        'combine':dict(fuc=combine_pdfs,help='combine PDFs into a single PDF',desc='combine PDFs into a single PDF')
+        'combine':dict(func=combine_pdfs,help='combine PDFs into a single PDF',desc='combine PDFs into a single PDF')
     }
     parser=ap.ArgumentParser()#description=textwrap.dedent(banner_message),formatter_class=ap.RawDescriptionHelpFormatter)
     parser.add_argument('--no-banner',default=False,action='store_true',help='turn off the banner')

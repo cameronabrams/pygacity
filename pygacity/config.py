@@ -93,9 +93,10 @@ class Config(Yclept):
                     serial_str=f.read()
                 self.build['serials']=list(map(int,serial_str.split()))
                 if len(self.build['serials'])!=self.ncopies:
-                    logger.debug(f'Warning: config requested {self.ncopies} copies but serial file {serial_file} only contained {len(self.build["serials"])} entries')
-                    logger.debug(f'I will only make {len(self.build["serials"])} copies')
-                    self.ncopies=len(self.build['serials'])
+                    if len(self.build['serials'])>self.ncopies:
+                        self.build['serials']=self.build['serials'][:self.ncopies]
+                    else:
+                        self.ncopies=len(self.build['serials'])
                 logger.info(f'{len(self.build["serials"])} serials read in from {serial_file}')
             else:
                 self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)
