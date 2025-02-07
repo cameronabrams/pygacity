@@ -5,6 +5,7 @@ import random
 import shutil
 from .template import Template
 from . import resources
+from .stringthings import FileCollector
 
 logger=logging.getLogger(__name__)
 
@@ -32,10 +33,15 @@ class Input:
             self.has_pycode=r'\begin{pycode}' in self.contents
     def resolve(self,serial=0):
         pass
-    def write_local(self):
+    def write_local(self,FC=None):
         if not os.path.exists(self.filename) and self.contents!=None:
             with open(self.filename,'w') as f:
                 f.write(self.contents)
+            if FC!=None:
+                FC.append(self.filename)
+                
+    def resgister_files(self,FC):
+        FC.append(self.filename)
 
     def __str__(self):
         return r'\input{'+self.filename+r'}'
@@ -44,6 +50,7 @@ _classmap={'template':Template,'include':Input}
 
 class Document:
     def __init__(self,docspecs={},buildspecs={}):
+        self.FC=FileCollector()
         self.structure=[]
         self.specs=docspecs
         self.buildspecs=buildspecs
@@ -55,8 +62,8 @@ class Document:
                 qno=1
                 for item in s['items']:
                     itemlabel=list(item.keys())[0]
-                    cls=_classmap[itemlabel]
-                    itemlist.append(cls(item))
+                    this_item=_classmap[itemlabel](item)
+                    itemlist.append(this_item)
                     itemlist[-1].inst_map['qno']=qno
                     if hasattr(itemlist[-1],'has_pycode') and itemlist[-1].has_pycode:
                         self.has_pycode=True
@@ -79,7 +86,7 @@ class Document:
 
     def resolve_instance(self,keymap={}):
         logger.debug('resolving document')
-        _resolve_recursive(self.structure,keymap=keymap,depth=0)
+        _resolve_recursive(self.structure,keymap=keymap,depth=0,FC=self.FC)
         self.write_tex(serial=keymap.get('serial',None))
         
     def write_tex(self,local_output_name='local_document',serial=None):
@@ -128,12 +135,15 @@ class Document:
                 else:
                     f.write(str(element)+'\n')
             f.write(r'\end{document}'+'\n')
-        logger.info(f'Wrote {local_output_file}')
+        logger.debug(f'Wrote {local_output_file}')
 
-def _resolve_recursive(structure,keymap,depth=0):
+    def flush(self):
+        self.FC.flush()
+
+def _resolve_recursive(structure,keymap,depth=0,FC=None):
     if hasattr(structure,'resolve'):
         structure.resolve(keymap)
-        structure.write_local()
+        structure.write_local(FC=FC)
     elif type(structure)==list:
         for ino,item in enumerate(structure):
             keymap['qno']=ino+1

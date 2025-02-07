@@ -55,6 +55,7 @@ class LatexBuilder:
             c.run()
         if cleanup:
             self.FC.flush()
+            document.flush()
             
 def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column

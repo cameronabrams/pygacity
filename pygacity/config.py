@@ -85,10 +85,11 @@ class Config(Yclept):
         self.build=user['build']
         self.document=Document(user['document'],buildspecs=self.build)
         self.ncopies=self.build['copies']
+        # print(f'seed {self.build.get('seed','whoops')}')
         np.random.seed(self.build.get('seed',10214596))
         serial_file=self.build.get('serial-file',None)
         if len(self.build['serials'])==0:
-            if serial_file and os.path.exists(serial_file):
+            if not kwargs.get('overwrite',False) and serial_file and os.path.exists(serial_file):
                 with open(serial_file,'r') as f:
                     serial_str=f.read()
                 self.build['serials']=list(map(int,serial_str.split()))
@@ -97,8 +98,11 @@ class Config(Yclept):
                         self.build['serials']=self.build['serials'][:self.ncopies]
                     else:
                         self.ncopies=len(self.build['serials'])
+                # print(f'reading serials from {serial_file}')
+                # print(f'-> {self.build["serials"]}')
                 logger.info(f'{len(self.build["serials"])} serials read in from {serial_file}')
             else:
+                # print(f'new serials {self.build["serials"]}')
                 self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)
                 while len(self.build['serials'])>len(set(self.build['serials'])):
                     self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)

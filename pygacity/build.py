@@ -16,7 +16,7 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
 def build(args):
     FC=FileCollector()
     print(f'Building exams as specified in {args.f}...')
-    c=Config(args.f)
+    c=Config(args.f,overwrite=args.overwrite)
     savedir=c.build.get('output-dir','.')
     if os.path.exists(savedir):
         if args.overwrite:

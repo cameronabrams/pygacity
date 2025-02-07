@@ -50,6 +50,9 @@ class Template:
             # print(self.filepath,keys)
             self.keys=keys
 
+    def register_files(self,FC):
+        FC.append(self.local_file)
+
     def resolve(self,map):
         local_map=map.copy()
         local_map.update(self.inst_map)
@@ -60,13 +63,15 @@ class Template:
             tmp=self.resolved_template.replace(self.ldelim+k+self.rdelim,str(local_map[k]))
             self.resolved_template=tmp
 
-    def write_local(self):
+    def write_local(self,FC=None):
         tf,ext=os.path.splitext(self.templatefile)
         self.local_file=tf+f'-{self.local_serial}'+ext
         if os.path.exists(self.local_file):
             logger.warning(f'Overwriting {self.local_file}')
         with open(self.local_file,'w') as f:
             f.write(self.resolved_template)
+        if FC!=None:
+            FC.append(self.local_file)
 
     def __str__(self):
         ptstr=''
