@@ -45,6 +45,7 @@ def cli():
     logging.getLogger('').addHandler(console)
 
     if not args.no_banner:
+        logger.info(f'pygacity')
         banner(print)    
     if hasattr(args,'func'):
         args.func(args)

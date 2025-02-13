@@ -39,12 +39,13 @@ def build(args):
         AS.to_pdf(c)
 
     if 'combine' in c.build:
-        outname=c.build['combine']['name']
-        args.i=FC.data
-        if c.build['combine']['sort']:
-            args.i.sort()
-        args.o=outname
-        combine_pdfs(args)
+        outname=c.build['combine'].get('name',None)
+        if outname:
+            args.i=FC.data
+            if c.build['combine']['sort']:
+                args.i.sort()
+            args.o=outname
+            combine_pdfs(args)
 
     if savedir!='.':
         os.chdir(basedir)
