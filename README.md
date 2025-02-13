@@ -14,7 +14,7 @@ cd pygacity
 pip install -e .
 ```
 
-`Pygacity` includes the LaTeX class file `autoprob.cls` under `[INSTALL-DIR]/pygacity/resources/autoprob-package/tex/latex/`.  All `latex` commands append this directory as a ``--include-directory`` argument.  If you would like to use `autoprob.cls` outside of `pygacity`, you will need to make your LaTeX installation aware of this directory.
+`Pygacity` includes the LaTeX class file `autoprob.cls` under `[INSTALL-DIR]/pygacity/resources/autoprob-package/tex/latex/`.  All `latex` commands append this directory as a ``--include-directory`` argument.  If you would like to use `autoprob.cls` outside of `pygacity`, you will need to make your LaTeX installation aware of `autoprob-package` root.
 
 ## Release History
 
