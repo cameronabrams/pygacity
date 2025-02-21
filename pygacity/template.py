@@ -8,6 +8,7 @@ assert os.path.isdir(_template_dir_)
 
 class Template:
     def __init__(self,specs={},keydelim=(r'<%',r'%>'),**kwargs):
+        # TODO: module file handling
         assert len(specs)==1,f'Bad template specs: {specs}'
         self.specs=specs['template']
         self.has_pycode=False
@@ -15,6 +16,7 @@ class Template:
         self.inst_map={}
         self.local_serial=0
         self.templatefile=self.specs.get('source',None)
+        self.modulefile=self.specs.get('module',None)
         if 'config' in self.specs:
             self.inst_map['config']=self.specs['config']
         self.local_file=self.templatefile
@@ -64,6 +66,7 @@ class Template:
             self.resolved_template=tmp
 
     def write_local(self,FC=None):
+        # TODO: module file handling
         tf,ext=os.path.splitext(self.templatefile)
         self.local_file=tf+f'-{self.local_serial}'+ext
         if os.path.exists(self.local_file):

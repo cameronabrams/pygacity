@@ -68,17 +68,6 @@ class Document:
                     if hasattr(itemlist[-1],'has_pycode') and itemlist[-1].has_pycode:
                         self.has_pycode=True
                     qno+=1
-                shuffleridx=[]
-                for i,item in enumerate(itemlist):
-                    if item.specs.get('shuffleable',False):
-                        shuffleridx.append(i)
-                shufflers=[]
-                if len(shuffleridx)>1:
-                    for i in shuffleridx:
-                        shufflers.append(itemlist[i])
-                    random.shuffle(shufflers)
-                    for i,s in enumerate(shuffleridx,shufflers):
-                        itemlist[i]=s
                 self.structure.append(itemlist)
             else:
                 cls=_classmap[label]

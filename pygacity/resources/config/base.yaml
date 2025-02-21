@@ -49,6 +49,9 @@ directives:
                   - name: source
                     type: str
                     text: file name of tex template to include
+                  - name: module
+                    type: str
+                    text: name of accompanying *.py file that is imported by the pycode env in the template
                   - name: config
                     type: str
                     text: name of YAML config file read during template resolution
