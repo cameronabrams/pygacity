@@ -33,6 +33,10 @@ class AnswerSet:
                                     value=value,
                                     units=units,
                                     formatter=formatter))
+    
+    def display(self,index=0):
+        pass
+
     def to_yaml(self):
         with open(self.dumpname,'w') as f:
             yaml.safe_dump(self.D,f)
