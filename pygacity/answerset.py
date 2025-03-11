@@ -34,8 +34,11 @@ class AnswerSet:
                                     units=units,
                                     formatter=formatter))
     
-    def display(self,index=0):
-        pass
+    def display(self,index,element=0):
+        D=self.D[index].get(element,{})
+        if D:
+            pass
+
 
     def to_yaml(self):
         with open(self.dumpname,'w') as f:
