@@ -38,7 +38,21 @@ class AnswerSetTests(unittest.TestCase):
         self.assertEqual(A.serial,999)
         self.assertEqual(len(A.D),3)
         self.assertEqual(len(A.D[3]),5)
-
+    def test_answerset_display(self):
+        A=AnswerSet(999)
+        A.register(1,label=r'$V_1$',units='m$^3$',value=1001.4,formatter='{:,.2f}')
+        A.register(1,label=r'$V_2$',units='m$^3$',value=102.4e12,formatter='{:.4e}')
+        d1=A.display(1,element=0)
+        self.assertEqual(d1,r'$V_1$ = 1,001.40 m$^3$')
+        d2=A.display(1,element=1)
+        self.assertEqual(d2,r'$V_2$ = 1.0240e+14 m$^3$')
+        A.register(1,label=r'$V_3$',value=100.9,formatter='{:.3f}')
+        A.register(1,label=r'$V_4$',value=1900.1)
+        d3=A.display(1,element=2)
+        self.assertEqual(d3,r'$V_3$ = 100.900')
+        d4=A.display(1,element=3)
+        self.assertEqual(d4,r'$V_4$ = 1900.1')
+        
 class AnswerSuperSetTests(unittest.TestCase):
     def make_superset(self):
         files=[]

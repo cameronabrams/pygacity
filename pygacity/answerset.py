@@ -9,6 +9,7 @@ from .document import Document
 logger=logging.getLogger(__name__)
 
 class AnswerSet:
+    _keys=['label','value','units','formatter']
     def __init__(self,serial=0):
         self.serial=serial
         self.dumpname=f'answers-{serial:08d}.yaml'
@@ -35,10 +36,22 @@ class AnswerSet:
                                     formatter=formatter))
     
     def display(self,index,element=0):
-        D=self.D[index].get(element,{})
+        D=None
+        if element<len(self.D[index]):
+            D=self.D[index][element]
         if D:
-            pass
-
+            fmt=D.get('formatter',None)
+            if fmt:
+                vstr=fmt.format(D['value'])
+            else:
+                vstr=str(D['value'])
+            u=D.get('units','')
+            if u:
+                ustr=f' {u}'
+            else:
+                ustr=''
+            return D["label"]+f' = {vstr}{ustr}'
+        return ''
 
     def to_yaml(self):
         with open(self.dumpname,'w') as f:
