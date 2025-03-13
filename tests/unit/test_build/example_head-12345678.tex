@@ -6,13 +6,13 @@
 \begin{pycode}
 from sandlersteam.state import State as SANDLER
 from sandlersteam.state import SteamTables as st
-import thermoproblems.texutils as tu
+import pygacity.texutils as tu
 import numpy as np
 import fractions as fr
 import yaml
 from argparse import Namespace
 from math import pow
-from thermoproblems.pick import Picker
+from pygacity.pick import Picker
 P=Picker(12345678)
 suphPavail=st['suph'].uniqs['P']
 solutions=[]

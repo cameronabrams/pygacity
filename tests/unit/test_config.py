@@ -5,7 +5,7 @@ from pygacity.config import Config, ResourceManager
 class ConfigTest(unittest.TestCase):
     def test_resource_manager(self):
         rm=ResourceManager()
-        for r in ['autoprob-package','data','examples','templates']:
+        for r in ['autoprob-package','config','example-scripts','corresponding-states-data','templates']:
             self.assertTrue(r in rm)
         badresourcename='non-existent-resource'
         self.assertFalse(badresourcename in rm)

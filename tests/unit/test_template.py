@@ -4,7 +4,7 @@ from pygacity.template import Template, _template_dir_
 
 class TemplateTest(unittest.TestCase):
     def test_template_instance(self):
-        T=Template({'source':'blank_template.tex'})
+        T=Template({'template':{'source':'blank_template.tex'}})
         self.assertEqual(T.filepath,os.path.join(_template_dir_,'blank_template.tex'))
         self.assertEqual(str(T),r'\input{blank_template.tex}')
         self.assertTrue('key1' in T.keys)
@@ -18,7 +18,7 @@ class TemplateTest(unittest.TestCase):
         self.assertEqual(str(T),r'\input{blank_template-12345678.tex}')
 
     def test_template_local(self):
-        T=Template({'source':'local_template.tex'})
+        T=Template({'template':{'source':'local_template.tex'}})
         self.assertEqual(T.filepath,os.path.realpath('local_template.tex'))
         self.assertTrue('localkey1' in T.keys)
         self.assertTrue('localkey2' in T.keys)

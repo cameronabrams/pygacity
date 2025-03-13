@@ -23,6 +23,7 @@ document:
     date: February 11, 2025
     description: Midterm Exam
 build:
+  copies: 18
   output-dir: output
   output-name: exam
   serial-file: exam-serials.dat

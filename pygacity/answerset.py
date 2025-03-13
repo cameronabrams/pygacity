@@ -41,16 +41,22 @@ class AnswerSet:
             D=self.D[index][element]
         if D:
             fmt=D.get('formatter',None)
-            if fmt:
-                vstr=fmt.format(D['value'])
-            else:
-                vstr=str(D['value'])
-            u=D.get('units','')
-            if u:
-                ustr=f' {u}'
-            else:
-                ustr=''
-            return D["label"]+f' = {vstr}{ustr}'
+            val=D.get('value',None)
+            label=D.get('label',None)
+            units=D.get('units',None)
+            vstr=''
+            if val:
+                if fmt:
+                    vstr=fmt.format(val)
+                else:
+                    vstr=str(val)
+                if units:
+                    vstr+=f' {units}'
+            if label:
+                if vstr:
+                    return f'{label} = {vstr}'
+                else:
+                    return label
         return ''
 
     def to_yaml(self):

@@ -15,11 +15,19 @@ import numpy as np
 import yaml
 rng=np.random.default_rng(seed=33246253)
 with open('../my-TF-questions.yaml','r') as f:
-    TF=yaml.safe_load(f)
+    TFC=yaml.safe_load(f)
+if 'content' in TFC and 'config' in TFC:
+    c=TFC['config']
+    TF=TFC['content']
+    count=c.get('count',len(TF))
+    TF=TF[:count]
+else:
+    TF=TFC
 rng.shuffle(TF)
 answers=[x['A'] for x in TF]
-if 'solutions' in locals():
-    solutions.append(dict(answers=answers))
+if 'AnsSet' in locals():
+    for l,t in zip([chr(ord('a')+x) for x in range(len(answers))],answers):
+        AnsSet.register(3,label=l,value=t)
 else:
     soln='33246253_3_soln.yaml'
     with open(soln,'w') as f:
