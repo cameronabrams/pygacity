@@ -1,8 +1,8 @@
-directives:
+attributes:
   - name: paths
     type: dict
     text: Allows user to specify paths to external executables and directories
-    directives:
+    attributes:
       - name: pythontex
         type: str
         text: Path for pythontex executable
@@ -18,7 +18,7 @@ directives:
   - name: document
     type: dict
     text: Specification of document structure
-    directives:
+    attributes:
       - name: type
         type: str
         text: Document type (assignment, exam, plain)
@@ -30,22 +30,22 @@ directives:
       - name: structure
         type: list
         text: Document structure specification
-        directives:
+        attributes:
           - name: template
             type: dict
             text: template specification
-            directives:
+            attributes:
               - name: source
                 type: str
                 text: name of template file
           - name: items
             type: list
             text: Item specifications; things that carry points
-            directives:
+            attributes:
               - name: template
                 type: dict
                 text: Description of a template for an item
-                directives:
+                attributes:
                   - name: source
                     type: str
                     text: file name of tex template to include
@@ -77,10 +77,29 @@ directives:
               - margin=1in
           - package_name: array
           - package_name: fancyhdr
+      - name: header_commands
+        type: list
+        text: default header commands
       - name: metadata
         type: dict
         text: Document metadata
-        directives:
+        attributes:
+          - name: Instructorname
+            type: str
+            text: instructor name
+            default: Cameron F. Abrams
+          - name: Instructoremail
+            type: str
+            text: instructor email
+            default: cfa22@drexel.edu
+          - name: Coursename
+            type: str
+            text: course name
+            default: UNSET-COURSENAME
+          - name: Departmentname
+            type: str
+            text: department name
+            default: UNSET-DEPARTMENTNAME
           - name: Termcode
             type: str
             text: term code
@@ -107,7 +126,7 @@ directives:
   - name: build
     type: dict
     text: build specifications
-    directives:
+    attributes:
       - name: copies
         type: int
         text: number of unique copies to generate
@@ -144,7 +163,7 @@ directives:
       - name: combine
         type: dict
         text: combine all PDFs into a single PDF
-        directives:
+        attributes:
           - name: name
             type: str
             text: name of output file to generate

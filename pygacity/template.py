@@ -23,6 +23,12 @@ class Template:
         self.filepath=None
         self.keys=[]
         # search local directory for template first
+        filelist=os.listdir('.')
+        logger.debug(f'Searching local directory for template {self.templatefile} ({os.path.exists(self.templatefile)})...')
+        logger.debug('Local files:')
+        for f in filelist:
+            logger.debug(f)
+        
         if os.path.exists(self.local_file):
             self.filepath=os.path.realpath(self.local_file)
         else:

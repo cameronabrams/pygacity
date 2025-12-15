@@ -98,10 +98,22 @@ class Document:
                         f.write(r'\usepackage{'+p['package_name']+r'}'+'\n')
                     else:
                         f.write(r'\usepackage['+','.join(p['options'])+r']{'+p['package_name']+r'}'+'\n')
-
+                    if 'affiliated_commands' in p:
+                        for c in p['affiliated_commands']:
+                            f.write(c+r'\n')
+            if 'header_commands' in self.specs:
+                for c in self.specs['header_commands']:
+                    f.write(c+'\n')           
             metadata=self.specs.get('metadata',{})
             if self.specs['class']['classname']=='autoprob':
-                for mdelem in ['Universityname','Departmentname','Coursename','Termname','Termcode','Instructorname','Instructoremail','Subjectname']:
+                for mdelem in ['Universityname',
+                               'Departmentname',
+                               'Coursename',
+                               'Termname',
+                               'Termcode',
+                               'Instructorname',
+                               'Instructoremail',
+                               'Subjectname']:
                     if mdelem in metadata:
                         f.write(r'\renewcommand{'+'\\'+mdelem+r'}{'+str(metadata[mdelem])+r'}'+'\n')
 
@@ -112,7 +124,7 @@ class Document:
                 f.write('\n'+r'\examheader{'+metadata['description']+r'}{'+metadata['date']+r'}'+'\n\n')
             elif doctype=='assignment':
                 msg=metadata.get('message','')
-                f.write('\n'+r'\asnheader{'+metadata['assignment_number']+r'}{'+metadata['date']+r'}{'+msg+r'}'+'\n\n')
+                f.write('\n'+r'\asnheader{'+str(metadata['assignment_number'])+r'}{'+metadata['date']+r'}{'+msg+r'}'+'\n\n')
             elif doctype=='plain':
                 f.write('\n'+r'\plainheader{'+metadata['date']+r'}'+'\n\n')
             for element in self.structure:

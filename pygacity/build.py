@@ -15,7 +15,7 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 def build(args):
     FC=FileCollector()
-    print(f'Building exams as specified in {args.f}...')
+    print(f'Building document(s) as specified in {args.f}...')
     c=Config(args.f,overwrite=args.overwrite)
     savedir=c.build.get('output-dir','.')
     if os.path.exists(savedir):
@@ -28,15 +28,21 @@ def build(args):
     os.mkdir(savedir)
     basedir=os.getcwd()
     os.chdir(savedir)
-    for i,serial in enumerate(c.serials):
-        keymap=dict(serial=serial)
-        c.document.resolve_instance(keymap)
+    if not c.serials:
+        c.document.resolve_instance(keymap={})
         c.LB.build_document(c.document,make_solutions=args.solutions)
         FC.append(f'{c.document.output_name}.pdf')
-        print(f'serial # {serial} ({i+1}/{len(c.serials)}) => {c.document.output_name}.pdf')
-    if len(c.serials)>1:
-        AS=AnswerSuperSet([f'answers-{serial}.yaml' for serial in c.serials])
-        AS.to_pdf(c)
+        print(f' => {c.document.output_name}.pdf')
+    else:
+        for i,serial in enumerate(c.serials):
+            keymap=dict(serial=serial)
+            c.document.resolve_instance(keymap)
+            c.LB.build_document(c.document,make_solutions=args.solutions)
+            FC.append(f'{c.document.output_name}.pdf')
+            print(f'serial # {serial} ({i+1}/{len(c.serials)}) => {c.document.output_name}.pdf')
+        if len(c.serials)>1:
+            AS=AnswerSuperSet([f'answers-{serial}.yaml' for serial in c.serials])
+            AS.to_pdf(c)
 
     if 'combine' in c.build:
         outname=c.build['combine'].get('name',None)

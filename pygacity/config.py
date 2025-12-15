@@ -103,18 +103,22 @@ class Config(Yclept):
                 logger.info(f'{len(self.build["serials"])} serials read in from {serial_file}')
             else:
                 # print(f'new serials {self.build["serials"]}')
-                self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)
-                while len(self.build['serials'])>len(set(self.build['serials'])):
+                if self.ncopies==1:
+                    self.build['serials']=None
+                else:
                     self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)
-                if serial_file:
-                    with open(serial_file,'w') as f:
-                        for s in self.build['serials']:
-                            f.write(f'{s}\n')
+                    while len(self.build['serials'])>len(set(self.build['serials'])):
+                        self.build['serials']=np.random.randint(10000000,99999999,self.ncopies)
+                    if serial_file:
+                        with open(serial_file,'w') as f:
+                            for s in self.build['serials']:
+                                f.write(f'{s}\n')
         else:
             if serial_file and not os.path.exists(serial_file):
                 with open(serial_file,'w') as f:
                     for s in self.build['serials']:
                         f.write(f'{s}\n')    
         self.serials=self.build['serials']
-        assert self.ncopies==len(self.build['serials']),f'Expected {self.ncopies} unique serial numbers'
-        assert len(self.build['serials'])==len(set(self.build['serials'])),f'Expected {self.ncopies} unique serial numbers'
+        if self.serials:
+            assert self.ncopies==len(self.build['serials']),f'Expected {self.ncopies} unique serial numbers'
+            assert len(self.build['serials'])==len(set(self.build['serials'])),f'Expected {self.ncopies} unique serial numbers'

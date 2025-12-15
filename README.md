@@ -18,6 +18,10 @@ pip install -e .
 
 ## Release History
 
+* 0.1.4
+    * single-shot assignment creation with no serial numbers
+    * additional LaTeX header commands available via config
+    * upgraded ycleptic dependencies to 2.0.3
 * 0.1.3
     * `combine` subcommand
     * `build` subcommand
