@@ -1,0 +1,214 @@
+attributes:
+  - name: paths
+    type: dict
+    text: Allows user to specify paths to external executables and directories
+    attributes:
+      - name: pythontex
+        type: str
+        text: Path for pythontex executable
+        default:  C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pythontex.exe
+      - name: pdflatex
+        type: str
+        text: Path for pdflatex executable
+        default: C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe
+      - name: build-dir
+        type: str
+        text: Path for build directory
+        default: .\build
+  - name: document
+    type: dict
+    text: Specification of document structure
+    attributes:
+      - name: name
+        type: str
+        text: Document name
+        default: tpdoc
+      - name: type
+        type: str
+        text: Document type (assignment, exam, plain)
+        options:
+          - assignment
+          - exam
+          - plain
+        default: plain
+      - name: structure
+        type: list
+        text: Document structure specification as a list of blocks
+        attributes:
+          - name: header
+            type: dict
+            text: template specification
+            attributes:
+              - name: source
+                type: str
+                text: name of template file
+                default: header.tex # provided iņ resources/templates
+              - name: metadata
+                type: dict
+                text: Header metadata
+                attributes:
+                  - name: Instructorname
+                    type: str
+                    text: instructor name
+                    default: UNSET INSTRUCTOR
+                  - name: Instructoremail
+                    type: str
+                    text: instructor email
+                    default: cfa22@drexel.edu
+                  - name: Coursename
+                    type: str
+                    text: course name
+                    default: UNSET-COURSENAME
+                  - name: Departmentname
+                    type: str
+                    text: department name
+                    default: UNSET-DEPARTMENTNAME
+                  - name: Termcode
+                    type: str
+                    text: term code
+                    default: 202425
+                  - name: Termname
+                    type: str
+                    text: term name
+                    default: Winter 2024-2025
+                  - name: date
+                    type: str
+                    text: date to put on document
+                    default: UNSET-DATE
+                  - name: description
+                    type: str
+                    text: a descriptive title for the document
+                    default: UNSET-DESCRIPTION
+                  - name: assignment_number
+                    type: int
+                    text: the assignment number (only used for doc type assignment)
+                    default: 1
+                  - name: message
+                    type: str
+                    text: A message for the assignment
+          - name: footer
+            type: dict
+            text: template specification
+            attributes:
+              - name: source
+                type: str
+                text: name of template file
+                default: footer.tex # provided in resources/templates
+              - name: metadata
+                type: dict
+                text: metadata to be passed to the template
+          - name: block
+            type: dict
+            text: block specification
+            attributes:
+              - name: name
+                type: str
+                text: name of the block
+              - name: type
+                type: str
+                text: type of block (paragraph, enumerate, itemize)
+                attributes:
+                  - name: paragraph
+                    type: dict
+                    text: paragraph block specification
+                    attributes:
+                      - name: content
+                        type: str
+                        text: content of the paragraph
+                      - name: source
+                        type: str
+                        text: source file for paragraph content (\input{})
+                  - name: enumerate
+                    type: dict
+                    text: enumerate block specification
+                    attributes:
+                      - name: items
+                        type: list
+                        text: list of items in the enumerate block
+                        attributes:
+                          - name: question
+                            type: list
+                            text: list of questions in the item
+                            attributes:
+                              - name: source
+                                type: str
+                                text: source file for question
+                              - name: points
+                                type: int
+                                text: number of points to assign to the question
+                  - name: itemize
+                    type: dict
+                    text: itemize block specification
+                    attributes:
+                      - name: items
+                        type: list
+                        text: list of items in the itemize block
+                        attributes:
+                          - name: question
+                            type: list
+                            text: list of questions in the item
+                            attributes:
+                              - name: source
+                                type: str
+                                text: source file for question
+                              - name: points
+                                type: int
+                                text: number of points to assign to the question
+      - name: class
+        type: dict
+        text: document class
+        default: 
+          classname: autoprob
+          options: 
+            - 12pt
+      - name: header_commands
+        type: list
+        text: default header commands
+  - name: build
+    type: dict
+    text: build specifications
+    attributes:
+      - name: copies
+        type: int
+        text: number of unique copies to generate
+        default: 1
+      - name: seed
+        type: int
+        text: rng seed (optional)
+      - name: serials
+        type: list
+        text: list of individual unique serial numbers; each serial number uniquely determines the content of any customizable items in templates; if unset, these are randomly-generated 8-digit integers
+      - name: serial-file
+        type: str
+        text: name of file containing serial numbers; if DNE, it is written
+      - name: solutions
+        type: bool
+        text: build full solutions for each copy
+        default: True
+      - name: overwrite
+        type: bool
+        text: overwrite any existing builds with the same serial number(s)
+        default: False
+      - name: output-dir
+        type: str
+        text: directory in which output builds are stored
+        default: build
+      - name: output-name
+        type: str
+        text: string prepended to all file names generated
+        default: tpdoc
+      - name: answer-file
+        type: str
+        text: name of answer file (tex and pdf)
+        default: answerset
+      - name: combine
+        type: dict
+        text: combine all PDFs into a single PDF
+        attributes:
+          - name: name
+            type: str
+            text: name of output file to generate
+          - name: sort
+            type: bool
+            text: sort files by name when combining
+        

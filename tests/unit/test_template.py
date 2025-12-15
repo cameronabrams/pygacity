@@ -1,6 +1,6 @@
 import unittest
 import os
-from pygacity.template import Template, _template_dir_
+from pygacity.generate.structure import Template, _template_dir_
 
 class TemplateTest(unittest.TestCase):
     def test_template_instance(self):

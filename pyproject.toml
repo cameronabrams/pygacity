@@ -30,3 +30,16 @@ dependencies = [
 log_cli = true
 [project.scripts]
 pygacity="pygacity.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pygacity"]
+
+[tool.hatch.build]
+include = [
+  "src/pyaota/resources/**",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/pygacity/**",
+]

@@ -1,4 +1,4 @@
-from pygacity.corrsts import CorrespondingStates
+from pygacity.topics.thermo.corrsts import CorrespondingStates
 import unittest
 
 class TestCoorsts(unittest.TestCase):
