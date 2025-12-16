@@ -1,8 +1,7 @@
 import unittest
 import os
-import shutil
 import random
-from pygacity.answerset import AnswerSet,AnswerSuperSet
+from pygacity.generate.answerset import AnswerSet,AnswerSuperSet
 import logging
 from glob import glob
 

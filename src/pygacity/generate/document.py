@@ -4,58 +4,64 @@ import os
 import shutil
 
 from importlib.resources import files
+from pathlib import Path
 
-from .structure import Template
+from .structure import LatexInputFile
 from ..util.stringthings import FileCollector
 
 logger = logging.getLogger(__name__)
 
-class Input:
-    def __init__(self,specs={}):
-        resources_dir = files('pygacity') / 'resources'
-        template_dir = resources_dir / 'templates'
-        self.filename = specs['include']
-        self.has_pycode = False
-        self.filepath = ''
-        self.contents = None
-        tmp = os.path.join(template_dir, self.filename)
-        if os.path.exists(tmp):
-            self.filepath = tmp
-            shutil.copy(self.filepath, self.filename) # make a local copy
-        else:
-            if os.path.exists(self.filename):
-                self.filepath = os.path.realpath(self.filename)
-            else:
-                raise FileNotFoundError(f'Could not locate input file {self.filename} in {os.getcwd()}')
-        if self.filepath:
-            with open(self.filepath, 'r') as f:
-                self.contents = f.read()
-            self.has_pycode = r'\begin{pycode}' in self.contents
-    def resolve(self,serial=0):
-        pass
-    def write_local(self,FC=None):
-        if not os.path.exists(self.filename) and self.contents!=None:
-            with open(self.filename,'w') as f:
-                f.write(self.contents)
-            if FC!=None:
-                FC.append(self.filename)
-                
-    def resgister_files(self,FC):
-        FC.append(self.filename)
-
-    def __str__(self):
-        return r'\input{'+self.filename+r'}'
-    
-_classmap={'template':Template,'include':Input}
 
 class Document:
-    def __init__(self,docspecs={},buildspecs={}):
-        self.FC=FileCollector()
-        self.structure=[]
-        self.specs=docspecs
-        self.buildspecs=buildspecs
-        self.has_pycode=False
-        for s in docspecs['structure']:
+    resources_root: Path = files('pygacity') / 'resources'
+    templates_dir: Path = resources_root / 'templates'
+    def __init__(self, sources_root: Path = Path('.'), build_root: Path = Path('build')):
+        self.local_sources_root = sources_root
+        self.build_root = build_root
+        assert self.local_sources_root != self.build_root
+        if not self.local_sources_root.exists():
+            raise FileNotFoundError(f'Sources root directory {self.local_sources_root} does not exist.')
+        self.build_root.mkdir(parents=True, exist_ok=True)
+        self.structure: list[LatexInputFile] = []
+        self.FC = FileCollector()
+
+    def source_resolver(self, source_name: str) -> Path:
+        # check local sources root first
+        local_path = self.local_sources_root / source_name
+        if local_path.exists():
+            return local_path
+        # check templates directory next
+        template_path = self.templates_dir / source_name
+        if template_path.exists():
+            return template_path
+        raise FileNotFoundError(f'Could not locate source file {source_name} in either {self.local_sources_root} or {self.templates_dir}.')
+
+    def generate_source(self, docspecs: dict):
+        logger.debug('Generating document source from specs')
+        self.specs = docspecs
+        self.name = docspecs.get('name', 'document')
+        self.type = docspecs.get('type', None)
+
+        for section in docspecs['structure']:
+            assert type(section) == dict
+            assert len(section) == 1
+            section_type = list(section.keys())[0]
+            if section_type == 'header':
+                self.structure.append(LatexInputFile(path=self.source_resolver(section['header'].get('source', 'header.tex'))).load())
+            elif section_type == 'footer':
+                self.structure.append(LatexInputFile(path=self.source_resolver(section['footer'].get('source', 'footer.tex'))).load())
+            elif section_type == 'block':
+                block_specs = section['block']
+                block_name = block_specs.get('name', None)
+                if block_name is None:
+                    raise ValueError('Block section must have a "name" field.')
+                block_type = block_specs.get('type', None)
+                if block_type is None:
+                    raise ValueError('Block section must have a "type" field.') 
+
+                pass
+            else:
+                raise ValueError(f'Unrecognized section type "{section_type}" in document structure.')
             label=list(s.keys())[0]
             if label=='items':
                 itemlist=[]

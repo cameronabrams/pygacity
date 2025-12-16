@@ -13,7 +13,7 @@ attributes:
         default: C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe
       - name: build-dir
         type: str
-        text: Path for build directory
+        text: Path for user's build directory
         default: .\build
   - name: document
     type: dict
@@ -31,6 +31,9 @@ attributes:
           - exam
           - plain
         default: plain
+      - name: substitutions
+        type: dict
+        text: Global substitutions to be passed to all templates
       - name: structure
         type: list
         text: Document structure specification as a list of blocks
@@ -43,9 +46,9 @@ attributes:
                 type: str
                 text: name of template file
                 default: header.tex # provided iņ resources/templates
-              - name: metadata
+              - name: substitutions
                 type: dict
-                text: Header metadata
+                text: Header substitutions
                 attributes:
                   - name: Instructorname
                     type: str
@@ -66,11 +69,11 @@ attributes:
                   - name: Termcode
                     type: str
                     text: term code
-                    default: 202425
+                    default: UNSET-TERMCODE
                   - name: Termname
                     type: str
                     text: term name
-                    default: Winter 2024-2025
+                    default: UNSET-TERMNAME
                   - name: date
                     type: str
                     text: date to put on document
@@ -82,7 +85,7 @@ attributes:
                   - name: assignment_number
                     type: int
                     text: the assignment number (only used for doc type assignment)
-                    default: 1
+                    default: 0
                   - name: message
                     type: str
                     text: A message for the assignment
@@ -94,9 +97,9 @@ attributes:
                 type: str
                 text: name of template file
                 default: footer.tex # provided in resources/templates
-              - name: metadata
+              - name: substitutions
                 type: dict
-                text: metadata to be passed to the template
+                text: substitutions to be passed to the template
           - name: block
             type: dict
             text: block specification
@@ -107,6 +110,9 @@ attributes:
               - name: type
                 type: str
                 text: type of block (paragraph, enumerate, itemize)
+              - name: substitutions
+                type: dict
+                text: substitutions to be passed to the block template
                 attributes:
                   - name: paragraph
                     type: dict
@@ -133,6 +139,9 @@ attributes:
                               - name: source
                                 type: str
                                 text: source file for question
+                              - name: substitutions
+                                type: dict
+                                text: substitutions for the question template
                               - name: points
                                 type: int
                                 text: number of points to assign to the question
@@ -151,6 +160,9 @@ attributes:
                               - name: source
                                 type: str
                                 text: source file for question
+                              - name: substitutions
+                                type: dict
+                                text: substitutions for the question template
                               - name: points
                                 type: int
                                 text: number of points to assign to the question
@@ -161,9 +173,9 @@ attributes:
           classname: autoprob
           options: 
             - 12pt
-      - name: header_commands
+      - name: preamble_commands
         type: list
-        text: default header commands
+        text: additional preamble commands
   - name: build
     type: dict
     text: build specifications
@@ -177,7 +189,10 @@ attributes:
         text: rng seed (optional)
       - name: serials
         type: list
-        text: list of individual unique serial numbers; each serial number uniquely determines the content of any customizable items in templates; if unset, these are randomly-generated 8-digit integers
+        text: |
+          list of individual unique serial numbers; each serial number uniquely 
+          determines the content of any customizable items in templates; if unset, 
+          these are randomly-generated 8-digit integers
       - name: serial-file
         type: str
         text: name of file containing serial numbers; if DNE, it is written

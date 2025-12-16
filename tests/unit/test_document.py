@@ -1,6 +1,6 @@
 import unittest
 import os
-from pygacity.document import Input, Document
+from pygacity.generate.document import Input, Document
 import yaml
 
 class DocumentTest(unittest.TestCase):
