@@ -1,40 +1,26 @@
 import unittest
-import os
+import pytest
 from pygacity.generate.config import Config
 
-# class ConfigTest(unittest.TestCase):
-#     def test_resource_manager(self):
-#         rm=ResourceManager()
-#         for r in ['autoprob-package','config','example-scripts','corresponding-states-data','templates']:
-#             self.assertTrue(r in rm)
-#         badresourcename='non-existent-resource'
-#         self.assertFalse(badresourcename in rm)
-    
-#     def test_config_base(self):
-#         c=Config()
-#         self.assertTrue('Resources' in c)
-#         self.assertEqual(type(c['Resources']),ResourceManager)
-#         self.assertTrue('base' in c)
-#         self.assertTrue('user' in c)
-#         cdict=c['user']
-#         for cat in ['paths','document']:
-#             self.assertTrue(cat in cdict)
-#         document=cdict['document']
-#         self.assertEqual(type(document),dict)
-#         dockeys=list(document.keys())
-#         for comp in ['metadata','type','structure','class','packages']:
-#             self.assertTrue(comp in dockeys)
-#         self.assertEqual(len(dockeys),5)
-#         build=cdict['build']
-#         self.assertEqual(build['copies'],1)
-#         self.assertEqual(len(build['serials']),1)
-#         self.assertEqual(build['solutions'],True)
-#         self.assertEqual(build['overwrite'],False)
-#         self.assertEqual(build['output-dir'],'build')
-#         self.assertEqual(build['output-name'],'tpdoc')
+class ConfigTest(unittest.TestCase):
 
-    # def test_config_user1(self):
-    #     c=Config('exam_description1.yaml')
+    def test_config_init_empty(self):
+        c = Config()
+        self.assertTrue('document' in c.specs)
+        self.assertTrue('build' in c.specs)
+        docspecs = c.document_specs
+        self.assertEqual(docspecs['name'], 'tpdoc')
+        self.assertEqual(docspecs['type'], 'plain')
+        self.assertTrue(type(docspecs['structure']) == list)
+        self.assertEqual(len(docspecs['structure']), 0)
+        
+        buildspecs = c.build_specs
+        self.assertEqual(buildspecs['output-name'], 'tpdoc')
+        self.assertEqual(len(buildspecs['paths']), 3)
+        self.assertTrue(buildspecs['solutions'])
+
+    def test_config_user1(self):
+        c = Config('exam_description1.yaml')
     #     self.assertTrue('Resources' in c)
     #     cdict=c['user']
     #     doc=cdict['document']

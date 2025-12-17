@@ -6,51 +6,67 @@ import pandas as pd
 import logging
 from .command import Command
 from .stringthings import FileCollector
+from ..generate.document import Document
 logger=logging.getLogger(__name__)
 
 class LatexBuilder:
-    def __init__(self,exepaths={},localdirs=[]):
-        self.exepaths=exepaths
-        self.localdirs=localdirs
-        self.FC=FileCollector()
-        logger.debug(f'localdirs {self.localdirs}')
+    def __init__(self, build_specs: dict, searchdirs: list = []):
+        self.specs = build_specs
+        self.pdflatex = self.specs['paths']['pdflatex']
+        self.pythontex = self.specs['paths']['pythontex']
+        assert os.access(self.pdflatex, os.X_OK)
+        assert os.access(self.pythontex, os.X_OK)
+        self.searchdirs = searchdirs
+        self.output_dir = self.specs.get('output-dir', '.')
+        self.output_name_stem = self.specs.get('output-name', 'document')
+        self.FC = FileCollector()
+        # logger.debug(f'localdirs {self.localdirs}')
 
-    def verify_access(self):
-        assert os.access(self.exepaths.get('pdflatex',None),os.X_OK)
-        assert os.access(self.exepaths.get('pythontex',None),os.X_OK)
+    def build_commands(self, document: Document = None, serial=0, make_solutions=False):
+        commands = []
+        document.write_source(local_output_name=self.output_name_stem)
+        pdfname_stem = f'{self.output_name_stem}'
+        if serial > 0:
+            pdfname_stem = f'{self.output_name_stem}-{serial}'
+        includedirs = ''
+        for d in self.localdirs:
+            includedirs = includedirs + ' -include-directory=' + d
+        logger.debug(f'includedirs {includedirs}')
+        has_pycode = document.has_pycode
+        output_option = ''
+        if self.output_dir != '.':
+            output_option = f'-output-directory={self.output_dir}'
 
-    def build_commands(self,document=None,make_solutions=False):
-        commands=[]
-        output_name=document.output_name
-        if output_name:
-            pdflatex_cmd=self.exepaths['pdflatex']
-            pythontex_cmd=self.exepaths['pythontex']
-            includedirs=''
-            for d in self.localdirs:
-                includedirs=includedirs+' --include-directory='+d
-            logger.debug(f'includedirs {includedirs}')
-            has_pycode=document.has_pycode
-            commands.append(Command(f'{pdflatex_cmd} --interaction=nonstopmode {includedirs} {output_name}',ignore_codes=[1]))
-            self.FC.append(f'{output_name}.aux')
-            self.FC.append(f'{output_name}.log')
+        repeated_command = (f'{self.pdflatex} -interaction=nonstopmode '
+                                f'-jobname={pdfname_stem} {includedirs} '
+                                f'{output_option} {self.output_name_stem}')
+        commands.append(Command(repeated_command, ignore_codes=[1]))
+
+        self.FC.append(f'{self.output_dir}/{pdfname_stem}.aux')
+        self.FC.append(f'{self.output_dir}/{pdfname_stem}.log')
+        if has_pycode:
+            self.FC.append(f'{self.output_dir}/{pdfname_stem}.pytxcode')
+            self.FC.append(f'{self.output_dir}/pythontex-files-{pdfname_stem}')
+            # don't know if this will work
+            commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.output_name_stem}'))
+
+        commands.append(Command(repeated_command, ignore_codes=[1]))
+
+        if make_solutions:
+            repeated_command = (f'{self.pdflatex} -jobname={self.output_name_stem}_soln '
+                                f'{includedirs} {output_option} {self.output_name_stem}')
+            commands.append(Command(repeated_command))
+            self.FC.append(f'{self.output_dir}/{self.output_name_stem}_soln.aux')
+            self.FC.append(f'{self.output_dir}/{self.output_name_stem}_soln.log')
             if has_pycode:
-                self.FC.append(f'{output_name}.pytxcode')
-                self.FC.append(f'pythontex-files-{output_name}')
-                commands.append(Command(f'{pythontex_cmd} {output_name}'))
-            commands.append(Command(f'{pdflatex_cmd} {includedirs} {output_name}'))
-            if make_solutions:
-                commands.append(Command(f'{pdflatex_cmd} -jobname={output_name}_soln {includedirs} {output_name}'))
-                self.FC.append(f'{output_name}_soln.aux')
-                self.FC.append(f'{output_name}_soln.log')
-                if has_pycode:
-                    self.FC.append(f'{output_name}_soln.pytxcode')
-                    self.FC.append(f'pythontex-files-{output_name}_soln')
-                    commands.append(Command(f'{pythontex_cmd} {output_name}_soln'))
-                commands.append(Command(f'{pdflatex_cmd} -jobname={output_name}_soln {includedirs} {output_name}'))
+                self.FC.append(f'{self.output_dir}/{self.output_name_stem}_soln.pytxcode')
+                self.FC.append(f'{self.output_dir}/pythontex-files-{self.output_name_stem}_soln')
+                commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.output_name_stem}_soln'))
+            commands.append(Command(repeated_command))
         return commands
 
-    def build_document(self,document=None,make_solutions=False,cleanup=True):
-        commands=self.build_commands(document,make_solutions=make_solutions)
+    def build_document(self, serial=0, document=None, make_solutions=False, cleanup=True):
+        commands = self.build_commands(document, serial=serial, make_solutions=make_solutions)
         for c in commands:
             c.run()
         if cleanup:

@@ -1,20 +1,4 @@
 attributes:
-  - name: paths
-    type: dict
-    text: Allows user to specify paths to external executables and directories
-    attributes:
-      - name: pythontex
-        type: str
-        text: Path for pythontex executable
-        default:  C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pythontex.exe
-      - name: pdflatex
-        type: str
-        text: Path for pdflatex executable
-        default: C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe
-      - name: build-dir
-        type: str
-        text: Path for user's build directory
-        default: .\build
   - name: document
     type: dict
     text: Specification of document structure
@@ -38,134 +22,49 @@ attributes:
         type: list
         text: Document structure specification as a list of blocks
         attributes:
-          - name: header
+          - name: unstructured
             type: dict
-            text: template specification
+            text: unstructured block specification
             attributes:
+              - name: content
+                type: str
+                text: literal content of the unstructured text block
               - name: source
                 type: str
-                text: name of template file
-                default: header.tex # provided iņ resources/templates
-              - name: substitutions
-                type: dict
-                text: Header substitutions
-                attributes:
-                  - name: Instructorname
-                    type: str
-                    text: instructor name
-                    default: UNSET INSTRUCTOR
-                  - name: Instructoremail
-                    type: str
-                    text: instructor email
-                    default: cfa22@drexel.edu
-                  - name: Coursename
-                    type: str
-                    text: course name
-                    default: UNSET-COURSENAME
-                  - name: Departmentname
-                    type: str
-                    text: department name
-                    default: UNSET-DEPARTMENTNAME
-                  - name: Termcode
-                    type: str
-                    text: term code
-                    default: UNSET-TERMCODE
-                  - name: Termname
-                    type: str
-                    text: term name
-                    default: UNSET-TERMNAME
-                  - name: date
-                    type: str
-                    text: date to put on document
-                    default: UNSET-DATE
-                  - name: description
-                    type: str
-                    text: a descriptive title for the document
-                    default: UNSET-DESCRIPTION
-                  - name: assignment_number
-                    type: int
-                    text: the assignment number (only used for doc type assignment)
-                    default: 0
-                  - name: message
-                    type: str
-                    text: A message for the assignment
-          - name: footer
-            type: dict
-            text: template specification
-            attributes:
-              - name: source
-                type: str
-                text: name of template file
-                default: footer.tex # provided in resources/templates
-              - name: substitutions
-                type: dict
-                text: substitutions to be passed to the template
-          - name: block
-            type: dict
-            text: block specification
-            attributes:
-              - name: name
-                type: str
-                text: name of the block
-              - name: type
-                type: str
-                text: type of block (paragraph, enumerate, itemize)
+                text: source file for unstructured content (\input{})
               - name: substitutions
                 type: dict
                 text: substitutions to be passed to the block template
+          - name: list
+            type: dict
+            text: list block specification
+            attributes:
+              - name: type
+                type: str
+                text: type of list (enumerate or itemize)
+                options:
+                  - enumerate
+                  - itemize
+              - name: items
+                type: list
+                text: list of items in the enumerate block
                 attributes:
-                  - name: paragraph
-                    type: dict
-                    text: paragraph block specification
+                  - name: question
+                    type: list
+                    text: list of questions in the item
                     attributes:
-                      - name: content
-                        type: str
-                        text: content of the paragraph
                       - name: source
                         type: str
-                        text: source file for paragraph content (\input{})
-                  - name: enumerate
-                    type: dict
-                    text: enumerate block specification
-                    attributes:
-                      - name: items
-                        type: list
-                        text: list of items in the enumerate block
-                        attributes:
-                          - name: question
-                            type: list
-                            text: list of questions in the item
-                            attributes:
-                              - name: source
-                                type: str
-                                text: source file for question
-                              - name: substitutions
-                                type: dict
-                                text: substitutions for the question template
-                              - name: points
-                                type: int
-                                text: number of points to assign to the question
-                  - name: itemize
-                    type: dict
-                    text: itemize block specification
-                    attributes:
-                      - name: items
-                        type: list
-                        text: list of items in the itemize block
-                        attributes:
-                          - name: question
-                            type: list
-                            text: list of questions in the item
-                            attributes:
-                              - name: source
-                                type: str
-                                text: source file for question
-                              - name: substitutions
-                                type: dict
-                                text: substitutions for the question template
-                              - name: points
-                                type: int
-                                text: number of points to assign to the question
+                        text: source file for question
+                      - name: config
+                        type: str
+                        text: configuration file for question template
+                      - name: substitutions
+                        type: dict
+                        text: substitutions for the question template
+                      - name: points
+                        type: int
+                        text: number of points to assign to the question
       - name: class
         type: dict
         text: document class
@@ -180,6 +79,22 @@ attributes:
     type: dict
     text: build specifications
     attributes:
+      - name: paths
+        type: dict
+        text: Allows user to specify paths to external executables and directories
+        attributes:
+          - name: pythontex
+            type: str
+            text: Path for pythontex executable
+            default:  C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pythontex.exe
+          - name: pdflatex
+            type: str
+            text: Path for pdflatex executable
+            default: C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe
+          - name: build-dir
+            type: str
+            text: Path for user's build directory
+            default: .\build
       - name: copies
         type: int
         text: number of unique copies to generate

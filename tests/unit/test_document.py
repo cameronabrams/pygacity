@@ -1,21 +1,9 @@
 import unittest
 import os
-from pygacity.generate.document import Input, Document
+from pygacity.generate.document import Document
 import yaml
 
 class DocumentTest(unittest.TestCase):
-    def test_input_instance(self):
-        if os.path.exists('blank_template.tex'):
-            os.remove('blank_template.tex')
-        I=Input({'include':'blank_template.tex'})
-        self.assertTrue(os.path.exists('blank_template.tex'))
-        os.remove('blank_template.tex')
-        self.assertEqual(I.filename,'blank_template.tex')
-        self.assertEqual(str(I),r'\input{blank_template.tex}')
-    def test_input_local(self):
-        I=Input({'include':'local_input.tex'})
-        self.assertEqual(I.filename,'local_input.tex')
-        self.assertEqual(str(I),r'\input{local_input.tex}')
     def test_document_structure1(self):
         with open('document1.yaml','r') as f:
             specs=yaml.safe_load(f)

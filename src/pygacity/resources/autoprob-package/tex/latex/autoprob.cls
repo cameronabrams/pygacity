@@ -139,7 +139,7 @@ numbers=none
         \Departmentname\\
         \Coursename\ -- \Termname\ (\Termcode)\\
         \Instructorname\\
-        \so{\sc Assignment {#1}}\\
+        \so{\sc {#1}}\\
         Due {#2}\\*[1em]
         \ifshowsolutions
         \Solutionstitle\\*[1em]
