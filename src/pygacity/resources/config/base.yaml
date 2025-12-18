@@ -3,21 +3,9 @@ attributes:
     type: dict
     text: Specification of document structure
     attributes:
-      - name: name
-        type: str
-        text: Document name
-        default: tpdoc
-      - name: type
-        type: str
-        text: Document type (assignment, exam, plain)
-        options:
-          - assignment
-          - exam
-          - plain
-        default: plain
       - name: substitutions
         type: dict
-        text: Global substitutions to be passed to all templates
+        text: Global substitutions to be applied to all LaTeX content
       - name: structure
         type: list
         text: Document structure specification as a list of blocks
@@ -28,13 +16,13 @@ attributes:
             attributes:
               - name: content
                 type: str
-                text: literal content of the unstructured text block
+                text: literal content of the unstructured text block (if source not given)
               - name: source
                 type: str
-                text: source file for unstructured content (\input{})
+                text: source file for unstructured content (\input{}) (if content not given)
               - name: substitutions
                 type: dict
-                text: substitutions to be passed to the block template
+                text: substitutions to be applied to the LaTeX content in this block
           - name: list
             type: dict
             text: list block specification
@@ -49,22 +37,31 @@ attributes:
                 type: list
                 text: list of items in the enumerate block
                 attributes:
-                  - name: question
+                  - name: item
                     type: list
-                    text: list of questions in the item
+                    text: list of items in the list
                     attributes:
+                      - name: itemtype
+                        type: str
+                        text: type of item (text or question)
+                        options:
+                          - text
+                          - question
+                      - name: content
+                        type: str
+                        text: literal content of the text item (if itemtype is text and source not given)
                       - name: source
                         type: str
-                        text: source file for question
+                        text: source file for item (if content not given)
                       - name: config
                         type: str
-                        text: configuration file for question template
+                        text: optional configuration file for question template (processed by pythontex)
                       - name: substitutions
                         type: dict
-                        text: substitutions for the question template
+                        text: substitutions to be applied to the LaTeX content in this item
                       - name: points
                         type: int
-                        text: number of points to assign to the question
+                        text: number of points to assign to the item (if it is a question)
       - name: class
         type: dict
         text: document class

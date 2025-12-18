@@ -13,7 +13,7 @@
 \begin{pycode}
 import numpy as np
 import yaml
-rng=np.random.default_rng(seed=<%serial%>)
+rng = np.random.default_rng(seed=<%serial%>)
 with open('<%config%>','r') as f:
     TFC=yaml.safe_load(f)
 if 'content' in TFC and 'config' in TFC:

@@ -1,5 +1,4 @@
 document:
-  type: exam
   structure:
     - unstructured:
         source: header.tex
@@ -11,17 +10,21 @@ document:
     - list:
         type: enumerate
         items:
-          - question: 
+          - item: 
+              type: question
               source: true_false.tex
               config: true_false.yaml
               points: 15
-          - question: 
+          - item: 
+              type: question
               source: tank_volume.tex
               points: 15
-          - question: 
+          - item: 
+              type: question
               source: adiabatic_compressor.tex
               points: 35
-          - question: 
+          - item: 
+              type: question
               source: steam_release.tex
               points: 35
     - unstructured:
