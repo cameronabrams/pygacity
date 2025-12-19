@@ -27,14 +27,15 @@ def build(args):
         random.seed(seed)
         logger.info(f'Setting random seed to {seed}.')
     output_dir = config.build_specs.get('output-dir', '.')
-    if os.path.exists(output_dir):
-        if args.overwrite:
-            permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-            chmod_recursive(output_dir, permissions)
-            rmtree(output_dir)
-        else:
-            raise Exception(f'Directory "{output_dir}" already exists and "--overwrite" was not specified.')
-    os.makedirs(output_dir, exist_ok=True)
+    if output_dir != '.':
+        if os.path.exists(output_dir):
+            if args.overwrite:
+                permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+                chmod_recursive(output_dir, permissions)
+                rmtree(output_dir)
+            else:
+                raise Exception(f'Directory "{output_dir}" already exists and "--overwrite" was not specified.')
+        os.makedirs(output_dir, exist_ok=True)
 
     base_builder = LatexBuilder(config.build_specs, 
                                  searchdirs = [config.autoprob_package_dir])
@@ -55,7 +56,13 @@ def build(args):
     if output_dir != '.':
         # find any configs referenced in document blocks and copy them to output_dir
         for block in base_doc.blocks:
-            block.copy_referenced_configs(output_dir)
+            file_or_files_or_none = block.copy_referenced_configs(output_dir)
+            if file_or_files_or_none:
+                if isinstance(file_or_files_or_none, list):
+                    for f in file_or_files_or_none:
+                        FC.append(f)
+                else:
+                    FC.append(file_or_files_or_none)
 
     if config.build_specs.get('copies', 1) > 1:
         if config.build_specs.get('serials', None):
@@ -79,7 +86,11 @@ def build(args):
             serials = list(serials)
             serials.sort()
     else:
-        serials = [0]
+        if config.build_specs.get('serials', None):
+            # check for explict serials
+            serials = [int(x) for x in config.build_specs['serials']]
+        else:
+            serials = [0]
 
     for i, serial in enumerate(serials):
         outer_substitutions = dict(serial=serial)
@@ -94,9 +105,9 @@ def build(args):
             print(f'serial # {serial} ({i+1}/{len(serials)}) => {output_dir}/{soln_builder.working_job_name}.pdf')
     for f in FC.data:
         logger.debug(f'Generated file: {f}')
-    FC.archive(os.path.join(output_dir, 'tex_artifacts'))
     if len(serials) > 1:
-        answerset(config)
+        FC.append(answerset(config))
+    FC.archive(os.path.join(output_dir, 'tex_artifacts'), delete=True)
 
 def answerset(config: Config = None):
     output_dir = config.build_specs.get('output-dir', '.')
@@ -105,7 +116,7 @@ def answerset(config: Config = None):
         raise FileNotFoundError(f'No answer files found in {output_dir} matching pattern "answers-*.yaml"')
     filenames = [str(x) for x in apparent_answer_files]
     filenames.sort()
-    AS = AnswerSuperSet(filenames)
+    AS = AnswerSuperSet(filenames, delete=True)
     answer_buildspecs = {'output-dir': output_dir,
                             'job-name': config.build_specs.get('answer-name', 'answerset'),
                             'paths': config.build_specs['paths']}
@@ -126,18 +137,11 @@ def answerset(config: Config = None):
     AnswerSetDoc.make_substitutions(dict(serial='Answer Set'))
     AnswerSetBuilder.build_document(AnswerSetDoc)
     print(f'Combined answer set => {output_dir}/{AnswerSetBuilder.working_job_name}.pdf')
+    return f'{AnswerSetBuilder.working_job_name}.tex'
 
 def answerset_subcommand(args):
     logger.info(f'Generating answer set document from previous build specified in {args.f}...')
     config = Config(args.f)
-    answerset(config)
-    # if 'combine' in c.build:
-    #     outname = c.build['combine'].get('name', None)
-    #     if outname:
-    #         args.i = FC.data
-    #         if c.build['combine']['sort']:
-    #             args.i.sort()
-    #         args.o = outname
-    #         combine_pdfs(args)
-
-
+    tex_file = answerset(config)
+    # remove the tex source
+    os.remove(tex_file)

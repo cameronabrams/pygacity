@@ -90,6 +90,8 @@ class LatexSimpleBlock:
             if not dest_path.exists():
                 copy2(self.config_path, dest_path)
                 logger.debug(f'Copied config file {self.config_path} to {dest_path}')
+            return str(dest_path)
+        return None
 
     def __str__(self):
         return self.processedcontents
@@ -122,8 +124,13 @@ class LatexListBlock:
             item.substitute(super_substitutions=super_substitutions)
 
     def copy_referenced_configs(self, output_dir: str):
+        filenames = []
         for item in self.items:
-            item.copy_referenced_configs(output_dir)
+            filename = item.copy_referenced_configs(output_dir)
+            if filename:
+                filenames.append(filename)
+        logger.debug(f'Copied referenced config files: {filenames}')
+        return filenames
 
     def __str__(self):
         lines = [rf'\begin{{{self.list_type}}}']

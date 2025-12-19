@@ -309,7 +309,7 @@ class FileCollector(UserList):
     def __str__(self):
         return ' '.join([x for x in self])
 
-    def archive(self, basename):
+    def archive(self, basename, delete=False):
         """If Linux, makes a tarball of the files in the collection; if Windows, makes a zipfile 
         
         Parameters
@@ -331,7 +331,8 @@ class FileCollector(UserList):
                 for f in self.data:
                     tf.add(f, arcname=os.path.basename(f))
             logger.debug(f'generated tarball {basename}.tgz')
-
+        if delete:
+            self.flush()
 
 def oxford(a_list,conjunction='or'):
     """ returns a comma-delimited string of items in a_list, following the oxford comma rules including a terminal conjuction (default is 'or') """

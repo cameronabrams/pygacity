@@ -16,7 +16,7 @@ class AnswerSet:
         self.D = {}
 
     @classmethod
-    def from_yaml(cls, filename):
+    def from_yaml(cls, filename, delete=False):
         root, ext = os.path.splitext(filename)
         assert ext in ['.yaml', '.yml'], f'{filename} does not end in .yaml or .yml'
         tokens = root.split('-')
@@ -25,6 +25,8 @@ class AnswerSet:
         R = cls(serial)
         with open(filename,'r') as f:
             R.D = yaml.safe_load(f)
+        if delete:
+            os.remove(filename)
         return R
     
     def register(self, index, label=None, value=None, units=None, formatter=None):
@@ -64,10 +66,10 @@ class AnswerSet:
             yaml.safe_dump(self.D, f)
 
 class AnswerSuperSet(UserList):
-    def __init__(self, files=[]):
+    def __init__(self, files=[], delete=False):
         data=[]
         for f in files:
-            data.append(AnswerSet.from_yaml(f))
+            data.append(AnswerSet.from_yaml(f, delete=delete))
         super().__init__(data)
         if not self._check_congruency():
             print(f'Error: There is a lack of congruency among {files}')

@@ -47,8 +47,9 @@ class LatexBuilder:
 
         self.FC.append(f'{self.output_dir}/{self.working_job_name}.aux')
         self.FC.append(f'{self.output_dir}/{self.working_job_name}.log')
+        self.FC.append(f'{self.output_dir}/{self.working_job_name}.out')
+        self.FC.append(f'{self.output_dir}/{self.working_job_name}.pytxcode')
         if has_pycode:
-            self.FC.append(f'{self.output_dir}/{self.working_job_name}.pytxcode')
             self.FC.append(f'{self.output_dir}/pythontex-files-{self.working_job_name}')
             # don't know if this will work
             commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
@@ -66,7 +67,7 @@ class LatexBuilder:
         if cleanup:
             self.FC.flush()
             
-def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
+def table_as_tex(table, float_format='{:.4f}'.format, drop_zeros=None, total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
         items and generates a table '''
     df=pd.DataFrame(table)
@@ -81,17 +82,17 @@ def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]
         tablestring=tmpstr
     return tablestring
 
-def Cp_as_tex(Cp,letters=True,decoration='*'):
+def Cp_as_tex(Cp_coeff: dict | list, decoration='*'):
     idx=[0,1,2,3]
-    if letters:
+    if type(Cp_coeff)==dict:
         idx='abcd'
     sgns=[]
     for i in range(4):
-        sgns.append('-' if Cp[idx[i]]<0 else '+')
-    retstr=r'$C_p^'+f'{decoration}'+r'$ = '+f'{Cp[idx[0]]:.3f} {sgns[1]} '
-    retstr+=sci_notation_as_tex(np.abs(Cp[idx[1]]),mantissa_fmt='{:.4e}')+r' $T$ '+f'{sgns[2]} '
-    retstr+=sci_notation_as_tex(np.abs(Cp[idx[2]]),mantissa_fmt='{:.4e}')+r' $T^2$ '+f'{sgns[3]} '
-    retstr+=sci_notation_as_tex(np.abs(Cp[idx[3]]),mantissa_fmt='{:.4e}')+r' $T^3$'
+        sgns.append('-' if Cp_coeff[idx[i]]<0 else '+')
+    retstr=r'$C_p^'+f'{decoration}'+r'$ = '+f'{Cp_coeff[idx[0]]:.3f} {sgns[1]} '
+    retstr+=sci_notation_as_tex(np.abs(Cp_coeff[idx[1]]),mantissa_fmt='{:.4e}')+r' $T$ '+f'{sgns[2]} '
+    retstr+=sci_notation_as_tex(np.abs(Cp_coeff[idx[2]]),mantissa_fmt='{:.4e}')+r' $T^2$ '+f'{sgns[3]} '
+    retstr+=sci_notation_as_tex(np.abs(Cp_coeff[idx[3]]),mantissa_fmt='{:.4e}')+r' $T^3$'
     return(retstr)
 
 def sci_notation_as_tex(x,**kwargs):
