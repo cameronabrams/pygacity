@@ -1,20 +1,16 @@
-type: exam
+substitutions:
+  description: test1
+  date: no-date
 structure:
-  - include: head.tex
-  - include: tail.tex
+  - unstructured: 
+      source: header.tex
+  - unstructured: 
+      source: footer.tex
 class:
   classname: farticle
   options:
     - 11pt
     - foobar
-packages:
-  - package_name: package_abc
-    options:
-      - abc1
-      - abc2
-  - package_name: package_xyz
-    options:
-      - xyz1
-metadata:
-  description: test1
-  date: no-date
+preamble_commands: |
+  \usepackage[abc1, abc2]{package_abc}
+  \usepackage[xyz1]{package_xyz}

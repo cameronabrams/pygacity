@@ -61,7 +61,7 @@ def cli():
         '-l',
         '--log',
         type=str,
-        default=None,
+        default='pygacity-diagnostics.log',
         help='File to which diagnostic log messages are written'
     )
     subparsers = parser.add_subparsers(
@@ -80,7 +80,7 @@ def cli():
         command_parsers[k].set_defaults(func=specs['func'])
 
     command_parsers['build'].add_argument(
-        '=o',
+        '-o',
         '--overwrite',
         type=bool,
         default=False,

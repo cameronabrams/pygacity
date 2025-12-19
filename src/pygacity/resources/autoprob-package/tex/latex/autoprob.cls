@@ -20,7 +20,6 @@
 \RequirePackage{nccmath}
 \RequirePackage{currfile}
 \RequirePackage{fancyhdr}
-\RequirePackage[margin=1in]{geometry}
 \RequirePackage{hyperref}
 \RequirePackage{array}
 \RequirePackage{soul}
@@ -49,6 +48,7 @@
 \LoadClass{article}
 
 \RequirePackage{enumitem}
+\RequirePackage[margin=1in]{geometry}
 
 \newsavebox{\fmbox}
 \newenvironment{fmpage}[1]
@@ -108,9 +108,6 @@ numbers=none
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
 
-%\RequirePackage[cmtip,all]{xy}
-%\newcommand{\longsquiggly}{\xymatrix{{}\ar@{~>}[r]&{}}}
-
 \newcommand{\Universityname}{\so{\sc University Name}}
 \newcommand{\Departmentname}{Department Name}
 \newcommand{\Coursename}{Course Name}
@@ -133,18 +130,16 @@ numbers=none
     \end{centering}
 }
 
-\newcommand{\asnheader}[3]{
+\newcommand{\asnheader}[2]{
     \begin{centering}
-        \Universityname\\
+        {\sc \Universityname}\\
         \Departmentname\\
         \Coursename\ -- \Termname\ (\Termcode)\\
         \Instructorname\\
-        \so{\sc {#1}}\\
+        {\sc {#1}\ }\\
         Due {#2}\\*[1em]
         \ifshowsolutions
         \Solutionstitle\\*[1em]
-        \else
-        \noindent {#3}\\*[1em]
         \fi
     \end{centering}
 }

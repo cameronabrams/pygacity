@@ -1,35 +1,38 @@
 import unittest
-import os
-from pygacity.generate.document import Document
 import yaml
 
+from importlib.resources import files
+
+from pygacity.generate.document import Document
+
 class DocumentTest(unittest.TestCase):
+
+    def setUp(self):
+        self.default_header_tex = files('pygacity') / 'resources' / 'templates' / 'header.tex'
+        self.default_header_contents = self.default_header_tex.read_text()
+        self.default_footer_tex = files('pygacity') / 'resources' / 'templates' / 'footer.tex'
+        self.default_footer_contents = self.default_footer_tex.read_text()
+
     def test_document_structure1(self):
-        with open('document1.yaml','r') as f:
-            specs=yaml.safe_load(f)
-        D=Document(specs,buildspecs={'output-name':'local_result1'})
-        self.assertEqual(D.specs['type'],'exam')
-        self.assertTrue(type(D.structure)==list)
-        self.assertEqual(len(D.structure),2)
-        self.assertEqual(str(D.structure[0]),r'\input{head.tex}')
-        self.assertEqual(str(D.structure[1]),r'\input{tail.tex}')
+        with open('document1.yaml', 'r') as f:
+            specs = yaml.safe_load(f)
+        D = Document(specs)
+        self.assertTrue(type(D.blocks) == list)
+        self.assertEqual(len(D.blocks), 2)
+        self.assertEqual(str(D.blocks[0]), self.default_header_contents)
+        self.assertEqual(len(D.blocks[0].substitution_map), 7)
+        self.assertTrue('Departmentname' in D.blocks[0].substitution_map)
+        self.assertTrue('Coursename' in D.blocks[0].substitution_map)
+        self.assertTrue('Documentname' in D.blocks[0].substitution_map)
+        self.assertTrue('Instructorname' in D.blocks[0].substitution_map)
+        self.assertTrue('Instructoremail' in D.blocks[0].substitution_map)
+        self.assertTrue('Termname' in D.blocks[0].substitution_map)
+        self.assertTrue('Termcode' in D.blocks[0].substitution_map)
+        self.assertEqual(str(D.blocks[1]), self.default_footer_contents)
         self.assertTrue('class' in D.specs)
-        if os.path.exists('local_result1.tex'):
-            os.remove('local_result1.tex')
-        D.write_tex()
-        self.assertTrue(os.path.exists('local_result1.tex'))
 
     def test_document_structure2(self):
-        with open('document2.yaml','r') as f:
-            specs=yaml.safe_load(f)
-        D=Document(specs,buildspecs={'output-name':'local_result2'})
-        self.assertEqual(D.specs['type'],'exam')
-        self.assertTrue(type(D.structure)==list)
-        self.assertEqual(len(D.structure),3)
-        self.assertEqual(str(D.structure[0]),r'\input{head.tex}')
-        self.assertEqual(str(D.structure[2]),r'\input{tail.tex}')
-        self.assertTrue('class' in D.specs)
-        if os.path.exists('local_result2.tex'):
-            os.remove('local_result2.tex')
-        D.write_tex()
-        self.assertTrue(os.path.exists('local_result2.tex'))
+        with open('document2.yaml', 'r') as f:
+            specs = yaml.safe_load(f)
+        D = Document(specs)
+        

@@ -7,7 +7,7 @@ import logging
 from .command import Command
 from .stringthings import FileCollector
 from ..generate.document import Document
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class LatexBuilder:
     def __init__(self, build_specs: dict, searchdirs: list = []):
@@ -25,53 +25,43 @@ class LatexBuilder:
     def build_commands(self, document: Document = None, serial=0, make_solutions=False):
         commands = []
         document.write_source(local_output_name=self.output_name_stem)
-        pdfname_stem = f'{self.output_name_stem}'
-        if serial > 0:
-            pdfname_stem = f'{self.output_name_stem}-{serial}'
         includedirs = ''
-        for d in self.localdirs:
-            includedirs = includedirs + ' -include-directory=' + d
+        for d in self.searchdirs:
+            includedirs = includedirs + ' -include-directory=' + str(d)
         logger.debug(f'includedirs {includedirs}')
         has_pycode = document.has_pycode
         output_option = ''
         if self.output_dir != '.':
             output_option = f'-output-directory={self.output_dir}'
+        job_name = self.specs.get('job-name', self.output_name_stem)
+        if serial > 0:
+           job_name = f'{job_name}-{serial}'
 
         repeated_command = (f'{self.pdflatex} -interaction=nonstopmode '
-                                f'-jobname={pdfname_stem} {includedirs} '
+                                f'-jobname={job_name} {includedirs} '
                                 f'{output_option} {self.output_name_stem}')
         commands.append(Command(repeated_command, ignore_codes=[1]))
 
-        self.FC.append(f'{self.output_dir}/{pdfname_stem}.aux')
-        self.FC.append(f'{self.output_dir}/{pdfname_stem}.log')
+        self.FC.append(f'{self.output_dir}/{job_name}.aux')
+        self.FC.append(f'{self.output_dir}/{job_name}.log')
         if has_pycode:
-            self.FC.append(f'{self.output_dir}/{pdfname_stem}.pytxcode')
-            self.FC.append(f'{self.output_dir}/pythontex-files-{pdfname_stem}')
+            self.FC.append(f'{self.output_dir}/{job_name}.pytxcode')
+            self.FC.append(f'{self.output_dir}/pythontex-files-{job_name}')
             # don't know if this will work
-            commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.output_name_stem}'))
+            commands.append(Command(f'{self.pythontex} {self.output_dir}/{job_name}'))
 
         commands.append(Command(repeated_command, ignore_codes=[1]))
-
-        if make_solutions:
-            repeated_command = (f'{self.pdflatex} -jobname={self.output_name_stem}_soln '
-                                f'{includedirs} {output_option} {self.output_name_stem}')
-            commands.append(Command(repeated_command))
-            self.FC.append(f'{self.output_dir}/{self.output_name_stem}_soln.aux')
-            self.FC.append(f'{self.output_dir}/{self.output_name_stem}_soln.log')
-            if has_pycode:
-                self.FC.append(f'{self.output_dir}/{self.output_name_stem}_soln.pytxcode')
-                self.FC.append(f'{self.output_dir}/pythontex-files-{self.output_name_stem}_soln')
-                commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.output_name_stem}_soln'))
-            commands.append(Command(repeated_command))
         return commands
 
-    def build_document(self, serial=0, document=None, make_solutions=False, cleanup=True):
+    def build_document(self, document=None, serial=0, make_solutions=False, cleanup=True):
         commands = self.build_commands(document, serial=serial, make_solutions=make_solutions)
         for c in commands:
-            c.run()
+            logger.debug(f'Running command: {c.c}')
+            out, err = c.run()
+            logger.debug(f'Command output:\n{out}\n\n')
+            logger.debug(f'Command error:\n{err}\n\n')
         if cleanup:
             self.FC.flush()
-            document.flush()
             
 def table_as_tex(table,float_format='{:.4f}'.format,drop_zeros=None,total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column

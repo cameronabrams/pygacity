@@ -1,29 +1,29 @@
-type: exam
 structure:
-  - include: head.tex
-  - items:
-      - template: 
-          source: problem_abc.tex
-          config: problem_abc.yaml
-          points: 50 
-      - template:
-          source: problem_def.tex
-          config: problem_def.yaml
-          points: 50 
-  - include: tail.tex
+  - unstructured: 
+      source: header.tex
+  - list:
+      type: enumerate
+      items:
+        - item:
+            type: question 
+            source: problem_abc.tex
+            config: problem_abc.yaml
+            points: 50 
+        - item:
+            type: question
+            source: problem_def.tex
+            config: problem_def.yaml
+            points: 50 
+  - unstructured: 
+      source: footer.tex
 class:
   classname: farticle
   options:
     - 11pt
     - foobar
-packages:
-  - package_name: package_abc
-    options:
-      - abc1
-      - abc2
-  - package_name: package_xyz
-    options:
-      - xyz1
-metadata:
+preamble_commands: |
+  \usepackage[abc1, abc2]{package_abc}
+  \usepackage[xyz1]{package_xyz}
+substitutions:
   description: test2
   date: no-date2

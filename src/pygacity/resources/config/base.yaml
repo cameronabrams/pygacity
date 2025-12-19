@@ -68,7 +68,7 @@ attributes:
         default: 
           classname: autoprob
           options: 
-            - 12pt
+            - 11pt
       - name: preamble_commands
         type: list
         text: additional preamble commands
@@ -124,6 +124,9 @@ attributes:
         type: str
         text: string prepended to all file names generated
         default: tpdoc
+      - name: job-name
+        type: str
+        text: job name passed to pdflatex (defaults to output-name if not given)
       - name: answer-file
         type: str
         text: name of answer file (tex and pdf)
