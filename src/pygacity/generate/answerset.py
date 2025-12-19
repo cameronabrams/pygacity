@@ -9,49 +9,49 @@ from .document import Document
 logger=logging.getLogger(__name__)
 
 class AnswerSet:
-    _keys=['label','value','units','formatter']
-    def __init__(self,serial=0):
-        self.serial=serial
-        self.dumpname=f'answers-{serial:08d}.yaml'
-        self.D={}
+    _keys=['label', 'value', 'units', 'formatter']
+    def __init__(self, serial:int = 0):
+        self.serial = serial
+        self.dumpname = f'answers-{serial:08d}.yaml'
+        self.D = {}
 
     @classmethod
-    def from_yaml(cls,filename):
-        root,ext=os.path.splitext(filename)
-        assert ext in ['.yaml','.yml'],f'{filename} does not end in .yaml or .yml'
-        tokens=root.split('-')
-        assert len(tokens)==2,f'{filename} should be of the format "answers-<serial#>.yaml"'
-        serial=int(tokens[1])
-        R=cls(serial)
+    def from_yaml(cls, filename):
+        root, ext = os.path.splitext(filename)
+        assert ext in ['.yaml', '.yml'], f'{filename} does not end in .yaml or .yml'
+        tokens = root.split('-')
+        assert len(tokens)==2, f'{filename} should be of the format "answers-<serial#>.yaml"'
+        serial = int(tokens[1])
+        R = cls(serial)
         with open(filename,'r') as f:
-            R.D=yaml.safe_load(f)
+            R.D = yaml.safe_load(f)
         return R
     
-    def register(self,index,label=None,value=None,units=None,formatter=None):
+    def register(self, index, label=None, value=None, units=None, formatter=None):
         if not index in self.D:
-            self.D[index]=[]
+            self.D[index] = []
         self.D[index].append(dict(  label=label,
                                     value=value,
                                     units=units,
                                     formatter=formatter))
     
-    def display(self,index,element=0):
-        D=None
-        if element<len(self.D[index]):
-            D=self.D[index][element]
+    def display(self, index, element=0):
+        D = None
+        if element < len(self.D[index]):
+            D = self.D[index][element]
         if D:
-            fmt=D.get('formatter',None)
-            val=D.get('value',None)
-            label=D.get('label',None)
-            units=D.get('units',None)
-            vstr=''
+            fmt = D.get('formatter',None)
+            val = D.get('value',None)
+            label = D.get('label',None)
+            units = D.get('units',None)
+            vstr = ''
             if val:
                 if fmt:
-                    vstr=fmt.format(val)
+                    vstr = fmt.format(val)
                 else:
-                    vstr=str(val)
+                    vstr = str(val)
                 if units:
-                    vstr+=f' {units}'
+                    vstr += f' {units}'
             if label:
                 if vstr:
                     return f'{label} = {vstr}'
@@ -60,11 +60,11 @@ class AnswerSet:
         return ''
 
     def to_yaml(self):
-        with open(self.dumpname,'w') as f:
-            yaml.safe_dump(self.D,f)
+        with open(self.dumpname, 'w') as f:
+            yaml.safe_dump(self.D, f)
 
 class AnswerSuperSet(UserList):
-    def __init__(self,files=[]):
+    def __init__(self, files=[]):
         data=[]
         for f in files:
             data.append(AnswerSet.from_yaml(f))
@@ -74,7 +74,7 @@ class AnswerSuperSet(UserList):
         self._make_df()
 
     def to_latex(self):
-        return self.DF.to_latex(formatters=self.formatters,index=False)#,header=self.headings)
+        return self.DF.to_latex(formatters=self.formatters, index=False)#,header=self.headings)
 
     def to_pdf(self, config):
         LB=config.LB

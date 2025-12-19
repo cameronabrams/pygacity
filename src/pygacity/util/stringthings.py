@@ -6,6 +6,9 @@ import os
 import subprocess
 import shutil
 import stat
+import sys
+from zipfile import ZipFile, ZIP_DEFLATED
+import tarfile
 
 import pandas as pd
 
@@ -28,21 +31,19 @@ import importlib.metadata
 
 __pygacity_version__ = importlib.metadata.version("pygacity")
 
-banner_message="""
+banner_message=f"""
 
 ░       ░░░  ░░░░  ░░░      ░░░░      ░░░░      ░░░        ░░        ░░  ░░░░  ░
 ▒  ▒▒▒▒  ▒▒▒  ▒▒  ▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒  ▒▒  ▒▒
 ▓       ▓▓▓▓▓    ▓▓▓▓  ▓▓▓   ▓▓  ▓▓▓▓  ▓▓  ▓▓▓▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓    ▓▓▓
 █  ███████████  █████  ████  ██        ██  ████  █████  ████████  ████████  ████
-█  ███████████  ██████      ███  ████  ███      ███        █████  ████████  ████                                                           
+█  ███████████  ██████      ███  ████  ███      ███        █████  {__pygacity_version__:█^8s}  ████
+
     (\"pie-GAS-ity\")
     
-    {} v. {}
-
     Cameron F. Abrams <cfa22@drexel.edu>
 
-""".format(__package__.title(),__pygacity_version__)
-
+"""
 
 def banner(logf):
     my_logger(banner_message,logf,fill=' ',just='<')
@@ -285,8 +286,8 @@ class FileCollector(UserList):
     flush()
        remove all files in the collection
        
-    tarball()
-       make a tarball of the collection
+    archive()
+       make a tarball or zipfile of the collection
     """
     def flush(self):
         logger.debug(f'Flushing file collector: {len(self)} entries.')
@@ -308,22 +309,28 @@ class FileCollector(UserList):
     def __str__(self):
         return ' '.join([x for x in self])
 
-    def tarball(self,basename):
-        """Makes a tarball of the files in the collection
+    def archive(self, basename):
+        """If Linux, makes a tarball of the files in the collection; if Windows, makes a zipfile 
         
         Parameters
         ----------
         basename: str
-            basename of the resulting tarball
+            basename of the resulting tarball or zipfile
         """
-        filelist=' '.join([x for x in self])
-        subprocess.run(f'tar zvcf {basename}.tgz {filelist}',
-                        shell=True, 
-                        executable='/bin/bash',
-                        check=True,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
-        logger.debug(f'generated tarball {basename}.tgz')
+        # check the OS type first
+        if sys.platform.startswith('win'):
+            # Windows: make a zipfile
+            zipname = f'{basename}.zip'
+            with ZipFile(zipname, 'w', ZIP_DEFLATED) as zf:
+                for f in self.data:
+                    zf.write(f, os.path.basename(f))
+            logger.debug(f'generated zipfile {zipname}')
+        else:
+            tgzname = f'{basename}.tgz'
+            with tarfile.open(tgzname, 'w:gz') as tf:
+                for f in self.data:
+                    tf.add(f, arcname=os.path.basename(f))
+            logger.debug(f'generated tarball {basename}.tgz')
 
 
 def oxford(a_list,conjunction='or'):

@@ -7,7 +7,7 @@ import shutil
 
 import argparse as ap
 
-from .generate.build import build
+from .generate.build import build, answerset_subcommand
 from .util.pdfutils import combine_pdfs
 from .util.stringthings import oxford, banner
 
@@ -35,6 +35,10 @@ def cli():
             func = build,
             help = 'build document',
             ),
+        'answerset' : dict(
+            func = answerset_subcommand,
+            help = 'remake answer set document from a previous build',
+        ),
         'combine': dict(
             func = combine_pdfs,
             help = 'combine PDFs',
@@ -96,6 +100,9 @@ def cli():
     command_parsers['build'].add_argument(
         'f',
         help='mandatory YAML input file')
+    command_parsers['answerset'].add_argument(
+        'f',
+        help='mandatory YAML input file used in a previous build to generate the answer set')
     command_parsers['combine'].add_argument(
         '-i',
         '--input-pdfs',

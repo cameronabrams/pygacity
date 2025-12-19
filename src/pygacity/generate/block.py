@@ -70,6 +70,7 @@ class LatexSimpleBlock:
         return self
 
     def substitute(self, super_substitutions: dict = {}, match_all: bool = True):
+        self.processedcontents = self.rawcontents[:]
         substitutions = self.substitution_map.copy()
         substitutions.update(super_substitutions)
         for key, value in substitutions.items():
@@ -115,6 +116,8 @@ class LatexListBlock:
         for idx, item in enumerate(self.items):
             if not 'qno' in item.substitution_map or not item.substitution_map['qno']:
                 item.substitution_map['qno'] = idx + 1
+            if not 'points' in item.substitution_map or not item.substitution_map['points']:
+                item.substitution_map['points'] = item.points
             logger.debug(f'LatexListBlock.substitute item {idx} with substitutions: {item.substitution_map}')
             item.substitute(super_substitutions=super_substitutions)
 
@@ -125,7 +128,8 @@ class LatexListBlock:
     def __str__(self):
         lines = [rf'\begin{{{self.list_type}}}']
         for item in self.items:
-            lines.append(r'\item ' + str(item))
+            pts_msg = f' ({item.points} pts) ' if item.points > 0 else ''
+            lines.append(r'\item ' + pts_msg + str(item))
         lines.append(rf'\end{{{self.list_type}}}')
         return '\n'.join(lines)
 

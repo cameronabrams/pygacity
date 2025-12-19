@@ -27,10 +27,6 @@ class Config(Yclept):
         assert 'build' in self.specs, f'Your config file does not specify document build parameters'
         self.document_specs = self.specs['document']
         self.build_specs = self.specs['build']
-        
-        if not 'job-name' in self.build_specs:
-            self.build_specs['job-name'] = self.build_specs.get('output-name', 'tpdoc')
-
         self.autoprob_package_root = self.resource_root / 'autoprob-package'
         self.autoprob_package_dir = self.autoprob_package_root / 'tex' / 'latex'
         logger.debug(f'autoprob_package_root {self.autoprob_package_root}')

@@ -112,6 +112,15 @@ attributes:
       - name: seed
         type: int
         text: rng seed (optional)
+      - name: serial-digits
+        type: int
+        text: number of digits in randomly-generated serial numbers
+        default: 8
+      - name: serial-range
+        type: list
+        text: |
+          list of two integers specifying the inclusive range of serial numbers to 
+          generate; overrides 'copies' if given
       - name: serials
         type: list
         text: |
@@ -133,16 +142,16 @@ attributes:
         type: str
         text: directory in which output builds are stored
         default: build
-      - name: output-name
+      - name: job-name
         type: str
         text: string prepended to all file names generated
         default: tpdoc
       - name: job-name
         type: str
         text: job name passed to pdflatex (defaults to output-name if not given)
-      - name: answer-file
+      - name: answer-name
         type: str
-        text: name of answer file (tex and pdf)
+        text: job-name of answer file (tex and pdf)
         default: answerset
       - name: combine
         type: dict

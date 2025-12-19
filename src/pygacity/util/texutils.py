@@ -18,13 +18,19 @@ class LatexBuilder:
         assert os.access(self.pythontex, os.X_OK)
         self.searchdirs = searchdirs
         self.output_dir = self.specs.get('output-dir', '.')
-        self.output_name_stem = self.specs.get('output-name', 'document')
+        self.job_name = self.specs.get('job-name', 'document')
+        self.working_job_name = self.job_name
+        # self.output_name_stem = self.specs.get('output-name', 'document')
         self.FC = FileCollector()
         # logger.debug(f'localdirs {self.localdirs}')
 
-    def build_commands(self, document: Document = None, serial=0, make_solutions=False):
+    def build_commands(self, document: Document = None):
         commands = []
-        document.write_source(local_output_name=self.output_name_stem)
+        serial = document.substitutions.get('serial', 0)
+        self.working_job_name = self.job_name
+        if isinstance(serial, int) and serial > 0:
+            self.working_job_name = self.job_name + f'-{serial}'
+        document.write_source(local_output_name=self.working_job_name)
         includedirs = ''
         for d in self.searchdirs:
             includedirs = includedirs + ' -include-directory=' + str(d)
@@ -33,28 +39,25 @@ class LatexBuilder:
         output_option = ''
         if self.output_dir != '.':
             output_option = f'-output-directory={self.output_dir}'
-        job_name = self.specs.get('job-name', self.output_name_stem)
-        if serial > 0:
-           job_name = f'{job_name}-{serial}'
 
         repeated_command = (f'{self.pdflatex} -interaction=nonstopmode '
-                                f'-jobname={job_name} {includedirs} '
-                                f'{output_option} {self.output_name_stem}')
+                                f'-jobname={self.working_job_name} {includedirs} '
+                                f'{output_option} {self.working_job_name}.tex')
         commands.append(Command(repeated_command, ignore_codes=[1]))
 
-        self.FC.append(f'{self.output_dir}/{job_name}.aux')
-        self.FC.append(f'{self.output_dir}/{job_name}.log')
+        self.FC.append(f'{self.output_dir}/{self.working_job_name}.aux')
+        self.FC.append(f'{self.output_dir}/{self.working_job_name}.log')
         if has_pycode:
-            self.FC.append(f'{self.output_dir}/{job_name}.pytxcode')
-            self.FC.append(f'{self.output_dir}/pythontex-files-{job_name}')
+            self.FC.append(f'{self.output_dir}/{self.working_job_name}.pytxcode')
+            self.FC.append(f'{self.output_dir}/pythontex-files-{self.working_job_name}')
             # don't know if this will work
-            commands.append(Command(f'{self.pythontex} {self.output_dir}/{job_name}'))
+            commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
 
         commands.append(Command(repeated_command, ignore_codes=[1]))
         return commands
 
-    def build_document(self, document=None, serial=0, make_solutions=False, cleanup=True):
-        commands = self.build_commands(document, serial=serial, make_solutions=make_solutions)
+    def build_document(self, document=None, cleanup=True):
+        commands = self.build_commands(document)
         for c in commands:
             logger.debug(f'Running command: {c.c}')
             out, err = c.run()
