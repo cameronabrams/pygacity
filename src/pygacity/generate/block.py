@@ -5,8 +5,25 @@ import re
 
 from importlib.resources import files
 from pathlib import Path
+from shutil import copy2
 
 logger = logging.getLogger(__name__)
+
+def path_resolver(filename: str, search_paths: list[Path] = [], ext: str ='') -> Path:
+    local_filename = filename if filename.endswith(ext) else filename + ext
+    # check local directory first
+    local_path = Path(local_filename)
+    if local_path.exists():
+        return local_path
+    # check search path next
+    else:
+        for search_path in search_paths:
+            template_path = search_path / local_filename
+            if template_path.exists():
+                return template_path
+        spm = ':'.join([str(sp) for sp in search_paths])
+        raise FileNotFoundError((f'Could not locate source file {local_filename} in cwd ({os.getcwd()}) '
+                                 f'or search path {spm}.'))
 
 class LatexSimpleBlock:
     resources_root: Path = files('pygacity') / 'resources'
@@ -26,28 +43,9 @@ class LatexSimpleBlock:
         self.config_filename: str = block_specs.get('config', None)
         self.config_path = Path(self.config_filename) if self.config_filename else None
 
-    def path_resolver(self):
-        if not self.filename:
-            raise ValueError("Name of the LaTeX input file is not specified.")
-        # check local directory first
-        local_path = Path(self.filename)
-        if local_path.exists():
-            self.path = local_path
-        # check templates directory next
-        else:
-            template_path = self.templates_dir / self.filename
-            if template_path.exists():
-                self.path = template_path
-            else:
-                raise FileNotFoundError(f'Could not locate source file {self.filename} ({os.path.exists(self.filename)}) in either {os.getcwd()} or {self.templates_dir}.')
-    
     def load(self):
         if self.rawcontents == '':
-            self.path_resolver()
-            if not self.path:
-                raise ValueError("Name of the LaTeX input file is not specified.")
-            if not self.path.exists():
-                raise FileNotFoundError(f'LaTeX input file {self.path} does not exist.')
+            self.path = path_resolver(self.filename, search_paths=[self.templates_dir])
             with open(self.path, 'r') as f:
                 self.rawcontents = f.read()
         self.has_pycode = r'\begin{pycode}' in self.rawcontents
@@ -85,6 +83,13 @@ class LatexSimpleBlock:
             elif match_all:
                 raise KeyError(f'Substitution key {key} has no associated value for input file {self.path.name}')
 
+    def copy_referenced_configs(self, output_dir: str):
+        if self.config_path and self.config_path.exists():
+            dest_path = Path(output_dir) / self.config_path.name
+            if not dest_path.exists():
+                copy2(self.config_path, dest_path)
+                logger.debug(f'Copied config file {self.config_path} to {dest_path}')
+
     def __str__(self):
         return self.processedcontents
 
@@ -108,10 +113,14 @@ class LatexListBlock:
 
     def substitute(self, super_substitutions: dict = {}):
         for idx, item in enumerate(self.items):
-            if not 'qno' in item.substitution_map:
+            if not 'qno' in item.substitution_map or not item.substitution_map['qno']:
                 item.substitution_map['qno'] = idx + 1
             logger.debug(f'LatexListBlock.substitute item {idx} with substitutions: {item.substitution_map}')
             item.substitute(super_substitutions=super_substitutions)
+
+    def copy_referenced_configs(self, output_dir: str):
+        for item in self.items:
+            item.copy_referenced_configs(output_dir)
 
     def __str__(self):
         lines = [rf'\begin{{{self.list_type}}}']
@@ -119,3 +128,22 @@ class LatexListBlock:
             lines.append(r'\item ' + str(item))
         lines.append(rf'\end{{{self.list_type}}}')
         return '\n'.join(lines)
+
+class PythontexPycodeBlock(LatexSimpleBlock):
+    pythontex_dir = files('pygacity') / 'resources' / 'pythontex'
+
+    def __init__(self, block_specs: dict):
+        self.block_specs = block_specs
+        super().__init__(block_specs)
+        self.imports: list[str] = block_specs.get('imports', [])
+        self.load_raw()
+
+    def load_raw(self):
+        if len(self.imports) > 0:
+            self.rawcontents = r'\begin{pycode}' + '\n'
+        for imp in self.imports:
+            self.path = path_resolver(imp, search_paths=[PythontexPycodeBlock.pythontex_dir], ext='.pycode')
+            with open(self.path, 'r') as f:
+                self.rawcontents += f.read() + '\n\n'
+        if len(self.imports) > 0:
+            self.rawcontents += r'\end{pycode}' + '\n'

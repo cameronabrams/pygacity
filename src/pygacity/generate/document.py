@@ -4,7 +4,7 @@ import logging
 from importlib.resources import files
 from pathlib import Path
 
-from .block import LatexSimpleBlock, LatexListBlock
+from .block import LatexSimpleBlock, LatexListBlock, PythontexPycodeBlock
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,8 @@ class Document:
                 self.blocks.append(LatexSimpleBlock(block_specs=section_specs).load())
             elif section_type == 'list':
                 self.blocks.append(LatexListBlock(block_specs=section_specs).load())
+            elif section_type == 'pythontex':
+                self.blocks.append(PythontexPycodeBlock(block_specs=section_specs).load())
             else:
                 raise ValueError(f'Unrecognized section type "{section_type}" in document structure.')
         self.has_pycode = any(block.has_pycode for block in self.blocks)

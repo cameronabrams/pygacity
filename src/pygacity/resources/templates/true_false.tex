@@ -13,25 +13,28 @@
 \begin{pycode}
 import numpy as np
 import yaml
-rng = np.random.default_rng(seed=<%serial%>)
-with open('<%config%>','r') as f:
-    TFC=yaml.safe_load(f)
+config = '<<<config>>>'
+serial = <<<serial>>>
+qno = <<<qno>>>
+rng = np.random.default_rng(seed=serial)
+with open(config,'r') as f:
+    TFC = yaml.safe_load(f)
 if 'content' in TFC and 'config' in TFC:
-    c=TFC['config']
-    TF=TFC['content']
-    count=c.get('count',len(TF))
-    TF=TF[:count]
+    c = TFC['config']
+    TF = TFC['content']
+    count = c.get('count',len(TF))
+    TF = TF[:count]
 else:
-    TF=TFC
+    TF = TFC
 rng.shuffle(TF)
-answers=[x['A'] for x in TF]
+answers = [x['A'] for x in TF]
 if 'AnsSet' in locals():
-    for l,t in zip([chr(ord('a')+x) for x in range(len(answers))],answers):
-        AnsSet.register(<%qno%>,label=l,value=t)
+    for l, t in zip([chr(ord('a')+x) for x in range(len(answers))], answers):
+        AnsSet.register(qno, label=l, value=t)
 else:
-    soln='<%serial%>_<%qno%>_soln.yaml'
+    soln=f'{serial}_{qno}_soln.yaml'
     with open(soln,'w') as f:
-        yaml.dump(dict(source='true_false.tex',serial=<%serial%>,answers=answers),f)
+        yaml.dump(dict(source='true_false.tex', serial=serial, answers=answers),f)
 \end{pycode}
 True/False questions. Write ``T'' for ``True'' or ``F'' for ``False'' in the blank space.
 \newcommand{\fillblank}{\ul{\ \ \ \ \ \ }}

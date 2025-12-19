@@ -76,7 +76,7 @@ class AnswerSuperSet(UserList):
     def to_latex(self):
         return self.DF.to_latex(formatters=self.formatters,index=False)#,header=self.headings)
 
-    def to_pdf(self,config):
+    def to_pdf(self, config):
         LB=config.LB
         incfile='tmp-table-'+config['user']['build']['answer-file']+'.tex'
         metadata=config['user']['document']['metadata']

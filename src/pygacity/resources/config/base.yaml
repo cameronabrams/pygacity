@@ -10,6 +10,16 @@ attributes:
         type: list
         text: Document structure specification as a list of blocks
         attributes:
+          - name: pythontex
+            type: dict
+            text: pythontex block specification
+            attributes:
+              - name: imports
+                type: list
+                text: python source file(s) stems (*.pycode) for enclosure in \begin{pycode}...\end{pycode}
+              - name: substitutions
+                type: dict
+                text: substitutions to be applied to the pythontex content in this block
           - name: unstructured
             type: dict
             text: unstructured block specification
@@ -55,7 +65,10 @@ attributes:
                         text: source file for item (if content not given)
                       - name: config
                         type: str
-                        text: optional configuration file for question template (processed by pythontex)
+                        text: |
+                          optional configuration file processed by the item's pycode block(s); if it excists
+                          if it exists in the current working directory and an output directory is specified
+                          in the build specs, it is copied to the build directory
                       - name: substitutions
                         type: dict
                         text: substitutions to be applied to the LaTeX content in this item

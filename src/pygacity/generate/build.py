@@ -36,7 +36,12 @@ def build(args):
     base_doc = Document(config.document_specs)
     logger.debug(f'base_doc has {len(base_doc.blocks)} blocks')
 
-    if config.build_specs.get('ncopies', 1) > 1:
+    if output_dir != '.':
+        # find any configs referenced in document blocks and copy them to output_dir
+        for block in base_doc.blocks:
+            block.copy_referenced_configs(output_dir)
+
+    if config.build_specs.get('copies', 1) > 1:
         if config.build_specs.get('serials', None):
             serials = config.build_specs['serials']
         elif config.build_specs.get('serial-range', None):
@@ -48,7 +53,7 @@ def build(args):
             with open(config.build_specs['serial-file'], 'r') as f:
                 serials = [int(line.strip()) for line in f if line.strip()]
         else:  
-            serials = list(range(1, config.build_specs['ncopies'] + 1))
+            serials = list(range(1, config.build_specs['copies'] + 1))
     else:
         serials = [0]
 
@@ -61,6 +66,7 @@ def build(args):
 
     if args.solutions:
         solution_build_specs = config.build_specs.copy()
+        solution_build_specs['output-name'] = config.build_specs.get('output-name', 'document') + '_soln'
         solution_build_specs['job-name'] = config.build_specs.get('job-name', 'document') + '_soln'
         soln_builder = LatexBuilder(solution_build_specs,
                                      searchdirs = [config.autoprob_package_dir])
