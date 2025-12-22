@@ -1,9 +1,13 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+from __future__ import annotations
 import os
 import fractions as fr
 import numpy as np
 import pandas as pd
 import logging
+from dataclasses import dataclass
+from typing import Sequence, Optional
+
 from .command import Command
 from .stringthings import FileCollector
 from ..generate.document import Document
@@ -66,7 +70,127 @@ class LatexBuilder:
             logger.debug(f'Command error:\n{err}\n\n')
         if cleanup:
             self.FC.flush()
-            
+
+@dataclass
+class SplitLatexConfig:
+    id_cols: Sequence[str]                  # repeated in every chunk
+    chunk_size: int = 6                     # how many non-id columns per chunk
+    caption: str = "Table"
+    label: str = "tab:split"
+    float_fmt: str = "{:.3g}"               # number formatting
+    index: bool = False                     # include DataFrame index as first column?
+    longtable: bool = True                  # else emit tabular inside table float
+    booktabs: bool = True                   # use \toprule etc
+    repeat_header: bool = True              # only relevant for longtable
+    escape: bool = True                     # escape LaTeX special chars
+
+def df_to_conceptually_split_latex(
+    df: pd.DataFrame,
+    cfg: SplitLatexConfig,
+    col_groups: Optional[Sequence[Sequence[str]]] = None,
+) -> str:
+    """
+    Generate LaTeX code consisting of multiple tables, each containing cfg.id_cols plus
+    a chunk of the remaining columns. You can either supply explicit `col_groups`
+    (recommended if you have semantic groupings), or let it chunk automatically.
+    """
+    if cfg.index:
+        df2 = df.copy()
+        df2.insert(0, df.index.name or "index", df.index)
+        df = df2
+
+    for c in cfg.id_cols:
+        if c not in df.columns:
+            raise ValueError(f"id_col '{c}' not in DataFrame columns")
+
+    non_id = [c for c in df.columns if c not in cfg.id_cols]
+
+    # If user didn't provide semantic groups, chunk automatically
+    if col_groups is None:
+        col_groups = [non_id[i:i + cfg.chunk_size] for i in range(0, len(non_id), cfg.chunk_size)]
+    else:
+        # validate groups are subsets of non_id
+        non_id_set = set(non_id)
+        for g in col_groups:
+            missing = [c for c in g if c not in non_id_set]
+            if missing:
+                raise ValueError(f"col_groups contains non-id cols not in df: {missing}")
+
+    # Use pandas built-in LaTeX escaping/formatting where possible
+    def _format_value(x):
+        if pd.isna(x):
+            return ""  # blank cell
+        if isinstance(x, (int, float)) and not isinstance(x, bool):
+            try:
+                return cfg.float_fmt.format(x)
+            except Exception:
+                return str(x)
+        return str(x)
+
+    parts: list[str] = []
+    total_groups = len(col_groups)
+
+    # Build each chunk as its own table
+    for gi, group in enumerate(col_groups, start=1):
+        cols = list(cfg.id_cols) + list(group)
+        chunk = df.loc[:, cols].copy()
+
+        # stringify with formatting
+        chunk = chunk.map(_format_value)
+
+        # column alignment: ids left, the rest right
+        align = "l" * len(cfg.id_cols) + "r" * len(group)
+
+        # Caption/label per chunk
+        cap = f"{cfg.caption} ({gi}/{total_groups})"
+        lab = f"{cfg.label}:{gi}"
+
+        if cfg.longtable:
+            latex = chunk.to_latex(
+                index=False,
+                escape=cfg.escape,
+                longtable=True,
+                caption=cap,
+                label=lab,
+                column_format=align,
+                multicolumn=False,
+                bold_rows=False,
+                na_rep="",
+                header=True,
+                booktabs=cfg.booktabs,
+            )
+            # pandas longtable output includes a full longtable block; good as-is
+            parts.append(latex)
+        else:
+            # tabular in a floating table
+            tab = chunk.to_latex(
+                index=False,
+                escape=cfg.escape,
+                longtable=False,
+                caption=False,
+                label=False,
+                column_format=align,
+                multicolumn=False,
+                bold_rows=False,
+                na_rep="",
+                header=True,
+                booktabs=cfg.booktabs,
+            )
+            float_block = "\n".join([
+                r"\begin{table}[htbp]",
+                r"\centering",
+                rf"\caption{{{cap}}}",
+                rf"\label{{{lab}}}",
+                tab,
+                r"\end{table}",
+                ""
+            ])
+            parts.append(float_block)
+
+    return "\n\n".join(parts)
+
+
+
 def table_as_tex(table, float_format='{:.4f}'.format, drop_zeros=None, total_row=[]):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
         items and generates a table '''

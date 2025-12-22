@@ -1,7 +1,7 @@
 Usage
 -----
 
-Pygacity is used via three subcommands:
+Pygacity provides three subcommands:
 
 1. ``pygacity build <config_file.yaml>``: Builds document(s) as specified in the YAML configuration file.
 2. ``pygacity combine <output_file.pdf> <input_file1.pdf> <input_file2.pdf> ...``: Combines multiple PDF files into a single PDF.
@@ -9,7 +9,7 @@ Pygacity is used via three subcommands:
 
 
 Subcommands
------------
+===========
 
 .. toctree::
    :maxdepth: 2

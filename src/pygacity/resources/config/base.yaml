@@ -75,6 +75,9 @@ attributes:
                       - name: points
                         type: int
                         text: number of points to assign to the item (if it is a question)
+                      - name: group
+                        type: int
+                        text: group number for grouping questions (optional)
       - name: class
         type: dict
         text: document class

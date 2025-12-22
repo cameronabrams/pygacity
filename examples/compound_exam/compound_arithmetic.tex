@@ -1,0 +1,34 @@
+\begin{pycode}
+qno = <<<qno>>>
+group = <<<group>>>
+part_a = Pick.pick_state({'A': {'default': 12, 'pick': {'pickfrom': [10,12,14]}},
+                          'B': {'default': 3,  'pick': {'pickfrom': [2,3,4]}}})
+part_a.answer = part_a.A * part_a.B
+part_b = Pick.pick_state({'C': {'default': 45, 'pick': {'pickfrom': [40,45,50]}},
+                          'D': 5})
+part_b.answer = part_b.C // part_b.D
+part_c = Pick.pick_state({'E': 7,
+                          'F': {'pick': {'pickfrom': [8,9,10]}}})
+part_c.answer = part_c.E + part_c.F
+AnsSet.register(qno, group=group, label='(a)', value=part_a.answer)
+AnsSet.register(qno, group=group, label='(b)', value=part_b.answer)
+AnsSet.register(qno, group=group, label='(c)', value=part_c.answer)
+\end{pycode}
+\textbf{Simple Arithmetic.} Solve the following arithmetic problems:
+\begin{enumerate}
+\item[a.] What is \py{part_a.A} \(\times\) \py{part_a.B}?\ifshowsolutions\ \ \ \textcolor{blue}{\py{part_a.answer}}\fi
+\ifshowsolutions
+\else
+\vspace{1cm}
+\fi
+\item[b.] What is \py{part_b.C} \(\div\) \py{part_b.D}?\ifshowsolutions\ \ \ \textcolor{blue}{\py{part_b.answer}}\fi
+\ifshowsolutions
+\else
+\vspace{1cm}
+\fi
+\item[c.] What is \py{part_c.E} \(+\) \py{part_c.F}?\ifshowsolutions\ \ \ \textcolor{blue}{\py{part_c.answer}}\fi
+\ifshowsolutions
+\else
+\vspace{1cm}
+\fi
+\end{enumerate}

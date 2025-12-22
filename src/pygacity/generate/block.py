@@ -42,6 +42,7 @@ class LatexSimpleBlock:
         self.points: int = block_specs.get('points', 0)
         self.config_filename: str = block_specs.get('config', None)
         self.config_path = Path(self.config_filename) if self.config_filename else None
+        self.group: int = block_specs.get('group', 0)
 
     def load(self):
         if self.rawcontents == '':
@@ -120,6 +121,8 @@ class LatexListBlock:
                 item.substitution_map['qno'] = idx + 1
             if not 'points' in item.substitution_map or not item.substitution_map['points']:
                 item.substitution_map['points'] = item.points
+            if not 'group' in item.substitution_map or not item.substitution_map['group']:
+                item.substitution_map['group'] = item.group
             logger.debug(f'LatexListBlock.substitute item {idx} with substitutions: {item.substitution_map}')
             item.substitute(super_substitutions=super_substitutions)
 

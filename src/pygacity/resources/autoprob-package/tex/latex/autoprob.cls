@@ -30,7 +30,7 @@
 \RequirePackage{tikz}
 \usetikzlibrary{patterns}
 \RequirePackage{calc}
-
+\RequirePackage{longtable}
 \newif\ifshowsolutions
 \showsolutionsfalse
 \newif\ifshowanswers

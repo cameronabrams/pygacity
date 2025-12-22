@@ -1,0 +1,47 @@
+document:
+  preamble_commands: 
+    - |
+      \usepackage[scaled]{helvet}
+      \renewcommand\familydefault{\sfdefault}
+  structure:
+    - unstructured:
+        source: header.tex
+        substitutions:
+          Universityname: University of Nowhere
+          Departmentname: ABC 1234
+          Instructorname: Eustace T. Smartypants
+          Instructoremail: ets@unow.edu
+          Coursename: BIO 5678 - Introduction to Applied Pyrohydrodynamics
+          Termcode: 202525
+          Termname: Winter 2025-2026
+    - unstructured:
+        content: |
+          \asnheader{Assignment 1: Random Topics}{January 13, 2026}
+    - list:
+        type: enumerate
+        items:
+          - item:
+              type: question
+              points: 25
+              source: simple_arithmetic.tex
+          - item:
+              type: question
+              points: 25
+              source: simple_derivatives.tex
+          - item:
+              type: question
+              points: 25
+              source: simple_integration.tex
+          - item:
+              type: question
+              points: 25
+              source: python_numerics.tex
+
+    - unstructured:
+        source: footer.tex
+build:
+  copies: 1
+  serials:
+    - 1
+  output-dir: ./build
+  job-name: Assignment

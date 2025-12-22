@@ -9,7 +9,6 @@ from pathlib import Path
 from .answerset import AnswerSuperSet
 from .config import Config
 from .document import Document
-from ..util.pdfutils import combine_pdfs
 from ..util.stringthings import chmod_recursive, FileCollector
 from ..util.texutils import LatexBuilder
 
@@ -129,7 +128,7 @@ def answerset(config: Config = None):
     answer_docspecs['structure'].append(
         {
             'unstructured': {
-                'content': r'\begin{center}\rotatebox{-90}{' + AS.to_latex() + r'}\end{center}'
+                'content': AS.to_latex()
             }
         })
     answer_docspecs['structure'].append(deepcopy(config.document_specs['structure'][-1]))

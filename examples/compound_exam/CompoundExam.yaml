@@ -1,0 +1,70 @@
+document:
+  preamble_commands: 
+    - |
+      \usepackage[scaled]{helvet}
+      \renewcommand\familydefault{\sfdefault}
+  structure:
+    - unstructured:
+        source: header.tex
+        substitutions:
+          Universityname: University of Nowhere
+          Departmentname: ABC 1234
+          Instructorname: Eustace T. Smartypants
+          Instructoremail: ets@unow.edu
+          Coursename: BIO 5678 - Introduction to Applied Pyrohydrodynamics
+          Termcode: 202525
+          Termname: Winter 2025-2026
+    - pythontex:
+        imports: # imports from resources/pythontex/<name>.pycode
+          - generic
+    - unstructured:
+        content: |
+          \examheader{Exam I}{January 13, 2026}
+          \noindent\textbf{Instructions:} This exam is closed book, and you are allowed 3 pages of your own handwritten notes on paper.  No electronic devices except for a non-smartphone, non-tablet based calculator. Show all work for full credit. Clearly indicate your final answers. The total number of points is 100. You have 110 minutes to complete the exam.
+    - list:
+        type: enumerate
+        items:
+          - item:
+              type: question
+              points: 30
+              source: compound_arithmetic.tex
+              group: 1
+          - item:
+              type: question
+              points: 30
+              source: short_answer.tex
+              config: derivatives_short_answer.yaml
+              group: 2
+          - item:
+              type: question
+              points: 20
+              source: simple_integration.tex
+              group: 3
+          - item:
+              type: question
+              points: 20
+              source: fill_in_the_blank.tex
+              config: calculus_fill_in_the_blank.yaml
+              group: 3
+          - item:
+              type: question
+              points: 10
+              source: true_false.tex
+              config: true_false_questions.yaml
+              group: 4
+          - item:
+              type: question
+              points: 10
+              source: multiple_choice.tex
+              config: multiple_choice_questions.yaml
+              group: 4
+    - pythontex:
+        imports: # imports from resources/pythontex/<name>.pycode
+          - writeanswerset
+    - unstructured:
+        source: footer.tex
+build:
+  seed: 12345
+  copies: 4
+  output-dir: ./build
+  job-name: ExamI

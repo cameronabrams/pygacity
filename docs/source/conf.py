@@ -58,7 +58,7 @@ html_theme_options = {
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/cameronabrams/pestifer",
+            "url": "https://github.com/cameronabrams/pygacity",
             "html": """
     <svg role="img" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
         <title>GitHub</title>

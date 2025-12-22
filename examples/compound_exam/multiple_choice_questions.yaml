@@ -1,0 +1,94 @@
+config:
+  count: 4
+  shuffle: true
+  instructions: |
+    \textbf{Multiple choice questions.}  Circle the letter of the correct answer from the choices provided.
+content:
+  - Q: What is the capital of Italy?
+    choices:
+      A: Madrid
+      B: Rome
+      C: Berlin
+      D: Lisbon
+    A: B
+    text: Rome is the capital city of Italy.
+  - Q: Which element has the chemical symbol 'O'?
+    choices:
+      A: Gold
+      B: Oxygen
+      C: Osmium
+      D: Silver
+    A: B
+    text: Oxygen has the chemical symbol 'O'.
+  - Q: Who wrote "Romeo and Juliet"?
+    choices:
+      A: Charles Dickens
+      B: Mark Twain
+      C: William Shakespeare
+      D: Jane Austen
+    A: C
+    text: William Shakespeare is the author of "Romeo and Juliet".
+  - Q: What is the largest mammal in the world?
+    choices:
+      A: African Elephant
+      B: Blue Whale
+      C: Giraffe
+      D: Great White Shark
+    A: B
+    text: The Blue Whale is the largest mammal in the world.
+  - Q: What is the boiling point of water at standard atmospheric pressure?
+    choices:
+      A: 90 degrees Celsius
+      B: 100 degrees Celsius
+      C: 110 degrees Celsius
+      D: 120 degrees Celsius
+    A: B
+    text: Water boils at 100 degrees Celsius at standard atmospheric pressure (1 atm).  
+  - Q: Which planet is known as the Red Planet?
+    choices:
+      A: Venus
+      B: Mars
+      C: Jupiter
+      D: Saturn
+    A: B
+    text: Mars is known as the Red Planet due to its reddish appearance caused by iron oxide
+  - Q: Who painted the Mona Lisa?
+    choices:
+      A: Vincent van Gogh
+      B: Pablo Picasso
+      C: Leonardo da Vinci
+      D: Claude Monet
+    A: C
+    text: The Mona Lisa was painted by Leonardo da Vinci.
+  - Q: What is the smallest prime number?
+    choices:
+      A: 0
+      B: 1
+      C: 2
+      D: 3
+    A: C
+    text: The smallest prime number is 2, which is the only even prime number.
+  - Q: In which year did the Titanic sink?
+    choices:
+      A: 1910
+      B: 1912
+      C: 1914
+      D: 1916
+    A: B
+    text: The Titanic sank in the North Atlantic Ocean on April 15, 1912, after hitting an iceberg.
+  - Q: What is the chemical formula for table salt?
+    choices:
+      A: H2O
+      B: CO2
+      C: NaCl
+      D: C6H12O6
+    A: C
+    text: The chemical formula for table salt is NaCl, which stands for sodium chloride.
+  - Q: Who is known as the "Father of Modern Physics"?
+    choices:
+      A: Isaac Newton
+      B: Albert Einstein
+      C: Galileo Galilei
+      D: Niels Bohr
+    A: B
+    text: Albert Einstein is often referred to as the "Father of Modern Physics" for his contributions to the field, including the theory of relativity.

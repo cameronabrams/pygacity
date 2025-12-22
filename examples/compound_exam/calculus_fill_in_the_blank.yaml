@@ -1,0 +1,39 @@
+config:
+  count: 3
+  shuffle: True
+  instructions: |
+    \textbf{State and World Capitals.} Write the correct US State, Canadian Province, or World Country or its capital in the blank provided.
+content:
+  - Q: The capital of Texas is ___.
+    A: Austin
+    text: Austin became the capital of Texas in 1839.
+  - Q: The capital of Ontario is ___.
+    A: Toronto
+    text: Toronto is the capital city of the province of Ontario in Canada.
+  - Q: The capital of France is ___.
+    A: Paris
+    text: Paris has been the capital of France since the 10th century.
+  - Q: The capital of Japan is ___.
+    A: Tokyo
+    text: Tokyo has been the capital of Japan since 1868.
+  - Q: The capital of Germany is ___.
+    A: Berlin
+    text: Berlin has been the capital of Germany since 1990 following reunification.
+  - Q: The capital of ___ is Ottawa.
+    A: Canada
+    text: Ottawa is the capital city of Canada.
+  - Q: The capital of ___ is Canberra.
+    A: Australia
+    text: Canberra is the capital city of Australia.
+  - Q: The capital of ___ is Brasília.
+    A: Brazil
+    text: Brasília has been the capital of Brazil since 1960.
+  - Q: The capital of ___ is New Delhi.
+    A: India
+    text: New Delhi has been the capital of India since 1911.
+  - Q: The capital of ___ is Moscow.
+    A: Russia
+    text: Moscow has been the capital of Russia since 1918.
+  - Q: The capital of ___ is Cairo.
+    A: Egypt
+    text: Cairo has been the capital of Egypt since 972 AD.

@@ -1,0 +1,31 @@
+\begin{pycode}
+import numpy as np
+from numpy.polynomial import Polynomial
+from pygacity.util.texutils import polynomial_as_tex
+import random
+roots = [1,-2,1]
+p = Polynomial.fromroots(roots)
+coeff = r'[ '+', '.join([f'{x}' for x in p.coef.astype(int)])+r' ]'
+polystr = polynomial_as_tex(p)
+col = ', '.join([f'{int(x)}' for x in roots])
+res = f'the roots are {col}.'
+\end{pycode}
+\textbf{Numerics using Python.} Use Python to compute the roots of the following polynomial:
+\[
+	f(x)=\py{polystr}
+\]
+\ifshowsolutions
+\Solutionheader\\
+The following sequence of Python statements:
+\begin{lstlisting}[style=mypython,escapeinside={(*}{*)}]
+import numpy as np
+r = np.roots((*\py{coeff}*))
+print(r)
+\end{lstlisting}
+Produces the output\\
+\texttt{\py{roots}}\\ 
+So, \py{res}
+\else
+	\par\vspace{0.4cm}
+\fi
+	

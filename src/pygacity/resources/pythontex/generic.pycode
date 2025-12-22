@@ -1,9 +1,12 @@
-import pygacity.util.texutils as tu
-from pygacity.generate.answerset import AnswerSet
+import yaml
 import numpy as np
 import fractions as fr
 from argparse import Namespace
+
+import pygacity.util.texutils as tu
+from pygacity.generate.answerset import AnswerSet
 from pygacity.generate.pick import Picker
+
 
 serial = <<<serial>>>
 

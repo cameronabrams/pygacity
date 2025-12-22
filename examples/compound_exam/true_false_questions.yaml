@@ -1,0 +1,31 @@
+config:
+  count: 4
+  shuffle: true
+  instructions: |
+    \textbf{True/False Questions.} Indicate whether each of the following statements is true (``T'') or false (``F'').
+content:
+  - Q: On a piano, the frequency of middle C is approximately 261.63 Hz.
+    A: T
+    text: The frequency of middle C (C4) is indeed approximately 261.63 Hz.
+  - Q: The chemical symbol for gold is Ag.
+    A: F
+    text: The chemical symbol for gold is Au; Ag is the symbol for silver.
+  - Q: The Great Wall of China is visible from space with the naked eye.
+    A: F
+    text: This is a common myth; the Great Wall is not easily visible from space without aid.
+  - Q: Water boils at 100 degrees Celsius at standard atmospheric pressure.
+    A: T
+    text: At standard atmospheric pressure (1 atm), water boils at 100 degrees Celsius.
+  - Q: The capital of Australia is Sydney.
+    A: F
+    text: The capital of Australia is Canberra, not Sydney.
+  - Q: Humans have four lungs.
+    A: F
+    text: Humans have two lungs, not four.
+  - Q: The speed of light in a vacuum is approximately \(3.00 \times 10^8\) meters per second.
+    A: T
+    text: The speed of light in a vacuum is approximately 299,792,458 meters per second, often rounded to \(3.00 \times 10^8\) m/s.
+  - Q: The largest planet in our solar system is Saturn.
+    A: F
+    text: The largest planet in our solar system is Jupiter, not Saturn.
+    
