@@ -1,25 +1,26 @@
 \begin{pycode}
-DSUH=P.pick_state(
+idx = <<<idx>>>
+group = <<<group>>>
+DSUH=Pick.pick_state(
     dict(
         P1={'default':3.2,'pick':{'between':[2.9,3.9],'round':1}}, # MPa
         T1C={'default':355,'pick':{'between':[340,360],'round':0}},
         Psat={'default':2.9,'pick':{'between':[2.7,2.9],'round':3}}, # MPa
         TLC={'default':50,'pick':{'between':[45,55],'round':0}},
         mdot={'default':15,'pick':{'between':[10,50],'round':0}}))
-P1=DSUH.P1
-T1C=DSUH.T1C
-Psat=DSUH.Psat
-TLC=DSUH.TLC
-mdot=DSUH.mdot
+P1  = DSUH.P1
+T1C = DSUH.T1C
+Psat = DSUH.Psat
+TLC = DSUH.TLC
+mdot = DSUH.mdot
+inlet = SANDLER(T=T1C, P=P1)
+outlet = SANDLER(P=Psat, x=1.0)
+inL = SANDLER(T=TLC, x=0.0)
 
-inlet=SANDLER(T=T1C,P=P1)
-outlet=SANDLER(P=Psat,x=1.0)
-inL=SANDLER(T=TLC,x=0.0)
-
-mLdot=mdot*((inlet.h-outlet.h)/(inlet.h-inL.h))
-m_show=float(np.round(mLdot,3))
-if 'solutions' in locals():
-    solutions.append(dict(mldot=m_show))
+mLdot = mdot * ((inlet.h - outlet.h)/(inlet.h - inL.h))
+m_show = float(np.round(mLdot, 3))
+if 'AnsSet' in locals():
+    AnsSet.register(idx, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=m_show, units='kg s$^{-1}$', formatter='{:.3f}')
 \end{pycode}
 Superheated steam at \py{f'{P1:,.0f}'} MPa and \py{T1C}$^\circ$C is to be converted to saturated steam at \py{f'{Psat:,.0f}'} MPa in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{TLC}$^\circ$C.  The unit should produce saturated steam at a rate of \py{mdot} kg~s$^{-1}$.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
 

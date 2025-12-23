@@ -1,9 +1,215 @@
+% Automatically generated LaTeX source file
+\documentclass[11pt]{autoprob}
+\usepackage[scaled]{helvet}
+\renewcommand\familydefault{\sfdefault}
+
+\renewcommand{\Universityname}{University of Nowhere}
+\renewcommand{\Departmentname}{ABC 1234}
+\renewcommand{\Coursename}{BIO 5678 - Introduction to Applied Pyrohydrodynamics}
+\renewcommand{\Termname}{Winter 2025-2026}
+\renewcommand{\Termcode}{202525}
+\renewcommand{\Instructorname}{Eustace T. Smartypants}
+\renewcommand{\Instructoremail}{ets@unow.edu}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\footnotesize \Universityname\ --- \Coursename\ --- \Termname}
+\rhead{\footnotesize 65917772}
+\rfoot{\thepage}
+\begin{document}
 \begin{pycode}
+import yaml
+import random
+import numpy as np
+import fractions as fr
+import logging
+import pickle
+from argparse import Namespace
+from pathlib import Path
+
+import pygacity.util.texutils as tu
+from pygacity.generate.answerset import AnswerSet
+from pygacity.generate.pick import Picker
+from pygacity.util.collectors import FileCollector
+
+serial = 65917772
+rng = np.random.default_rng(seed=serial)
+Pick = Picker(serial)
+AnsSet = AnswerSet(serial)
+loglevel_numeric = getattr(logging, 'DEBUG')
+logging.basicConfig(filename=f'pythontex-{serial}.log',
+                    filemode='w',
+                    format='%(asctime)s %(name)s %(message)s',
+                    level=loglevel_numeric)
+logger = logging.getLogger(__name__)
+pythonTexFC = FileCollector()
+pickle_cache = Path.cwd() / ".cache"
+# pickle_cache should already exist if the manager makes it
+
+
+import os
+from pathlib import Path
+safe_mplconfig = Path.cwd() / "_mplconfig"
+safe_mplconfig.mkdir(exist_ok=True)
+os.environ["MPLCONFIGDIR"] = str(safe_mplconfig)
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+
+
+
+from sandlersteam.state import State as SANDLER
+from sandlersteam.state import SteamTables as st
+from sandlersteam.request import Request
+STReq = Request()
+suphPavail = st['suph'].uniqs['P']
+
+
+\end{pycode}
+
+\examheader{Exam I}{January 13, 2026}
+\noindent\textbf{Instructions:} This exam is closed book, and you are allowed 
+3 pages of your own handwritten notes on paper.  No electronic devices except 
+for a non-smartphone, non-tablet based calculator. Show all work for full credit. 
+Clearly indicate your final answers. The total number of points is 100. You have 
+110 minutes to complete the exam.
+
+
+\begin{enumerate}
+\item \begin{pycode}
+idx = 4.1
+group = 1
+MIXER = Pick.pick_state(
+    dict(
+        P1={'default':14,'pick':{'between':[13,15],'round':2}},
+        P2={'default':12,'pick':{'between':[10,12.5],'round':2}},
+        T1={'default':1000,'pick':{'pickfrom':[900,950,1000,1050,1100]}},
+        T2={'default':400,'pick':{'pickfrom':[350,375,400,425,450]}},
+        T3={'default':600,'pick':{'pickfrom':[500,550,600,650,700]}},
+        CP_over_R={'default':3.5,'pick':{'pickfrom':[7,7.5,8]}}
+    )
+)
+P1 = MIXER.P1
+P2 = MIXER.P2
+T1 = MIXER.T1
+T2 = MIXER.T2
+T3 = MIXER.T3
+CP_over_R = MIXER.CP_over_R
+alpha = (T1 - T3) / (T3 - T2)
+P3 = pow(pow(T3**(1 + alpha) / T1 / T2**alpha, CP_over_R) * P1 * P2**alpha, 1 / (1 + alpha))
+cpr = tu.frac_or_int_as_tex(fr.Fraction(CP_over_R))
+if 'AnsSet' in locals():
+    AnsSet.register(idx, group=group, label=r'\(\alpha\)', value=np.round(alpha,5), formatter='{:.5f}')
+    AnsSet.register(idx, group=group, label=r'\(P\)', value=np.round(P3,3), units='bar', formatter='{:.3f}')
+\end{pycode}
+
+A stream of air at \py{P1} bar and \py{T1} K (labeled ``stream 1'') is to be cooled to \py{T3} K by mixing with another stream of air at \py{P2} bar and \py{T2} K (labeled ``stream 2'').  Let $\alpha$ be the ratio of the molar flow rate of the hotter stream to that of the cooler stream.  Compute (1) $\alpha$, and (2) the pressure $P$ of the mixed stream (labeled ``stream 3'').  You may assume this is carried out adiabatically and that air is an ideal gas for which $C_{\rm P}$ = $\py{cpr}R$.
+
+It may be helpful for you to remember, {\bf for the ideal gas}, that a change of state from $(T_A,P_A)$ to $(T_B,P_B)$ results in the following enthalpy and entropy changes, respectively:
+
+\begin{align*}
+\Delta \molar{H} \equiv \molar{H}_B-\molar{H}_A = \int_{T_A}^{T_B} C_{\rm P} dT\\
+\Delta \molar{S} \equiv \molar{S}_B-\molar{S}_A = \int_{T_A}^{T_B} \frac{C_{\rm P}}{T} dT - R \ln\frac{P_B}{P_A}.
+\end{align*}
+
+\ifshowsolutions\Solutionheader
+
+Let $\dot{n}$ be the unknown molar flow rate of stream 1.  This means the outlet stream (3) has a flow rate of $\alpha\dot{n}$.  An energy balance here resolves to 
+\begin{align*}
+H_{\rm out} & = H_{\rm in}\\
+(1+\alpha) \dot{n} \Hb(T_3,P_3) & = \dot{n}\Hb(T_1,P_1) + \alpha\dot{n} \Hb(T_2,P_2)\\
+(1+\alpha)  \int_{T_r}^{T_3} C_{\rm P} dT & = \int_{T_r}^{T_1} C_{\rm P}dT + \alpha\int_{T_r}^{T_2} C_{\rm P}dT\\
+(1+\alpha)C_{\rm P}(T_3-T_r) & = C_{\rm P}(T_1-T_r) + \alpha C_{\rm P}(T_2-T_r)\\
+(1+\alpha)T_3 & = T_1 + \alpha T_2\\
+\Rightarrow T_3 & = \frac{T_1+\alpha T_2}{1+\alpha},\ \mbox{or}\\
+\alpha & = \frac{T_1-T_3}{T_3-T_2}\\
+ & = \frac{900-500}{500-400} = \frac{400}{100} = \fbox{\py{f'{alpha:.1f}'}}.
+\end{align*}
+(Note all terms involving $T_r$ cancel and $C_{\rm P}$ divides out.).  We can get $P_3$ from an entropy balance:
+\begin{align*}
+S_{\rm out} & = S_{\rm in}\\
+(1+\alpha)\dot{n} \sb(T_3,P_3) & = \dot{n}\sb(T_1,P_1) + \alpha\dot{n} \sb(T_2,P_2)\\
+\sb(T_3,P_3) - \sb(T_1,P_1) + \alpha\left[\sb(T_3,P_3)-\sb(T_2,P_2)\right] & = 0\\
+C_{\rm P}\ln\frac{T_3}{T_1} - R\ln\frac{P_3}{P_1} + \alpha\left[C_{\rm P}\ln\frac{T_3}{T_2}-R\ln\frac{P_3}{P_2}\right] & = 0\\
+C_{\rm P}\ln\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right) - R\ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right) & = 0\\
+\ln\left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C_{\rm P}}{R}}\right] & = \ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right)\\
+\Rightarrow\ P_3 & = \left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C_{\rm P}}{R}}P_1P_2^\alpha\right]^{\frac{1}{1+\alpha}}\\
+& = \left[\left(\frac{(\py{T3})^{(1+\py{f'{alpha:.2f}'})}}{(\py{T1})(\py{T2})^{\py{f'{alpha:.2f}'}}}\right)^{\py{cpr}}(\py{P1})(\py{P2})^{\py{f'{alpha:.2f}'}}\right]^{\frac{1}{1+\py{f'{alpha:.2f}'}}} \\
+& = \fbox{\py{f'{P3:.2f}'}\ \mbox{bar}}.
+\end{align*}
+\clearpage
+\else
+\ifgivespace
+\clearpage
+\noindent (This page left blank for extra space for Problem \theenumi.)
+\clearpage
+\fi
+\fi
+
+\item \begin{pycode}
+idx = 4.2
+group = 1
+DSUH=Pick.pick_state(
+    dict(
+        P1={'default':3.2,'pick':{'between':[2.9,3.9],'round':1}}, # MPa
+        T1C={'default':355,'pick':{'between':[340,360],'round':0}},
+        Psat={'default':2.9,'pick':{'between':[2.7,2.9],'round':3}}, # MPa
+        TLC={'default':50,'pick':{'between':[45,55],'round':0}},
+        mdot={'default':15,'pick':{'between':[10,50],'round':0}}))
+P1  = DSUH.P1
+T1C = DSUH.T1C
+Psat = DSUH.Psat
+TLC = DSUH.TLC
+mdot = DSUH.mdot
+inlet = SANDLER(T=T1C, P=P1)
+outlet = SANDLER(P=Psat, x=1.0)
+inL = SANDLER(T=TLC, x=0.0)
+
+mLdot = mdot * ((inlet.h - outlet.h)/(inlet.h - inL.h))
+m_show = float(np.round(mLdot, 3))
+if 'AnsSet' in locals():
+    AnsSet.register(idx, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=m_show, units='kg s$^{-1}$', formatter='{:.3f}')
+\end{pycode}
+Superheated steam at \py{f'{P1:,.0f}'} MPa and \py{T1C}$^\circ$C is to be converted to saturated steam at \py{f'{Psat:,.0f}'} MPa in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{TLC}$^\circ$C.  The unit should produce saturated steam at a rate of \py{mdot} kg~s$^{-1}$.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
+
+The following enthalpies will be useful:
+\begin{itemize}
+\item[] Superheated steam at \py{T1C}$^\circ$C and \py{f'{P1:,.0f}'}~MPa: $\hat{H}$ = \py{f'{inlet.h:,.2f}'} kJ/kg;
+\item[] Saturated liquid water at \py{TLC}$^\circ$C: $\hat{H}^{\rm L}$ = \py{f'{inL.h:,.2f}'} kJ/kg; and
+\item[] Saturated water vapor at \py{f'{Psat:,.0f}'}~MPa: $\hat{H}^{\rm V}$ = \py{f'{outlet.h:,.2f}'} kJ/kg.
+\end{itemize}
+
+\ifshowsolutions\Solutionheader
+
+Let stream 1 be the liquid water stream, which we assume is saturated liquid, stream 2 be the superheated steam inlet, and stream 3 be the saturated steam outlet.  Hence, $\dot{m}_3$ = 15 kg~s$^{-1}$ as given.  The mass and energy balance yield the two unknowns $\dot{m}_1$ and $\dot{m}_2$:
+
+\begin{align*}
+\dot{m}_1 + \dot{m}_2 & = \dot{m}_3\\
+\dot{m}_1\hat{H}_1 + \dot{m}_2\hat{H}_2 & = \dot{m}_3\hat{H}_3\\
+\end{align*}
+
+Solving these two simultaneously yields 
+
+\begin{align*}
+\dot{m}_1 & = \dot{m}_3\left(\frac{\hat{H}_2-\hat{H}_3}{\hat{H}_2-\hat{H}_1}\right)\\
+& = (15)\left(\frac{\py{f'{inlet.h:,.2f}'}-\py{f'{outlet.h:,.2f}'}}{\py{f'{inlet.h:,.2f}'}-\py{f'{inL.h:,.2f}'}}\right) = \fbox{\py{f'{mLdot:.2f}'}\ \mbox{kg~s$^{-1}$}}.
+\end{align*}
+\clearpage
+\else
+\ifgivespace
+\clearpage
+\fi
+\fi
+
+
+\item \begin{pycode}
 from scipy.optimize import fsolve
 import pandas as pd
 
-idx = <<<idx>>>
-group = <<<group>>>
+idx = 4.3
+group = 1
 
 def acm_ocm(x, A):
     return np.array([np.exp(A * (1 - x)**2), np.exp(A * x**2)])
@@ -196,12 +402,12 @@ Peforming a bubble-point pressure calculation at this composition gives the pres
     & = (\py{f'{xazeo:.4f}'})(\py{f'{gazeo[0]:.4f}'})(\py{f'{Pv[0]:.4f}'}) + (1-\py{f'{xazeo:.4f}'})(\py{f'{gazeo[1]:.4f}'})(\py{f'{Pv[1]:.4f}'}) = \fbox{\py{f'{Pazeo:.2f}'}~kPa}.
 \end{align*}
 
-\IfFileExists{mypxy-<<<serial>>>-<<<idx>>>.pdf}{
+\IfFileExists{mypxy-65917772-4.3.pdf}{
 The figure below shows the full $Pxy$ diagram for this binary at \py{f'{T:.2f}'} K, with the azeotrope labeled.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.5\textwidth]{mypxy-<<<serial>>>-<<<idx>>>.pdf}
+\includegraphics[width=0.5\textwidth]{mypxy-65917772-4.3.pdf}
 \end{center}
 \end{figure}
 }{
@@ -217,3 +423,33 @@ not showing plot yet
 \clearpage
 \fi
 \fi
+
+\end{enumerate}
+
+\begin{pycode}
+if 'STReq' in locals():
+    steamtables = STReq.to_latex()
+    if len(steamtables) > 0:
+        print(steamtables)
+
+from shutil import rmtree
+
+if len(pythonTexFC) > 0:
+   # pickle it
+   pkl = pickle_cache / f"pythontex-{serial}.pkl"
+   pkl.write_bytes(pickle.dumps(pythonTexFC, protocol=pickle.HIGHEST_PROTOCOL))
+
+if 'safe_mplconfig' in locals():
+    rmtree(safe_mplconfig)
+
+if 'AnsSet' in locals():
+    # pickle it
+    pkl = pickle_cache / f"answers-{serial}.pkl"
+    pkl.write_bytes(pickle.dumps(AnsSet, protocol=pickle.HIGHEST_PROTOCOL))
+
+
+\end{pycode}
+
+\end{document}
+
+% End of automatically generated LaTeX source file

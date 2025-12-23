@@ -3,6 +3,7 @@ config:
   shuffle: true
   instructions: |
     \textbf{Derivatives.} Provide the correct derivative for each of the following functions.
+  type: short_answer
 content:
   - Q: \(f(x) = x^2\)
     A: \(f^\prime(x) = 2x\)

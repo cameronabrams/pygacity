@@ -14,6 +14,8 @@ document:
         Termname: Winter 2025-2026
     - pythontex:
         - setup
+        - matplotlib
+        - sandlersteam
     - text: |
             \examheader{Exam I}{January 13, 2026}
             \noindent\textbf{Instructions:} This exam is closed book, and you are allowed 
@@ -22,34 +24,22 @@ document:
             Clearly indicate your final answers. The total number of points is 100. You have 
             110 minutes to complete the exam.
     - enumerate:
-      - source: compound_arithmetic.tex
-        points: 30        
-        group: 1
-      - source: short.tex
+      - source: air_mixing.tex
         points: 30
-        config: derivatives_short_answer.yaml
-        group: 2
-      - source: simple_integration.tex
+        group: 1
+      - source: desuperheater.tex
         points: 20
-        group: 3
-      - source: short.tex
-        points: 20
-        config: geography_fill_in_the_blank.yaml
-        group: 3
-      - source: short.tex
-        points: 10
-        config: true_false_questions.yaml
-        group: 4
-      - source: short.tex
-        points: 10
-        config: multiple_choice_questions.yaml
-        group: 4
+        group: 1
+      - source: vle_binary_OCM.tex
+        points: 50
+        group: 1
     - pythontex:
+        - showsteamtables
         - teardown
     - source: footer.tex
 build:
   seed: 12345
-  copies: 3
+  copies: 10
   job-name: ExamI
   paths:
     build-dir: ./build

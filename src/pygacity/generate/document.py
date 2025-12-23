@@ -5,7 +5,7 @@ from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path
 
-from .block import LatexSimpleBlock, LatexListBlock, PythontexPycodeBlock
+from .block import LatexCompoundBlock
 
 logger = logging.getLogger(__name__)
 
@@ -13,23 +13,15 @@ class Document:
     resources_root: Path = files('pygacity') / 'resources'
     templates_dir: Path = resources_root / 'templates'
     def __init__(self, document_specs: dict):
-        self.blocks: list[LatexSimpleBlock | LatexListBlock] = []
+        self.blocks: list[LatexCompoundBlock] = []
         self.specs = deepcopy(document_specs)
+        self.preamble = self.specs.get('preamble', [])
         self.substitutions = self.specs.get('substitutions', {})
         logger.debug(f'Document.__init__ with specs: {self.specs}')
-        for section in self.specs['structure']:
+        for idx, section in enumerate(self.specs['structure']):
             assert type(section) == dict
-            assert len(section) == 1
-            section_type = list(section.keys())[0]
-            section_specs = section[section_type]
-            if section_type == 'unstructured':
-                self.blocks.append(LatexSimpleBlock(block_specs=section_specs).load())
-            elif section_type == 'list':
-                self.blocks.append(LatexListBlock(block_specs=section_specs).load())
-            elif section_type == 'pythontex':
-                self.blocks.append(PythontexPycodeBlock(block_specs=section_specs).load())
-            else:
-                raise ValueError(f'Unrecognized section type "{section_type}" in document structure.')
+            self.blocks.append(LatexCompoundBlock(block_specs=section, parent_idx='', idx=idx+1).load())
+            logger.debug(f'Added block for top section {idx}: {section}')
         self.has_pycode = any(block.has_pycode for block in self.blocks)
         self.embedded_graphics = []
         for block in self.blocks:
@@ -41,7 +33,7 @@ class Document:
         for block in self.blocks:
             block.substitute(super_substitutions=self.substitutions)
 
-    def write_source(self, local_output_name='local_document'):
+    def write_source(self, local_output_name: str  = 'local_document'):
         with open(local_output_name + '.tex', 'w') as f:
             f.write('% Automatically generated LaTeX source file\n')
             class_specs = self.specs.get('class', {})
@@ -49,9 +41,7 @@ class Document:
             dcoptions = class_specs.get('options', [])
             classname = class_specs.get('classname', 'article')
             f.write(rf'\documentclass[{", ".join(dcoptions)}]{{{classname}}}' + '\n')
-            preamble = self.specs.get('preamble_commands', [])
-            for cmd in preamble:
-                f.write(str(cmd) + '\n')
+            f.write(str(self.preamble) + '\n')
             for block in self.blocks:
                 f.write(str(block) + '\n')
             f.write('% End of automatically generated LaTeX source file\n')

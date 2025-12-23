@@ -1,3 +1,0 @@
-if 'AnsSet' in locals() and 'serial' in locals():
-    with open(f'answers-{serial}.yaml', 'w') as f:
-        yaml.dump(AnsSet.D, f)

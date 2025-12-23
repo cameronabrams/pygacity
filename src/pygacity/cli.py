@@ -123,10 +123,10 @@ def cli():
     setup_logging(args)
 
     if args.banner:
-        # logger.info(f'pygacity')
         banner(print)    
     if hasattr(args, 'func'):
         args.func(args)
     else:
         my_list = oxford(list(subcommands.keys()))
         print(f'No subcommand found. Expected one of {my_list}')
+    logger.info('Thanks for using pygacity!')

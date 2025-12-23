@@ -1,5 +1,5 @@
 \begin{pycode}
-qno = <<<qno>>>
+idx = <<<idx>>>
 group = <<<group>>>
 part_a = Pick.pick_state({'A': {'default': 12, 'pick': {'pickfrom': [10,12,14]}},
                           'B': {'default': 3,  'pick': {'pickfrom': [2,3,4]}}})
@@ -10,9 +10,9 @@ part_b.answer = part_b.C // part_b.D
 part_c = Pick.pick_state({'E': 7,
                           'F': {'pick': {'pickfrom': [8,9,10]}}})
 part_c.answer = part_c.E + part_c.F
-AnsSet.register(qno, group=group, label='(a)', value=part_a.answer)
-AnsSet.register(qno, group=group, label='(b)', value=part_b.answer)
-AnsSet.register(qno, group=group, label='(c)', value=part_c.answer)
+AnsSet.register(idx, group=group, label='a', value=part_a.answer)
+AnsSet.register(idx, group=group, label='b', value=part_b.answer)
+AnsSet.register(idx, group=group, label='c', value=part_c.answer)
 \end{pycode}
 \textbf{Simple Arithmetic.} Solve the following arithmetic problems:
 \begin{enumerate}

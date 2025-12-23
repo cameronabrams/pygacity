@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
 name = "pygacity"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
   { name="Cameron F Abrams", email="cfa22@drexel.edu" },
 ]
@@ -25,7 +25,6 @@ dependencies = [
     "progressbar",
     "pypdf2",
     "jinja2",
-    "ycleptic"
 ]
 [tool.pytest.ini_options]
 log_cli = true

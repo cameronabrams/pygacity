@@ -3,6 +3,8 @@ config:
   shuffle: true
   instructions: |
     \textbf{Multiple choice questions.}  Circle the letter of the correct answer from the choices provided.
+  type: multiple_choice
+  shuffle_choices: true
 content:
   - Q: What is the capital of Italy?
     choices:

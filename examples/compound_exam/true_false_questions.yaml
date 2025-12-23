@@ -3,6 +3,7 @@ config:
   shuffle: true
   instructions: |
     \textbf{True/False Questions.} Indicate whether each of the following statements is true (``T'') or false (``F'').
+  type: true_false
 content:
   - Q: On a piano, the frequency of middle C is approximately 261.63 Hz.
     A: T

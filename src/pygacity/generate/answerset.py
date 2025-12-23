@@ -13,6 +13,7 @@ class AnswerSet:
         self.serial = serial
         self.dumpname = f'answers-{serial:08d}.yaml'
         self.D = {}
+        self.first_index = None
 
     @classmethod
     def from_yaml(cls, filename, delete=False):
@@ -36,6 +37,8 @@ class AnswerSet:
         """
         Register an answer entry for a particular question index.
         """
+        if not self.first_index:
+            self.first_index = index
         if not index in self.D:
             self.D[index] = []
         # if value is a numpy data type, convert to native python type
@@ -46,6 +49,7 @@ class AnswerSet:
                                     units=units,
                                     formatter=formatter,
                                     group=group))
+        logger.debug(f'AnswerSet.register index={index} label={label} value={value} units={units} formatter={formatter} group={group}')
     
     def display(self, index, element=0):
         D = None
@@ -71,26 +75,42 @@ class AnswerSet:
                     return label
         return ''
 
-    def to_yaml(self):
-        with open(self.dumpname, 'w') as f:
-            yaml.safe_dump(self.D, f)
+    # def to_yaml(self):
+    #     # check all indices for common bytes at the start, and remove them
+    #     raw_indices = list(self.D.keys())
+    #     common_prefix = os.path.commonprefix([str(x) for x in raw_indices])
+    #     logger.debug(f'AnswerSet.to_yaml common prefix: "{common_prefix}"')
+    #     if common_prefix:
+    #         new_D = {}
+    #         for index, AL in self.D.items():
+    #             new_index = str(index)[len(common_prefix):]
+    #             new_D[new_index] = AL
+    #         self.D = new_D
+    #     with open(self.dumpname, 'w') as f:
+    #         yaml.safe_dump(self.D, f)
 
 class AnswerSuperSet(UserList):
 
-    def __init__(self, files=[], delete=False):
+    def __init__(self, initial: list[AnswerSet] = None):
+        self.data: list[AnswerSet] = initial if initial is not None else []
+        super().__init__(self.data)
+        if not self._check_congruency():
+            print(f'Error: There is a lack of congruency among answer sets')
+        self._make_dfs()
+
+    @classmethod
+    def from_dumpfiles(cls, files=[], delete=False):
         data=[]
         for f in files:
             data.append(AnswerSet.from_yaml(f, delete=delete))
-        super().__init__(data)
-        if not self._check_congruency():
-            print(f'Error: There is a lack of congruency among {files}')
-        self._make_dfs()
+        return cls(initial=data)
 
     def to_latex(self):
         result = ''
         for group_name, group_data in self.groups.items():
             df = group_data['df']
             formatters = group_data.get('formatters', None)
+            logger.debug(f'AnswerSuperSet.to_latex group "{group_name}" with formatters: {formatters}')
             result += df.to_latex(formatters=formatters, index=False, longtable=True)#,header=self.headings)
         return result
     
@@ -121,9 +141,20 @@ class AnswerSuperSet(UserList):
         pattern = self.data[0]  # keys in first AnswerSet form the pattern all sets follow
         self.formatters = {}
         self.groups = {}
+        # keys in D may be prepended with a common prefix; remove it
+        common_prefix = os.path.commonprefix([str(x) for x in pattern.D.keys()])
+        logger.debug(f'Overall common prefix: "{common_prefix}"')
+        for dataset in self.data:
+            new_dataset_D = {}
+            for index in dataset.D.keys():
+                new_index = str(index)[len(common_prefix):]
+                new_dataset_D[new_index] = dataset.D[index]
+            dataset.D = new_dataset_D
         for index, AL in pattern.D.items():
             for a in AL:
                 key = f'{index}-{a["label"]}'
+                if 'units' in a and a['units']:
+                    key += f' ({a["units"]})'
                 group = a.get('group', None)
                 if group:
                     if group not in self.groups:
@@ -140,6 +171,8 @@ class AnswerSuperSet(UserList):
             for index, AL in inst.D.items():
                 for a in AL:
                     key = f'{index}-{a["label"]}'
+                    if 'units' in a and a['units']:
+                        key += f' ({a["units"]})'
                     group = a.get('group', None)
                     if group:
                         self.groups[group]['values'][key].append(a['value'])
@@ -152,6 +185,7 @@ class AnswerSuperSet(UserList):
             self.groups['base'] = dict(formatters=self.formatters, df=DF)
         else:
             for gname, gdata in self.groups.items():
+                logger.debug(f'Building DataFrame for group {gname} with values: {gdata["values"]}')
                 DF = pd.DataFrame(gdata['values'])
                 DF.sort_values(by='serials', inplace=True)
                 self.groups[gname]['df'] = DF

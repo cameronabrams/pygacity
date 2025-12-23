@@ -1,8 +1,9 @@
 config:
-  count: 3
+  count: 4
   shuffle: True
   instructions: |
     \textbf{State and World Capitals.} Write the correct US State, Canadian Province, or World Country or its capital in the blank provided.
+  type: fill_in_the_blank
 content:
   - Q: The capital of Texas is ___.
     A: Austin

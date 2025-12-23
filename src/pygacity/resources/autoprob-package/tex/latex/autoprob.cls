@@ -108,6 +108,12 @@ numbers=none
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
 
+\newcommand{\tffillblank}{\ul{\ \ \ \ \ \ }}
+\newcommand{\tfitem}[2]{\item[{{#1}}. \ifshowsolutions\textcolor{blue}{\underline{{#2}}}\else\tffillblank\fi]}
+\newcommand{\fitbfillblank}{\ul{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+\newcommand{\fitanswerslot}[1]{\ifshowsolutions\textcolor{blue}{\underline{{#1}}}\else\fitbfillblank\fi}
+\newcommand{\mcchoiceitem}[2]{\item[\ifshowsolutions\ifthenelse{\equal{{#1}}{{#2}}}{\textcolor{blue}{\fbox{\textbf{#1}}}}{#1}\else #1\fi.]}
+
 \newcommand{\Universityname}{\so{\sc University Name}}
 \newcommand{\Departmentname}{Department Name}
 \newcommand{\Coursename}{Course Name}

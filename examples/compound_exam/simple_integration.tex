@@ -1,6 +1,6 @@
 \begin{pycode}
-qno = <<<qno>>>
-group = <<<group>>>
+idx = <<<idx>>> # nested block index, starts at 0
+group = <<<group>>>  # group name for answer set
 \end{pycode}
 \textbf{Integration Problems.} Compute the following integrals:
 \begin{enumerate}
@@ -11,7 +11,7 @@ group = <<<group>>>
 \fi
 \begin{pycode}
 if 'AnsSet' in locals():
-    AnsSet.register(qno, group=group, label='(a)', value=r'\(x^3 + x^2 + x + C\)')
+    AnsSet.register(idx, group=group, label='a', value=r'\(x^3 + x^2 + x + C\)')
 \end{pycode}
 \item[b.] What is the definite integral of \(f(x)=\cos(x)\) from \(0\) to \(\pi/2\)?\ifshowsolutions\ \ \ \textcolor{blue}{\(\int_0^{\pi/2} \cos(x) dx = 1\)}\fi
 \ifshowsolutions
@@ -20,7 +20,7 @@ if 'AnsSet' in locals():
 \fi
 \begin{pycode}
 if 'AnsSet' in locals():
-    AnsSet.register(qno, group=group, label='(b)', value=r'\(1\)')
+    AnsSet.register(idx, group=group, label='b', value=r'\(1\)')
 \end{pycode}
 \item[c.] What is the indefinite integral of \(f(x)=e^{3x}\)?\ifshowsolutions\ \ \ \textcolor{blue}{\(\int f(x)dx = \frac{1}{3} e^{3x} + C\)}\fi
 \ifshowsolutions
@@ -29,6 +29,6 @@ if 'AnsSet' in locals():
 \fi
 \begin{pycode}
 if 'AnsSet' in locals():
-    AnsSet.register(qno, group=group, label='(c)', value=r'\(\frac{1}{3} e^{3x} + C\)')
+    AnsSet.register(idx, group=group, label='c', value=r'\(\frac{1}{3} e^{3x} + C\)')
 \end{pycode}
 \end{enumerate}

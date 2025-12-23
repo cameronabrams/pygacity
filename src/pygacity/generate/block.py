@@ -1,8 +1,10 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+from __future__ import annotations
 import logging
 import os
 import re
 
+from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path
 from shutil import copy2
@@ -25,34 +27,68 @@ def path_resolver(filename: str, search_paths: list[Path] = [], ext: str ='') ->
         raise FileNotFoundError((f'Could not locate source file {local_filename} in cwd ({os.getcwd()}) '
                                  f'or search path {spm}.'))
 
-class LatexSimpleBlock:
+class LatexCompoundBlock:
     resources_root: Path = files('pygacity') / 'resources'
     templates_dir: Path = resources_root / 'templates'
+    pythontex_dir = resources_root / 'pythontex'
     substitution_delimiters: tuple = (r'<<<', r'>>>')
 
-    def __init__(self, block_specs: dict):
+    def __init__(self, block_specs: dict, parent_idx: str = '', idx: int = 0):
         self.block_specs = block_specs
-        self.filename: str = block_specs.get('source', None)
-        self.path = Path(self.filename) if self.filename else None
+        self.idx = parent_idx + (f'.{idx}' if parent_idx != '' else f'{idx}')
+        self.textcontents: str = block_specs.get('text', '')
+
+        self.sourcename: str = block_specs.get('source', None)
         self.substitution_map: dict = block_specs.get('substitutions', {})
-        self.has_pycode: bool = False
-        self.embedded_graphics: list[str | Path] = []
-        self.rawcontents: str = block_specs.get('content', '')
-        self.processedcontents: str = ''
+
         self.points: int = block_specs.get('points', 0)
         self.config_filename: str = block_specs.get('config', None)
-        self.config_path = Path(self.config_filename) if self.config_filename else None
         self.group: int = block_specs.get('group', 0)
 
-    def load(self):
-        if self.rawcontents == '':
-            self.path = path_resolver(self.filename, search_paths=[self.templates_dir])
-            with open(self.path, 'r') as f:
-                self.rawcontents = f.read()
-        self.has_pycode = r'\begin{pycode}' in self.rawcontents
+        self.pythontex: list[str] = block_specs.get('pythontex', [])
+
+        self.enumerate = [LatexCompoundBlock(block_specs=child, parent_idx=self.idx, idx=i+1) for i, child in enumerate(block_specs.get('enumerate', []))]
+        self.itemize = [LatexCompoundBlock(block_specs=child, parent_idx=self.idx, idx=i+1) for i, child in enumerate(block_specs.get('itemize', []))]
+        self.children = self.enumerate + self.itemize
+
+        self.sourcepath = None
+        self.config_path = Path(self.config_filename) if self.config_filename else None
+        self.processedcontents: str = ''
+        self.has_pycode: bool = False
+        self.embedded_graphics: list[str | Path] = []
+
+        self._check_schema()
+
+        logger.debug(f'LatexCompoundBlock.__init__ substitution_map: {self.substitution_map}')
+
+    def _check_schema(self):
+        # cannot specify both text content and a source file
+        if self.textcontents != '' and self.sourcename is not None:
+            raise ValueError('Block cannot specify both "text" content and a "source" file.')
+        # cannot specify both enumerate and itemize
+        if len(self.enumerate) > 0 and len(self.itemize) > 0:
+            raise ValueError('Block cannot specify both "enumerate" and "itemize" children.')
+        # if list of pythontext files is non-empty, cannot specify text or source
+        if len(self.pythontex) > 0:
+            if self.textcontents != '' or self.sourcename is not None:
+                raise ValueError('Block cannot specify "pythontex" files along with "text" content or a "source" file.')
+
+    def load(self) -> LatexCompoundBlock:
+        if self.sourcename:
+            self.sourcepath = path_resolver(self.sourcename, search_paths=[self.templates_dir])
+            with open(self.sourcepath, 'r') as f:
+                self.textcontents = f.read()
+        elif len(self.pythontex) > 0:
+            self.textcontents = r'\begin{pycode}' + '\n'
+            for ptfile in self.pythontex:
+                ptpath = path_resolver(ptfile, search_paths=[LatexCompoundBlock.pythontex_dir], ext='.pycode')
+                with open(ptpath, 'r') as f:
+                    self.textcontents += f.read() + '\n\n'
+            self.textcontents += r'\end{pycode}' + '\n'
+        self.has_pycode = r'\begin{pycode}' in self.textcontents or self.has_pycode
         # check contents for substitution keys and embedded graphics files
         KEY_RE = re.compile(rf'{self.substitution_delimiters[0]}\s*([A-Za-z0-9_-]+)\s*{self.substitution_delimiters[1]}')
-        for line in self.rawcontents.split('\n'):
+        for line in self.textcontents.split('\n'):
             keys = set(KEY_RE.findall(line))
             for key in keys:
                 if not key in self.substitution_map:
@@ -63,101 +99,68 @@ class LatexSimpleBlock:
             for gf in graphics_files:
                 if gf not in self.embedded_graphics:
                     self.embedded_graphics.append(gf)
-        self.processedcontents = self.rawcontents[:]
+        self.processedcontents = self.textcontents[:]
         if self.config_path:
             if not self.config_path.exists():
-                raise FileNotFoundError(f'Configuration file {self.config_path} does not exist.')
-            self.substitution_map['config'] = self.config_path.name
+                raise FileNotFoundError(f'Configuration file {self.config_path.as_posix()} does not exist.')
+            self.substitution_map['config'] = self.config_path.as_posix()
+        if self.points:
+            self.substitution_map['points'] = self.points
+        if self.group:
+            self.substitution_map['group'] = self.group
+        self.substitution_map['idx'] = self.idx
+
+        for child in self.children:
+            child.load()
+            self.has_pycode = child.has_pycode or self.has_pycode
+            self.embedded_graphics.extend(child.embedded_graphics)
+
+        logger.debug(f'LatexCompoundBlock.load completed for idx={self.idx} with substitutions: {self.substitution_map}')
         return self
 
     def substitute(self, super_substitutions: dict = {}, match_all: bool = True):
-        self.processedcontents = self.rawcontents[:]
-        substitutions = self.substitution_map.copy()
-        substitutions.update(super_substitutions)
-        for key, value in substitutions.items():
-            if key in self.substitution_map:
-                self.substitution_map[key] = value
-        logger.debug(f'LatexSimpleBlock.substitute with substitutions: {self.substitution_map}')
+        self.processedcontents = self.textcontents[:]
+        substitutions = deepcopy(super_substitutions)
+        logger.debug(f'block at idx {self.idx} incoming substitutions: {substitutions}')
+        logger.debug(f'block at idx {self.idx} own substitution_map: {self.substitution_map}')
+        substitutions.update({k: v for k, v in self.substitution_map.items() if v is not None})
+        logger.debug(f'block at idx {self.idx} substitutions: {substitutions}')
         # apply substitutions to the contents
-        for key, value in self.substitution_map.items():
+        for key, value in substitutions.items():
             if value is not None:
                 self.processedcontents = self.processedcontents.replace(f'{self.substitution_delimiters[0]}{key}{self.substitution_delimiters[1]}', str(value))
             elif match_all:
-                raise KeyError(f'Substitution key {key} has no associated value for input file {self.path.name}')
+                raise KeyError(f'Substitution key {key} has no associated value for text {self.textcontents[:30]}...')
+        # apply substitutions to children
+        for child in self.children:
+            child.substitute(super_substitutions=substitutions, match_all=match_all)
 
     def copy_referenced_configs(self, output_dir: str):
+        config_paths = []
         if self.config_path and self.config_path.exists():
             dest_path = Path(output_dir) / self.config_path.name
             if not dest_path.exists():
                 copy2(self.config_path, dest_path)
                 logger.debug(f'Copied config file {self.config_path} to {dest_path}')
-            return str(dest_path)
-        return None
+            config_paths.append(str(dest_path))
+        for child in self.children:
+            child_paths = child.copy_referenced_configs(output_dir)
+            if child_paths:
+                config_paths.extend(child_paths)
+        return config_paths
 
     def __str__(self):
-        return self.processedcontents
-
-class LatexListBlock:
-    def __init__(self, block_specs: dict = {}):
-        self.item_specs = block_specs.get('items', [])
-        self.list_type = block_specs.get('type', 'enumerate')
-        self.items: list[LatexSimpleBlock] = []
-        self.has_pycode: bool = False
-        self.embedded_graphics: list[str | Path] = []
-
-    def load(self):
-        for item_spec in self.item_specs:
-            item_type = list(item_spec.keys())[0]
-            item = LatexSimpleBlock(block_specs=item_spec[item_type]).load()
-            self.items.append(item)
-            if item.has_pycode:
-                self.has_pycode = True
-            self.embedded_graphics.extend(item.embedded_graphics)
-        return self
-
-    def substitute(self, super_substitutions: dict = {}):
-        for idx, item in enumerate(self.items):
-            if not 'qno' in item.substitution_map or not item.substitution_map['qno']:
-                item.substitution_map['qno'] = idx + 1
-            if not 'points' in item.substitution_map or not item.substitution_map['points']:
-                item.substitution_map['points'] = item.points
-            if not 'group' in item.substitution_map or not item.substitution_map['group']:
-                item.substitution_map['group'] = item.group
-            logger.debug(f'LatexListBlock.substitute item {idx} with substitutions: {item.substitution_map}')
-            item.substitute(super_substitutions=super_substitutions)
-
-    def copy_referenced_configs(self, output_dir: str):
-        filenames = []
-        for item in self.items:
-            filename = item.copy_referenced_configs(output_dir)
-            if filename:
-                filenames.append(filename)
-        logger.debug(f'Copied referenced config files: {filenames}')
-        return filenames
-
-    def __str__(self):
-        lines = [rf'\begin{{{self.list_type}}}']
-        for item in self.items:
-            pts_msg = f' ({item.points} pts) ' if item.points > 0 else ''
-            lines.append(r'\item ' + pts_msg + str(item))
-        lines.append(rf'\end{{{self.list_type}}}')
-        return '\n'.join(lines)
-
-class PythontexPycodeBlock(LatexSimpleBlock):
-    pythontex_dir = files('pygacity') / 'resources' / 'pythontex'
-
-    def __init__(self, block_specs: dict):
-        self.block_specs = block_specs
-        super().__init__(block_specs)
-        self.imports: list[str] = block_specs.get('imports', [])
-        self.load_raw()
-
-    def load_raw(self):
-        if len(self.imports) > 0:
-            self.rawcontents = r'\begin{pycode}' + '\n'
-        for imp in self.imports:
-            self.path = path_resolver(imp, search_paths=[PythontexPycodeBlock.pythontex_dir], ext='.pycode')
-            with open(self.path, 'r') as f:
-                self.rawcontents += f.read() + '\n\n'
-        if len(self.imports) > 0:
-            self.rawcontents += r'\end{pycode}' + '\n'
+        contents = self.processedcontents
+        if self.enumerate:
+            enum_str = r'\begin{enumerate}' + '\n'
+            for item in self.enumerate:
+                enum_str += r'\item ' + str(item) + '\n'
+            enum_str += r'\end{enumerate}' + '\n'
+            contents += '\n' + enum_str
+        if self.itemize:
+            item_str = r'\begin{itemize}' + '\n'
+            for item in self.itemize:
+                item_str += r'\item ' + str(item) + '\n'
+            item_str += r'\end{itemize}' + '\n'
+            contents += '\n' + item_str
+        return contents
