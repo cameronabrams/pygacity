@@ -178,7 +178,7 @@ def answerset(config: Config = None, AnswerSets: dict[str | int, AnswerSet] = No
     logger.info(f'Combined answer set => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{AnswerSetBuilder.working_job_name}.pdf')
     answerset_archive = AnswerSetBuilder.FC.archive(build_path / 'answerset_buildfiles', delete=True)
     logger.info(f'Archived answer set build files to {answerset_archive.absolute().relative_to(Path.cwd()).as_posix()}')
-    return f'{AnswerSetBuilder.working_job_name}.tex'
+    return Path.cwd() / f'{AnswerSetBuilder.working_job_name}.tex'
 
 def answerset_subcommand(args):
     logger.info(f'Generating answer set document from previous build specified in {args.f}...')
