@@ -71,22 +71,23 @@ class LatexBuilder:
         if cleanup:            
             self.FC.flush()
 
-def table_as_tex(table, float_format='{:.4f}'.format, drop_zeros=None, total_row=[]):
+def table_as_tex(table, float_format='\({:.4f}\)'.format, drop_zeros=None, total_row=[], index=False):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
         items and generates a table '''
-    df=pd.DataFrame(table)
+    df = pd.DataFrame(table)
     if drop_zeros:
-        for k,d in zip(table.keys(),drop_zeros):
+        for k, d in zip(table.keys(), drop_zeros):
             if d:
-                df=df[df[k]!=0.]
-    tablestring=df.to_latex(float_format=float_format)
-    if len(total_row)>0:
-        i=tablestring.find(r'\bottomrule')
-        tmpstr=tablestring[:i-1]+r'\hline'+'\n'+'&'.join(total_row)+r'\\'+'\n'+tablestring[i:]
-        tablestring=tmpstr
+                df = df[df[k] != 0.]
+    tablestring = df.to_latex(float_format=float_format, index=index, header=True)
+    logger.debug(f'Generated table string:\n{tablestring}\n')
+    if len(total_row) > 0:
+        i = tablestring.find(r'\bottomrule')
+        tmpstr = tablestring[:i-1] + r'\hline' + '\n' + '&'.join(total_row) + r'\\' + '\n' + tablestring[i:]
+        tablestring = tmpstr
     return tablestring
 
-def Cp_as_tex(Cp_coeff: dict | list, decoration='*'):
+def Cp_as_tex(Cp_coeff: dict | list, decoration='*', sig: int = 5) -> str:
     idx=[0,1,2,3]
     if type(Cp_coeff)==dict:
         idx='abcd'
@@ -94,17 +95,28 @@ def Cp_as_tex(Cp_coeff: dict | list, decoration='*'):
     for i in range(4):
         sgns.append('-' if Cp_coeff[idx[i]]<0 else '+')
     retstr=r'$C_p^'+f'{decoration}'+r'$ = '+f'{Cp_coeff[idx[0]]:.3f} {sgns[1]} '
-    retstr+=sci_notation_as_tex(np.abs(Cp_coeff[idx[1]]),mantissa_fmt='{:.4e}')+r' $T$ '+f'{sgns[2]} '
-    retstr+=sci_notation_as_tex(np.abs(Cp_coeff[idx[2]]),mantissa_fmt='{:.4e}')+r' $T^2$ '+f'{sgns[3]} '
-    retstr+=sci_notation_as_tex(np.abs(Cp_coeff[idx[3]]),mantissa_fmt='{:.4e}')+r' $T^3$'
+    retstr+=format_sig(np.abs(Cp_coeff[idx[1]]),sig=sig)+r' $T$ '+f'{sgns[2]} '
+    retstr+=format_sig(np.abs(Cp_coeff[idx[2]]),sig=sig)+r' $T^2$ '+f'{sgns[3]} '
+    retstr+=format_sig(np.abs(Cp_coeff[idx[3]]),sig=sig)+r' $T^3$'
     return(retstr)
 
-def sci_notation_as_tex(x,**kwargs):
+import math
+
+def format_sig(x: float, sig: int = 5, use_tex: bool = True) -> str:
+    s = format(x, f",.{sig}g")
+    if "e" in s:
+        mantissa, exponent = s.split("e")
+        if use_tex:
+            exponent = int(exponent)      # removes + and leading zeros
+            return rf"{mantissa}\times 10^{{{exponent}}}"
+    return s
+
+def sci_notation_as_tex(x, **kwargs):
     ''' Writes a floating point in LaTeX format scientific notation '''
-    maglimit=kwargs.get('maglimit',1000)
-    fmt=kwargs.get('fmt','{:.4f}')
-    mantissa_fmt=kwargs.get('mantissa_fmt','{:.6e}')
-    mathmode=kwargs.get('mathmode',False)
+    maglimit = kwargs.get('maglimit',1000)
+    fmt = kwargs.get('fmt','{:.4f}')
+    mantissa_fmt = kwargs.get('mantissa_fmt','{:.6e}')
+    mathmode = kwargs.get('mathmode',False)
     if 1/maglimit<np.abs(x)<maglimit:
         return str(fmt.format(x))
     xstr=mantissa_fmt.format(x)
@@ -152,7 +164,8 @@ def split_reactants_products(emps,nu):
     products=[]
     nureactants=[]
     nuproducts=[]
-    for e,n in zip(emps,nu):
+    for e,nn in zip(emps,nu):
+        n = float(np.round(nn,5))
         if n<0:
             reactants.append(e)
             f=fr.Fraction(-n)

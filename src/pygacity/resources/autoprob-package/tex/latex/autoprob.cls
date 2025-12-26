@@ -1,36 +1,6 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{autoprob}[2023/01/06]
+\ProvidesClass{autoprob}[2025/12/26]
 
-\RequirePackage{datatool}
-\RequirePackage{graphicx}
-\RequirePackage{amsfonts}
-\RequirePackage{amssymb}
-\RequirePackage{amsmath}
-\RequirePackage{amstext}
-\RequirePackage{mathtools}
-\RequirePackage{latexsym}
-\RequirePackage{epic}
-\RequirePackage{eepic}
-\RequirePackage{multirow}
-\RequirePackage[mathscr]{euscript}
-\RequirePackage{xcolor}
-\RequirePackage{accents}
-\RequirePackage{xifthen}
-\RequirePackage{xfp}
-\RequirePackage{nccmath}
-\RequirePackage{currfile}
-\RequirePackage{fancyhdr}
-\RequirePackage{hyperref}
-\RequirePackage{array}
-\RequirePackage{soul}
-\RequirePackage[version=4]{mhchem}
-\RequirePackage{booktabs}
-\RequirePackage[font=small,labelfont=bf]{caption}
-\RequirePackage{pythontex}
-\RequirePackage{tikz}
-\usetikzlibrary{patterns}
-\RequirePackage{calc}
-\RequirePackage{longtable}
 \newif\ifshowsolutions
 \showsolutionsfalse
 \newif\ifshowanswers
@@ -39,7 +9,7 @@
 \givespacefalse
 
 \DeclareOption{solutions}{\showsolutionstrue}
-\DeclareOption{answers}{\showanwersstrue}
+\DeclareOption{answers}{\showanswerstrue}
 \DeclareOption{givespace}{\givespacetrue}
 
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
@@ -47,15 +17,59 @@
 
 \LoadClass{article}
 
-\RequirePackage{enumitem}
+% core
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
 \RequirePackage[margin=1in]{geometry}
+\RequirePackage{calc}
+
+% math
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsfonts}
+\RequirePackage{amstext}
+\RequirePackage{mathtools}
+\RequirePackage{latexsym}
+\RequirePackage[mathscr]{euscript}
+\RequirePackage{nccmath}
+\RequirePackage{accents}
+\RequirePackage[version=4]{mhchem}
+
+% utilities
+\RequirePackage{xifthen}
+\RequirePackage{xfp}
+\RequirePackage{currfile}
+\RequirePackage{datatool}
+\RequirePackage{soul}
+
+% tables
+\RequirePackage{array}
+\RequirePackage{multirow}
+\RequirePackage{longtable}
+\RequirePackage{booktabs}
+\RequirePackage[font=small,labelfont=bf]{caption}
+
+% graphics / code
+\RequirePackage{tikz}
+\RequirePackage{listings}
+\RequirePackage{pythontex}
+
+% lists / headers
+\RequirePackage{enumitem}
+\RequirePackage{fancyhdr}
+
+% hyperlinks LAST
+\RequirePackage{hyperref}
+
+\usetikzlibrary{patterns}
+
+
 
 \newsavebox{\fmbox}
 \newenvironment{fmpage}[1]
 {\begin{lrbox}{\fmbox}\begin{minipage}[c]{#1}}
 {\end{minipage}\end{lrbox}\fbox{\usebox{\fmbox}}}
 
-\RequirePackage{listings}
 \definecolor{Brown}{cmyk}{0,0.81,1,0.60}
 \definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
 \definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}

@@ -139,7 +139,7 @@ def build(args):
         logger.debug(f'Removed pickle cache at {pickle_cache.as_posix()}')
     if len(AnswerSets) > 0:
         logger.info(f'Collected {len(AnswerSets)} answer sets from pickle cache.')
-        FC.extend(answerset(config, AnswerSets=AnswerSets))
+        FC.append(answerset(config, AnswerSets=AnswerSets))
     for f in FC.data:
         logger.debug(f'Generated file: {f.absolute().relative_to(Path.cwd()).as_posix()}')
     tex_archive = FC.archive(build_path / 'tex_artifacts', delete=True)

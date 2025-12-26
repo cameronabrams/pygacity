@@ -18,6 +18,8 @@ pip install -e .
 
 ## Release History
 
+* 0.4.0
+   * examples
 * 0.3.0
    * Added multiple choice, short answer, and fill in the blank question types
 * 0.2.0

@@ -1,0 +1,70 @@
+\begin{pycode}
+my_compounds = {
+    'A': pure_props.get_compound('hydrogen (equilib)'),
+    'B': pure_props.get_compound('nitrogen'),
+    'C': pure_props.get_compound('ammonia'),
+}
+N0 = {
+    my_compounds['A']: 3.0,
+    my_compounds['B']: 1.0,
+    my_compounds['C']: 0.0
+}
+n0_table = tu.table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$N_{0,i}$ (mol)':[f'\({N0[c]}\)' for c in my_compounds.values()]})
+T = 500
+P = 8 # bar
+Eq = ChemEqSystem(N0=N0, T=T, P=P) # no need to specify a reaction if all species are specified
+Eq.solve_lagrange()
+R = Reaction(R=[my_compounds['A'] ,my_compounds['B']], P=[my_compounds['C']])
+mock = ChemEqSystem(N0=N0, T=T, P=P, Reactions=[R])
+ka_calcslines = mock.texgen_kacalculations(sig=4)
+mock.solve_implicit(Xinit=[0.5]) # single reaction
+report = mock.report()
+rxnstr = R.as_tex()
+thermochemicaltable = mock.thermochemicaltable_as_tex()
+stotable = mock.stoichiometrictable_as_tex()
+stoprod = tu.StoProd_as_tex(bases=[rf'y_{{{c.as_tex()}}}' for c in my_compounds.values()], nu=R.nu)
+resultstable = tu.table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$y_i$':[f'\({y:.4f}\)' for y in mock.ys]})
+\end{pycode}
+Consider the following reaction:
+\[
+\py{rxnstr}
+\]
+
+The initial molar feed composition to a reactor is as follows:
+
+\begin{center}
+\py{n0_table}
+\end{center}
+
+If the reactor is operated at \py{T} K and \py{P} bar, determine the equilibrium mole fractions of each species in the reactor effluent.  Assume ideal gas behavior.
+
+The following thermochemical data may be useful:
+
+\begin{center}
+\py{thermochemicaltable}
+\end{center}
+
+\ifshowsolutions\vspace{1em}\Solutionheader\\
+
+At \py{T} K, the equilibrium constant for the reaction at the reference temperature $T_0$, followed by the equilibrium constant at the operating temperature $T$, are calculated as follows:
+
+\py{ka_calcslines}
+
+Let's set up the stoichiometric table for the reaction, where we let $X$ be the extent of reaction:
+
+\py{stotable}
+
+Plugging each expression for $y_i$ into the equilibrium expression and solving for $X$ (implicitly) gives:
+\[
+X = \py{f'{mock.Xeq[0]:.5f}'}
+\]
+
+Using this value of $X$, we can compute the equilibrium mole fractions of each species:
+
+\begin{center}
+\py{resultstable}    
+\end{center}
+
+\clearpage
+\fi
+

@@ -1,7 +1,9 @@
 document:
   preamble: |
-          \usepackage[scaled]{helvet}
-          \renewcommand\familydefault{\sfdefault}
+    \usepackage[T1]{fontenc}
+    \usepackage{tgheros}
+    \renewcommand{\sfdefault}{qhv} % TeX Gyre Heros family name
+    \renewcommand{\familydefault}{\sfdefault}
   structure:
     - source: header.tex # provided; must contain \begin{document}
       substitutions:
@@ -16,6 +18,7 @@ document:
         - setup
         - matplotlib
         - sandlersteam
+        - chemeq
     - text: |
             \examheader{Exam I}{January 13, 2026}
             \noindent\textbf{Instructions:} This exam is closed book, and you are allowed 
@@ -33,13 +36,14 @@ document:
       - source: vle_binary_OCM.tex
         points: 50
         group: 1
+      - source: ammonia_synthesis.tex
     - pythontex:
         - showsteamtables
         - teardown
     - source: footer.tex
 build:
   seed: 12345
-  copies: 10
+  copies: 3
   job-name: ExamI
   paths:
     build-dir: ./build
