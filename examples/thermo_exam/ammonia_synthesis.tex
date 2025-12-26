@@ -1,4 +1,12 @@
 \begin{pycode}
+idx = <<<idx>>>
+group = <<<group>>>
+REACTOR = Pick.pick_state(
+    dict(
+        P1={'default':8,'pick':{'between':[7,10],'round':-1}}, # MPa
+        T1={'default':500,'pick':{'between':[480,520], 'round':0}} # K
+    )
+)
 my_compounds = {
     'A': pure_props.get_compound('hydrogen (equilib)'),
     'B': pure_props.get_compound('nitrogen'),
@@ -10,8 +18,8 @@ N0 = {
     my_compounds['C']: 0.0
 }
 n0_table = tu.table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$N_{0,i}$ (mol)':[f'\({N0[c]}\)' for c in my_compounds.values()]})
-T = 500
-P = 8 # bar
+T = REACTOR.T1 # K
+P = REACTOR.P1 # bar
 Eq = ChemEqSystem(N0=N0, T=T, P=P) # no need to specify a reaction if all species are specified
 Eq.solve_lagrange()
 R = Reaction(R=[my_compounds['A'] ,my_compounds['B']], P=[my_compounds['C']])
@@ -24,7 +32,13 @@ thermochemicaltable = mock.thermochemicaltable_as_tex()
 stotable = mock.stoichiometrictable_as_tex()
 stoprod = tu.StoProd_as_tex(bases=[rf'y_{{{c.as_tex()}}}' for c in my_compounds.values()], nu=R.nu)
 resultstable = tu.table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$y_i$':[f'\({y:.4f}\)' for y in mock.ys]})
+
+if 'AnsSet' in locals():
+    AnsSet.register(idx, group=group, label=r'\(X_{\rm eq}\)', value=mock.Xeq[0], formatter='{:.5f}')
+    for y, c in zip(mock.ys, list(my_compounds.values())):
+        AnsSet.register(idx, group=group, label=rf'\(y_{{\rm {c.as_tex()}}}\)', value=y, formatter='{:.5f}')
 \end{pycode}
+
 Consider the following reaction:
 \[
 \py{rxnstr}

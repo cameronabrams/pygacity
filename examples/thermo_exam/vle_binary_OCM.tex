@@ -5,6 +5,9 @@ import pandas as pd
 idx = <<<idx>>>
 group = <<<group>>>
 
+comps = Pick.pick_state(dict(xbub={'default':0.08,'pick':{'pickfrom':[0.06, 0.07, 0.08, 0.09, 0.10],'round':3}},
+                             ydew={'default':0.12,'pick':{'pickfrom':[0.10, 0.11, 0.12, 0.13, 0.14],'round':3}}))
+
 def acm_ocm(x, A):
     return np.array([np.exp(A * (1 - x)**2), np.exp(A * x**2)])
 
@@ -26,11 +29,11 @@ def dewp(y, Pvap=[], acm=None, acmp=[], xinit=0.5):
 T = 343.15
 Pv = np.array([79.8, 40.5])
 Aij = 1.15
-xbub = 0.08
+xbub = comps.xbub
 g = acm_ocm(xbub, Aij)
 Pbub, ybub = bubp(xbub, Pvap=Pv, acm=acm_ocm, acmp=[Aij])
 
-ydew = 0.12
+ydew = comps.ydew
 xinit = 0.02
 Pdew, xdew = dewp(ydew, Pvap=Pv, acm=acm_ocm, acmp=[Aij], xinit=xinit)
 gdew = acm_ocm(xdew, Aij)
@@ -80,10 +83,10 @@ Pplot = xplot * gplot[0] * Pv[0] + (1 - xplot) * gplot[1] * Pv[1]
 yplot = xplot * gplot[0] * Pv[0] * np.reciprocal(Pplot)
 
 if 'AnsSet' in locals():
-    AnsSet.register(idx, group=group, label='a', value=np.round(Pbub,2), units='kPa', formatter='{:.2f}')
-    AnsSet.register(idx, group=group, label='b', value=np.round(Pdew,2), units='kPa', formatter='{:.2f}')
-    AnsSet.register(idx, group=group, label='c \(x_{az}\)', value=np.round(xazeo,4), formatter='{:.4f}')
-    AnsSet.register(idx, group=group, label='c \(P_{az}\)', value=np.round(Pazeo,2), units='kPa', formatter='{:.2f}')
+    AnsSet.register(idx, group=group, label='a \(P_{\\rm bub}\)', value=np.round(Pbub,2), units='kPa', formatter='{:.2f}')
+    AnsSet.register(idx, group=group, label='b \(P_{\\rm dew}\)', value=np.round(Pdew,2), units='kPa', formatter='{:.2f}')
+    AnsSet.register(idx, group=group, label='c \(x_{\\rm az}\)', value=np.round(xazeo,4), formatter='{:.4f}')
+    AnsSet.register(idx, group=group, label='c \(P_{\\rm az}\)', value=np.round(Pazeo,2), units='kPa', formatter='{:.2f}')
 
 df = pd.DataFrame({'x': xplot, 'y': yplot, 'g1': gplot[0], 'g2': gplot[1], 'P': Pplot})
 df.to_csv(f'pxy-{serial}-{idx}.csv', header=True, index=False)

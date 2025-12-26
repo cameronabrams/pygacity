@@ -1,7 +1,9 @@
 document:
   preamble: |
-          \usepackage[scaled]{helvet}
-          \renewcommand\familydefault{\sfdefault}
+    \usepackage[T1]{fontenc}
+    \usepackage{tgheros}
+    \renewcommand{\sfdefault}{qhv} % TeX Gyre Heros family name
+    \renewcommand{\familydefault}{\sfdefault}
   structure:
     - source: header.tex # provided; must contain \begin{document}
       substitutions:

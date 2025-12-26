@@ -51,8 +51,10 @@ def _pick_recursive(specs, rng):
                     specs[k] = lims[0] + r * (lims[1] - lims[0])
                     if 'round' in pickrule:
                         specs[k]=np.round(specs[k], pickrule['round'])
-                elif 'pickfrom' in pickrule:
-                    domain = pickrule['pickfrom']
+                elif 'pickfrom' in pickrule or 'from' in pickrule:
+                    domain = pickrule.get('pickfrom',pickrule.get('from',None))
+                    if not domain:
+                        raise ValueError('Pickrule expecting from or pickfrom')
                     specs[k] = rng.choice(domain)
                     if 'round' in pickrule:
                         specs[k] = np.round(specs[k], pickrule['round'])

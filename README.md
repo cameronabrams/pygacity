@@ -6,7 +6,12 @@ You may have learned how to use Python to solve thermodynamics problems, like eq
 
 ## Installation
 
-`Pygacity` is in development.  Best to install it that way.
+`Pygacity` can be installed from Pypi the usual way:
+```sh
+pip install pygacity
+```
+
+`Pygacity` is under active development.  To install a bleeding edge version:
 
 ```sh
 git clone git@github.com:cameronabrams/pygacity.git
@@ -14,10 +19,12 @@ cd pygacity
 pip install -e .
 ```
 
-`Pygacity` includes the LaTeX class file `autoprob.cls` under `[INSTALL-DIR]/pygacity/resources/autoprob-package/tex/latex/`.  All `latex` commands that are managed by `pygacity` append this directory in a ``--include-directory`` argument.  If you would like to use `autoprob.cls` outside of `pygacity`, you will need to make your LaTeX installation aware of `autoprob-package` root.
+`Pygacity` includes the LaTeX class file `autoprob.cls` under `[INSTALL-DIR]/pygacity/resources/autoprob-package/tex/latex/`.  All `latex`-like commands that are managed by `pygacity` append this directory in a ``--include-directory`` argument.  If you would like to use `autoprob.cls` outside of `pygacity`, you will need to make your LaTeX installation aware of `autoprob-package` root.
 
 ## Release History
 
+* 0.4.1
+   * updated examples
 * 0.4.0
    * examples
 * 0.3.0

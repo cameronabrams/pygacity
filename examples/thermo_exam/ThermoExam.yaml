@@ -34,9 +34,11 @@ document:
         points: 20
         group: 1
       - source: vle_binary_OCM.tex
-        points: 50
-        group: 1
+        points: 20
+        group: 2
       - source: ammonia_synthesis.tex
+        points: 30
+        group: 3
     - pythontex:
         - showsteamtables
         - teardown
