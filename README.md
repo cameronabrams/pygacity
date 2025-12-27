@@ -23,6 +23,8 @@ pip install -e .
 
 ## Release History
 
+* 0.5.0
+   * `singlet` subcommand
 * 0.4.1
    * updated examples
 * 0.4.0

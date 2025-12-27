@@ -4,10 +4,10 @@ pygacity
 .. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.16051498.svg
 ..   :target: https://doi.org/10.5281/zenodo.16051498
 
-.. .. image:: https://static.pepy.tech/badge/pygacity
-..    :target: https://pepy.tech/projects/pygacity
+.. image:: https://static.pepy.tech/badge/pygacity
+   :target: https://pepy.tech/projects/pygacity
 
-**Pygacity** is a a tool for building assignments and exams using Latex and Pythontex.  It is designed to facilitate the creation of dynamic and customizable assessments for educational purposes.
+**Pygacity** is a a tool for building printable assignment, exam, and solution documents using PDFLaTeX and PythonTex.   A user must provide latex/pythontex versions of problems and their solutions, along with YAML-format input to specify document construction.  Pygacity's pythontex integration includes random/unique initial condition generation for numerical problems.
 
 .. note::
 
@@ -23,5 +23,4 @@ Contents
    installation
    usage
    examples
-   config_ref
    API <api/API>

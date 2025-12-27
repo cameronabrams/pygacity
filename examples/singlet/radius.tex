@@ -1,0 +1,26 @@
+\begin{pycode}
+from math import pi, sqrt
+A = 0.25 # cm
+# A = pi * r**2 ==> r = sqrt(A/pi)
+r = sqrt(A/pi)
+AnsSet.register(1, label=r'\(r\) (cm)', value=r)
+\end{pycode}
+A circle has area $A$ = \py{A} cm$^2$.  What is its radius?
+
+\ifshowsolutions
+Solution: Since area $A$ and radius $r$ of a circle are related by
+\[
+    A = \pi r^2
+\]
+we know that
+\[
+    r = \sqrt{\frac{A}{\pi}}
+\]
+Using the value of area provided:
+
+\begin{align*}
+r & = \sqrt{\frac{\py{A}}{\py{f'{pi:.4f}'}}}\\
+  & = \py{f'{r:.2f}'}\ \mbox{cm.}
+\end{align*}
+
+\fi

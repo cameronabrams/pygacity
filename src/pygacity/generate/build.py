@@ -14,6 +14,7 @@ from ..util.stringthings import chmod_recursive
 from ..util.collectors import FileCollector
 from ..util.texutils import LatexBuilder
 from pathlib import Path
+from importlib.resources import files
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +22,25 @@ logging.getLogger("ycleptic").setLevel(logging.WARNING)
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 def build(args):
-    logger.info(f'Building document(s) as specified in {args.f}...')
     FC = FileCollector()
-    config = Config(args.f)
+    if hasattr(args, 'f') and args.f:
+        logger.info(f'Building document(s) as specified in {args.f}...')
+        config = Config(args.f)
+    else:
+        config = Config()
+        if hasattr(args, 'texfile') and args.texfile:
+            docspecs, buildspecs = config_singlet(args)
+            config.document_specs = docspecs
+            config.build_specs = buildspecs
+        else:
+            raise KeyError(f'No config file nor singlet tex file specified. No build is possible.')
+
     seed = config.build_specs.get('seed', None)
     if seed is not None:
         random.seed(seed)
         logger.info(f'Setting random seed to {seed}.')
 
     build_path: Path = Path(config.build_specs['paths']['build-dir'])
-    pickle_cache = build_path / '.cache'
     if not build_path.exists():
         build_path.mkdir(parents=True, exist_ok=True)
     else:
@@ -42,6 +52,7 @@ def build(args):
         else:
             raise Exception(f'Build directory "{build_path.as_posix()}" already exists and "--overwrite" was not specified.')
 
+    pickle_cache = build_path / config.pickle_cache_name
     if not pickle_cache.exists():
         pickle_cache.mkdir(parents=True, exist_ok=True)
 
@@ -112,21 +123,15 @@ def build(args):
             FC.append(f'{soln_builder.working_job_name}.tex')
             logger.info(f'serial # {serial} ({i+1}/{len(serials)}) => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{soln_builder.working_job_name}.pdf')
 
-    AnswerSets = []
     if pickle_cache.exists():
         # there may be a pickle file for each serial that holds a FileCollector instance
         commonFC = FileCollector()
-        for pfile in pickle_cache.glob('*.pkl'):
+        for pfile in pickle_cache.glob('pythontex*.pkl'):
             with pfile.open('rb') as f:
                 obj = pickle.load(f)
             if isinstance(obj, FileCollector):
                 for item in obj.data:
                     commonFC.append(build_path / item)
-            elif isinstance(obj, AnswerSet):
-                # serial is second token in filename split by '-'
-                tokens = pfile.stem.split('-')
-                serial = int(tokens[1])
-                AnswerSets.append(obj)
             else:
                 logger.debug(f'Unrecognized object type {type(obj)} in pickle file {pfile.as_posix()}')
             logger.debug(f'Removing pickle cache file {pfile.as_posix()}')
@@ -135,32 +140,30 @@ def build(args):
         archive_path = build_path / 'common_files_from_pickle_cache'
         common_archive = commonFC.archive(archive_path, delete=True)
         logger.info(f'Archived common files from pickle cache to {common_archive.absolute().relative_to(Path.cwd()).as_posix()}')
-        rmtree(pickle_cache)
-        logger.debug(f'Removed pickle cache at {pickle_cache.as_posix()}')
-    if len(AnswerSets) > 0:
-        logger.info(f'Collected {len(AnswerSets)} answer sets from pickle cache.')
-        FC.append(answerset(config, AnswerSets=AnswerSets))
+        logger.debug(f'Retaining pickle cache at {pickle_cache.as_posix()}')
+        FC.append(answerset(config))
+
     for f in FC.data:
         logger.debug(f'Generated file: {f.absolute().relative_to(Path.cwd()).as_posix()}')
     tex_archive = FC.archive(build_path / 'tex_artifacts', delete=True)
     logger.info(f'Archived TeX artifacts to {tex_archive.absolute().relative_to(Path.cwd()).as_posix()}')
     buildfiles_archive = base_builder.FC.archive(build_path / 'buildfiles', delete=True)
-    solnbuildfiles_archive = soln_builder.FC.archive(build_path / 'solnbuildfiles', delete=True)
     logger.info(f'Archived build files to {buildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')
-    logger.info(f'Archived solution build files to {solnbuildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+    if args.solutions:
+        solnbuildfiles_archive = soln_builder.FC.archive(build_path / 'solnbuildfiles', delete=True)
+        logger.info(f'Archived solution build files to {solnbuildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')
 
-def answerset(config: Config = None, AnswerSets: dict[str | int, AnswerSet] = None) -> str:
+def answerset(config: Config = None) -> str:
     build_path: Path = Path(config.build_specs['paths']['build-dir'])
-    if len(AnswerSets) == 0:
-        apparent_answer_files = list(build_path.glob('answers-*.yaml'))
-        if not apparent_answer_files:
-            raise FileNotFoundError(f'No answer files found in {build_path} matching pattern "answers-*.yaml"')
-        filenames = [str(x) for x in apparent_answer_files]
-        filenames.sort()
-        logger.debug(f'Found answer set files: {filenames}')
-        AS = AnswerSuperSet.from_dumpfiles(filenames, delete=True)
-    else:
-        AS = AnswerSuperSet(initial=AnswerSets)
+    pickle_cache = build_path / config.pickle_cache_name
+    if not pickle_cache.exists():
+        raise Exception(f'No cache found -- cannot build answer set')
+    AnswerSets: list[AnswerSet] = []
+    for pfile in pickle_cache.glob('answer*.pkl'):
+        with pfile.open('rb') as f:
+            obj = pickle.load(f)
+        AnswerSets.append(obj)
+    AS = AnswerSuperSet(initial=AnswerSets)
 
     answer_buildspecs = {'job-name': config.build_specs.get('answer-name', 'answerset'),
                          'paths': config.build_specs['paths']}
@@ -186,3 +189,53 @@ def answerset_subcommand(args):
     tex_file = answerset(config)
     # remove the tex source
     os.remove(tex_file)
+
+def config_singlet(args):
+    """
+    Builds a solution document for a single input tex file, no input config needed
+    """
+    tex_sourcefile = args.texfile
+    docspecs = {
+        'class': {
+            'classname': 'autoprob',
+            'options': [
+                '11pt',
+                'solutions'
+            ]
+        },
+        'preamble': r"""
+\usepackage[T1]{fontenc}
+\usepackage{tgheros}
+\renewcommand{\sfdefault}{qhv}
+\renewcommand{\familydefault}{\sfdefault}""",
+        'structure': [
+            {'text': r'\begin{document}'},
+            {'pythontex': [
+                'setup',
+                'matplotlib',
+                'sandlersteam',
+                'chemeq'
+            ]},
+            {'enumerate':[
+                {'source': tex_sourcefile,
+                 'group': 1}
+            ]},
+            {'pythontex': [
+                'showsteamtables',
+                'teardown'
+            ]},
+            {'text': r'\end{document}'}
+        ]
+    }
+    buildspecs = {
+        'copies': 1,
+        'job-name': Path(tex_sourcefile).stem + '-singlet',
+        'paths': {
+            'build-dir': './build_singlet',
+            'pdflatex': 'pdflatex',
+            'pythontex': 'pythontex'
+        }
+    }
+
+    return docspecs, buildspecs
+    

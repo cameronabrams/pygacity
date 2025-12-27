@@ -75,19 +75,19 @@ class AnswerSet:
                     return label
         return ''
 
-    # def to_yaml(self):
-    #     # check all indices for common bytes at the start, and remove them
-    #     raw_indices = list(self.D.keys())
-    #     common_prefix = os.path.commonprefix([str(x) for x in raw_indices])
-    #     logger.debug(f'AnswerSet.to_yaml common prefix: "{common_prefix}"')
-    #     if common_prefix:
-    #         new_D = {}
-    #         for index, AL in self.D.items():
-    #             new_index = str(index)[len(common_prefix):]
-    #             new_D[new_index] = AL
-    #         self.D = new_D
-    #     with open(self.dumpname, 'w') as f:
-    #         yaml.safe_dump(self.D, f)
+    def to_yaml(self):
+        # check all indices for common bytes at the start, and remove them
+        raw_indices = list(self.D.keys())
+        common_prefix = os.path.commonprefix([str(x) for x in raw_indices])
+        logger.debug(f'AnswerSet.to_yaml common prefix: "{common_prefix}"')
+        if common_prefix:
+            new_D = {}
+            for index, AL in self.D.items():
+                new_index = str(index)[len(common_prefix):]
+                new_D[new_index] = AL
+            self.D = new_D
+        with open(self.dumpname, 'w') as f:
+            yaml.safe_dump(self.D, f)
 
 class AnswerSuperSet(UserList):
 
@@ -151,8 +151,11 @@ class AnswerSuperSet(UserList):
                 new_dataset_D[new_index] = dataset.D[index]
             dataset.D = new_dataset_D
         for index, AL in pattern.D.items():
+            index_pref = f'{index}-'
+            if len(serials) == 1:
+                index_pref = ''
             for a in AL:
-                key = f'{index}-{a["label"]}'
+                key = f'{index_pref}{a["label"]}'
                 if 'units' in a and a['units']:
                     key += f' ({a["units"]})'
                 group = a.get('group', None)
@@ -169,8 +172,11 @@ class AnswerSuperSet(UserList):
         # logger.debug(values)
         for inst in self.data:
             for index, AL in inst.D.items():
+                index_pref = f'{index}-'
+                if len(serials) == 1:
+                    index_pref = ''
                 for a in AL:
-                    key = f'{index}-{a["label"]}'
+                    key = f'{index_pref}{a["label"]}'
                     if 'units' in a and a['units']:
                         key += f' ({a["units"]})'
                     group = a.get('group', None)

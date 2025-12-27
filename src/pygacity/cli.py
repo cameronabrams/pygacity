@@ -42,6 +42,10 @@ def cli():
         'combine': dict(
             func = combine_pdfs,
             help = 'combine PDFs',
+        ),
+        'singlet': dict(
+            func = build,
+            help = 'build a single problem'
         )
     }
     parser = ap.ArgumentParser(
@@ -117,7 +121,26 @@ def cli():
         type=str,
         default='out.pdf',
         help='name of new output PDF to be created')
-    
+    command_parsers['singlet'].add_argument(
+        '-t',
+        '--texfile',
+        type=str,
+        help='name of tex file containing single problem'
+    )
+    command_parsers['singlet'].add_argument(
+        '-o',
+        '--overwrite',
+        type=bool,
+        default=True,
+        action=ap.BooleanOptionalAction,
+        help='completely remove old save dir and build new exams')
+    command_parsers['singlet'].add_argument(
+        '-s',
+        '--solutions',
+        type=bool,
+        default=False,
+        action=ap.BooleanOptionalAction,
+        help='build solutions document(s) (singlet builds are only solutions)')
     args = parser.parse_args()
 
     setup_logging(args)

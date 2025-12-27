@@ -4,7 +4,7 @@ from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
 import pandas as pd
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
-from pygacity.pick import *
+from pygacity.generate.pick import *
 
 def Antoine(T,pardict):
     A,B,C=pardict['A'],pardict['B'],pardict['C']
@@ -440,7 +440,8 @@ if __name__=='__main__':
         'Condenser':{'Type':'Total'},
         'Reboiler':{'Type':'Partial'},
     }
-    specs=pick_state(specs)
+    picker = Picker(specs['tag'])
+    specs=picker.pick_state(specs)
     specs=process_input(specs)
     specs=Txy(specs)
     specs=AllFlows(specs)

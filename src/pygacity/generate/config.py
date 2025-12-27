@@ -4,7 +4,6 @@ import logging
 import yaml
 import sys
 
-from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
 from shutil import which
@@ -24,17 +23,18 @@ class Config:
             assert os.path.exists(userfile), f'Config file {userfile} not found'
             with open(userfile, 'r', encoding='utf-8') as f:
                 self.specs = yaml.safe_load(f)
+            assert 'document' in self.specs, f'Your config file does not specify a document structure'
+            assert 'build' in self.specs, f'Your config file does not specify document build parameters'
         else:
-            raise ValueError('No user config file specified')
-        assert 'document' in self.specs, f'Your config file does not specify a document structure'
-        assert 'build' in self.specs, f'Your config file does not specify document build parameters'
-
+            self.specs['document'] = {}
+            self.specs['build'] = {}
+            
         self.document_specs = self.specs['document']
         self.build_specs = self.specs['build']
 
         self.autoprob_package_root = self.resource_root / 'autoprob-package'
         self.autoprob_package_dir = self.autoprob_package_root / 'tex' / 'latex'
-
+        self.pickle_cache_name = self.build_specs.get('pickle-dir', '.cache')
         logger.debug(f'autoprob_package_root {self.autoprob_package_root}')
         
         self.progress = kwargs.get('progress', False)
@@ -53,7 +53,7 @@ class Config:
                 'options': ['11pt']
             }
         if 'structure' not in self.document_specs:
-            raise ValueError('Document structure not specified in config file')
+            self.document_specs['structure'] = []
         if 'substitutions' not in self.document_specs:
             self.document_specs['substitutions'] = {}
         if 'paths' not in self.build_specs:

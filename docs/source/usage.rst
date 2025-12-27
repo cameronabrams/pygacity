@@ -1,19 +1,29 @@
+.. _usage:
+
 Usage
 -----
 
-Pygacity provides three subcommands:
+Building Documents
+++++++++++++++++++
 
-1. ``pygacity build <config_file.yaml>``: Builds document(s) as specified in the YAML configuration file.
-2. ``pygacity combine <output_file.pdf> <input_file1.pdf> <input_file2.pdf> ...``: Combines multiple PDF files into a single PDF.
-3. ``pygacity answerset``: Generates an answer-set document for an existing multidocument build.
-
-
-Subcommands
-===========
+``pygacity build`` is the main way pygacity is used.  The main steps one needs to follow to build a document are described in these pages:
 
 .. toctree::
    :maxdepth: 2
 
-   subcommands/build
-   subcommands/combine
+   Writing Latex/Pythontex Problems <pygbuild/numericals>
+   Short-Answer/Multiple-Choice/Fill-in-the-Blank/True-False Questions <pygbuild/shorts>
+   The Document Configuration <pygbuild/config>
+   Document Compilation <pygbuild/after-build>
+
+Other Subcommands
++++++++++++++++++
+
+``pygacity`` also has two other subcommands:
+
+.. toctree:: 
+   :maxdepth: 2
+
+   subcommands/singlet
    subcommands/answerset
+   subcommands/combine

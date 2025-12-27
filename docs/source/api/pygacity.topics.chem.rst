@@ -12,7 +12,7 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   pygacity.topics.chem.chemeqsystem
    pygacity.topics.chem.compound
    pygacity.topics.chem.properties
    pygacity.topics.chem.reaction
-   pygacity.topics.chem.system
