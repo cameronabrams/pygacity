@@ -15,6 +15,9 @@ class AnswerSet:
         self.D = {}
         self.first_index = None
 
+    def __len__(self):
+        return len(self.D)
+
     @classmethod
     def from_yaml(cls, filename, delete=False):
         """

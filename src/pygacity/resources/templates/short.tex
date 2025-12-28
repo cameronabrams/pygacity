@@ -18,8 +18,9 @@
 \begin{pycode}
 config = {}
 configfilename = '<<<config>>>'
-idx = <<<idx>>>
-is_top_level = not '.' in str(idx)
+idx = '<<<idx>>>'
+points = <<<points>>>
+is_top_level = not '.' in idx
 first_ordinal = '1' if is_top_level else 'a'
 group = <<<group>>>
 instructions = 'Short-answer, multiple-choice, fill-in-the-blank, and/or true/false questions.'
@@ -36,7 +37,7 @@ if 'content' in SQ and 'config' in SQ:
         rng.shuffle(questions)
     count = config.get('count',len(questions))
     questions = questions[:count]
-    instructions = config.get('instructions', instructions)
+    instructions = f'({points} pts.) ' + config.get('instructions', instructions)
     shuffle_choices = config.get('shuffle_choices', False)
     if shuffle_choices:
         for qdict in questions:
@@ -93,7 +94,7 @@ for iidx, qdict in enumerate(questions):
             print(r'\ifshowsolutions\textcolor{red}{'+explanation+r'}\fi'+'\n')
 
 print(r'\end{enumerate}'+'\n')
-if config.get('clearpage', False):
+if config.get('clearpage', True):
     print(r'\clearpage'+'\n')
 \end{pycode}
 

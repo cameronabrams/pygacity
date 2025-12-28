@@ -6,6 +6,7 @@ import logging
 import pickle
 from argparse import Namespace
 from pathlib import Path
+from scipy.constants import R # J/mol-K
 
 import pygacity.util.texutils as tu
 from pygacity.generate.answerset import AnswerSet
@@ -13,15 +14,16 @@ from pygacity.generate.pick import Picker
 from pygacity.util.collectors import FileCollector
 
 serial = <<<serial>>>
+
 rng = np.random.default_rng(seed=serial)
 Pick = Picker(serial)
 AnsSet = AnswerSet(serial)
+
 loglevel_numeric = getattr(logging, 'DEBUG')
 logging.basicConfig(filename=f'pythontex-{serial}.log',
                     filemode='w',
                     format='%(asctime)s %(name)s %(message)s',
                     level=loglevel_numeric)
 logger = logging.getLogger(__name__)
-pythonTexFC = FileCollector()
-pickle_cache = Path.cwd() / ".cache"
-# pickle_cache should already exist if the manager makes it
+
+pickle_cache = Path.cwd() / <<<cache_dir>>>

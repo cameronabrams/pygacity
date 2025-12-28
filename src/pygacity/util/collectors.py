@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import stat
 import sys
 import tarfile
 
@@ -11,6 +12,10 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from .stringthings import my_logger
 
 logger = logging.getLogger(__name__)
+
+def on_rm_error(func, path, exc):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 class ByteCollector:
     """A simple string manager
@@ -202,7 +207,7 @@ class FileCollector(UserList):
                 # logger.debug(f'  -> exists? {f.exists()}')
             elif f.is_dir():
                 # logger.debug(f'Deleting directory {f.as_posix()} exists? {f.exists()}')
-                shutil.rmtree(f)
+                shutil.rmtree(f, onerror=on_rm_error)
                 # logger.debug(f'  -> exists? {f.exists()}')
             else:
                 logger.debug(f'FileCollector.flush: path {f.as_posix()} does not exist.')

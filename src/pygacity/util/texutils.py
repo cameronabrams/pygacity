@@ -5,68 +5,7 @@ import numpy as np
 import pandas as pd
 import logging
 
-from .command import Command
-from .collectors import FileCollector
-from ..generate.document import Document
 logger = logging.getLogger(__name__)
-
-class LatexBuilder:
-    def __init__(self, build_specs: dict, searchdirs: list = []):
-        self.specs = build_specs
-        self.pdflatex = self.specs['paths']['pdflatex']
-        self.pythontex = self.specs['paths']['pythontex']
-        self.searchdirs = searchdirs
-        
-        self.output_dir = self.specs.get('paths', {}).get('build-dir', '.')
-        self.job_name = self.specs.get('job-name', 'document')
-        self.working_job_name = self.job_name
-        # self.output_name_stem = self.specs.get('output-name', 'document')
-        self.FC = FileCollector()
-        # logger.debug(f'localdirs {self.localdirs}')
-
-    def build_commands(self, document: Document = None):
-        commands = []
-        serial = document.substitutions.get('serial', 0)
-        self.working_job_name = self.job_name
-        if isinstance(serial, int) and serial > 0:
-            self.working_job_name = self.job_name + f'-{serial}'
-        document.write_source(local_output_name=self.working_job_name)
-        includedirs = ''
-        for d in self.searchdirs:
-            includedirs = includedirs + ' -include-directory=' + str(d)
-        logger.debug(f'includedirs {includedirs}')
-        has_pycode = document.has_pycode
-        output_option = ''
-        if self.output_dir != '.':
-            output_option = f'-output-directory={self.output_dir}'
-
-        repeated_command = (f'{self.pdflatex} -interaction=nonstopmode -file-line-error '
-                                f'-jobname={self.working_job_name} {includedirs} '
-                                f'{output_option} {self.working_job_name}.tex')
-        commands.append(Command(repeated_command, ignore_codes=[1]))
-
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.aux')
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.log')
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.out')
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.pytxcode')
-        if has_pycode:
-            self.FC.append(f'{self.output_dir}/pythontex-files-{self.working_job_name}')
-            self.FC.append(f'{self.output_dir}/pythontex-{serial}.log')
-            # don't know if this will work
-            commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
-
-        commands.append(Command(repeated_command, ignore_codes=[1]))
-        return commands
-
-    def build_document(self, document=None, cleanup=False):
-        commands = self.build_commands(document)
-        for c in commands:
-            logger.debug(f'Running command: {c.c}')
-            out, err = c.run()
-            logger.debug(f'Command output:\n{out}\n\n')
-            logger.debug(f'Command error:\n{err}\n\n')
-        if cleanup:            
-            self.FC.flush()
 
 def table_as_tex(table, float_format='\({:.4f}\)'.format, drop_zeros=None, total_row=[], index=False):
     ''' A wrapper to Dataframe.to_latex() that takes a dictionary of heading:column
@@ -96,8 +35,6 @@ def Cp_as_tex(Cp_coeff: dict | list, decoration='*', sig: int = 5) -> str:
     retstr+=format_sig(np.abs(Cp_coeff[idx[2]]),sig=sig)+r' $T^2$ '+f'{sgns[3]} '
     retstr+=format_sig(np.abs(Cp_coeff[idx[3]]),sig=sig)+r' $T^3$'
     return(retstr)
-
-import math
 
 def format_sig(x: float, sig: int = 5, use_tex: bool = True) -> str:
     s = format(x, f",.{sig}g")

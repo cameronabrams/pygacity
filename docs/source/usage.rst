@@ -11,9 +11,9 @@ Building Documents
 .. toctree::
    :maxdepth: 2
 
-   Writing Latex/Pythontex Problems <pygbuild/numericals>
+   Writing LaTeX/Pythontex Problems <pygbuild/numericals>
    Short-Answer/Multiple-Choice/Fill-in-the-Blank/True-False Questions <pygbuild/shorts>
-   The Document Configuration <pygbuild/config>
+   Document Configuration <pygbuild/config>
    Document Compilation <pygbuild/after-build>
 
 Other Subcommands
