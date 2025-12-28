@@ -45,11 +45,13 @@ class Config:
         self.document_specs = self.specs['document']
         self.build_specs = self.specs['build']
 
+        logger.debug(f'Build specs: {self.build_specs}')
+
         self.autoprob_package_root = self.resource_root / 'autoprob-package'
         self.autoprob_package_dir = self.autoprob_package_root / 'tex' / 'latex'
         logger.debug(f'autoprob_package_root {self.autoprob_package_root}')
         
-        self.progress = self.build_specs('progress', False)
+        self.progress = self.build_specs.get('progress', False)
         self.templates_root = self.resource_root / 'templates'
         assert os.path.exists(self.templates_root)
 
@@ -59,8 +61,11 @@ class Config:
         self._set_defaults()
 
         # shortcuts
-        self.build_path = Path.cwd() / self.build_specs['build-dir']
-        self.cache_path = Path.cwd() / self.build_specs['cache-dir']
+        self.build_path = Path(self.build_specs['paths']['build-dir'])
+        self.cache_path = self.build_path / self.build_specs['paths']['cache-dir']
+
+        logger.debug(f'Build path: {str(self.build_path)}')
+        logger.debug(f'Cache path: {str(self.cache_path)}')
 
         self._setup_paths(args)
 
@@ -186,7 +191,7 @@ class Config:
         if 'build-dir' not in self.build_specs['paths']:
             self.build_specs['paths']['build-dir'] = 'build'
         if 'cache-dir' not in self.build_specs['paths']:
-            self.build_specs['cache-dir'] = '.cache'
+            self.build_specs['paths']['cache-dir'] = '.cache'
         if 'job-name' not in self.build_specs:
             self.build_specs['job-name'] = 'pygacity_document'
         if 'overwrite' not in self.build_specs:

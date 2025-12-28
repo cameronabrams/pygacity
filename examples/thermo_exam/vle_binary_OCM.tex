@@ -72,7 +72,7 @@ while abs(dx) > epsilon:
 nrdf = pd.DataFrame({r'$x$': xsav, r'$\gamma_1$': g1sav, r'$\gamma_2$': g2sav, r'$[1-2Ax(1-x)]$': dsav, r'$f$': fsav, r'$df/dx$': dfsav})
 nrdf_str = nrdf.to_latex(header=True, index=False, float_format="%.5f")
 nrdf.to_csv(f'nr_dewp_{serial}_{idx}.csv', header=True, index=False)
-pythonTexFC.append(f'nr_dewp_{serial}_{idx}.csv')
+pythontexFC.append(f'nr_dewp_{serial}_{idx}.csv')
 
 xazeo = 0.5 - 0.5 / Aij * np.log(Pv[1] / Pv[0])
 gazeo = acm_ocm(xazeo, Aij)
@@ -90,7 +90,7 @@ if 'AnsSet' in locals():
 
 df = pd.DataFrame({'x': xplot, 'y': yplot, 'g1': gplot[0], 'g2': gplot[1], 'P': Pplot})
 df.to_csv(f'pxy-{serial}-{idx}.csv', header=True, index=False)
-pythonTexFC.append(f'pxy-{serial}-{idx}.csv')
+pythontexFC.append(f'pxy-{serial}-{idx}.csv')
 logger.debug(f'VLE binary OCM Pxy data saved to pxy-{serial}-{idx}.csv')
 fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 logger.debug('Plotting VLE binary OCM Pxy diagram')
@@ -103,7 +103,7 @@ ax.set_ylabel(r'$P$ [kPa]')
 ax.legend()
 ax.grid(True)
 plt.savefig(f'mypxy-{serial}-{idx}.pdf', bbox_inches='tight')
-pythonTexFC.append(f'mypxy-{serial}-{idx}.pdf')
+pythontexFC.append(f'mypxy-{serial}-{idx}.pdf')
 logger.debug(f'VLE binary OCM Pxy plot saved to mypxy-{serial}-{idx}.pdf')
 plt.close()
 

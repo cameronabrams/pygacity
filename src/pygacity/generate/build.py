@@ -20,12 +20,13 @@ def build(args):
     FC = FileCollector()
     config = Config(args)
 
-    build_path = config.build_path
+    build_path: Path = config.build_path
+    build_dir = build_path.as_posix()
     cache_path: Path = config.cache_path
-    cache_dir = cache_path.relative_to(Path.cwd()).name
+    cache_dir = cache_path.relative_to(build_path.parent).as_posix()
 
     logger.debug(f'Building in {str(build_path)}')
-    logger.debug(f'Caching data in {str(cache_path)}')
+    logger.debug(f'Caching data in {cache_dir}')
 
     base_builder = LatexCompiler(config.build_specs, 
                                  searchdirs = [config.autoprob_package_dir])
@@ -40,7 +41,7 @@ def build(args):
     serials = config.retrieve_serials()
 
     for i, serial in enumerate(serials):
-        outer_substitutions = dict(serial=serial, cache_dir=cache_dir)
+        outer_substitutions = dict(serial=serial, build_dir=build_dir, cache_dir=cache_dir)
         base_doc.make_substitutions(outer_substitutions)
         base_builder.build_document(base_doc)
         FC.append(f'{base_builder.working_job_name}.tex')
@@ -55,13 +56,21 @@ def build(args):
     if answerset_tex:
         FC.append(answerset_tex)
 
-    logger.debug(f'Top-level files generated:')
-    for f in FC.data:
-        logger.debug(f.absolute().relative_to(Path.cwd()).as_posix())
     tex_archive = FC.archive(build_path / 'tex_artifacts', delete=True)
     logger.info(f'Archived TeX artifacts to {tex_archive.absolute().relative_to(Path.cwd()).as_posix()}')
     buildfiles_archive = base_builder.FC.archive(build_path / 'buildfiles', delete=True)
     logger.info(f'Archived build files to {buildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+
+    pythontex_usergenerated = cache_path.glob('pythontex-usergenerated*.pkl')
+    if len(pythontex_usergenerated) > 0:
+        UG_FC = FileCollector()
+        for f in pythontex_usergenerated:
+            with open(f, 'rb') as f:
+                obj = pickle.load(f)
+            UG_FC.extend([build_path / x for x in obj.data])
+        usergen_archive = UG_FC.archive(build_path / 'usergenerated', delete=True)
+        logger.info(f'Archived user-generated files to {usergen_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+
     if config.solutions:
         solnbuildfiles_archive = soln_builder.FC.archive(build_path / 'solnbuildfiles', delete=True)
         logger.info(f'Archived solution build files to {solnbuildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')

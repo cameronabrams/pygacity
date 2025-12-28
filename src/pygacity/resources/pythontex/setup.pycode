@@ -26,4 +26,14 @@ logging.basicConfig(filename=f'pythontex-{serial}.log',
                     level=loglevel_numeric)
 logger = logging.getLogger(__name__)
 
-pickle_cache = Path.cwd() / <<<cache_dir>>>
+# Pythontex runs in the directory that contains the pytxcode file(s), which
+# may be different than the CWD of the manager if the user specified a 
+# build directory relative to that CWD
+manager_pickle_cache = Path('<<<cache_dir>>>')
+manager_build_path = Path('<<<build_dir>>>')
+
+pythontex_pickle_cache = manager_pickle_cache.relative_to(manager_build_path)
+
+logger.debug(f'Pickling to {pythontex_pickle_cache.as_posix()} exists? {pythontex_pickle_cache.exists()}')
+
+pythontexFC = FileCollector()

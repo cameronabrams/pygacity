@@ -3,8 +3,13 @@ from shutil import rmtree
 if 'safe_mplconfig' in locals():
     rmtree(safe_mplconfig)
 
+if 'pythontexFC' in locals():
+    if len(pythontexFC.data) > 0:
+        pkl = Path(pythontex_pickle_cache) / f"pythontex-usergenerated-files-{serial}.pkl"
+        pkl.write_bytes(pickle.dumps(pythontexFC, protocol=pickle.HIGHEST_PROTOCOL))
+
 if 'AnsSet' in locals():
     if len(AnsSet) > 0:
         # pickle a non-empty answer set for manager to use
-        pkl = pickle_cache / f"answers-{serial}.pkl"
+        pkl = Path(pythontex_pickle_cache) / f"answers-{serial}.pkl"
         pkl.write_bytes(pickle.dumps(AnsSet, protocol=pickle.HIGHEST_PROTOCOL))
