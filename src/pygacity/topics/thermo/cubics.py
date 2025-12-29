@@ -62,10 +62,10 @@ class CubicEOS:
     pressure_unit: str = 'mpa' # MPa
     volume_unit: str = 'm3'
     temperature_unit: str = 'K'
-    thermal_energy_unit: str = 'J'
-    P: float = 0.0
-    T: float = 298.15
-    Pc: float = 0.0 # critical pressure, any pressure unit
+
+    P: float = 0.1 # MPa
+    T: float = 298.15 # K
+    Pc: float = 0.1 # critical pressure, MPa
     Tc: float = 298.15 # critical temperature, K
     omega: float = 0.0 # acentricity factor, dimensionless
 
@@ -74,17 +74,6 @@ class CubicEOS:
     epsilon: float = 1.e-5
     iter: int = 0
     err: float = 0.0
-
-    def unit_consistency(self, other: CubicEOS):
-        return self.pressure_unit == other.pressure_unit and self.volume_unit == other.volume_unit and self.temperature_unit == other.temperature_unit
-
-    @property    
-    def volumetric_energy_unit(self):
-        return self.pressure_unit + '-' + self.volume_unit
-    
-    # @property
-    # def e_v2t(self): # factor to convert volumetric energy units to thermal energy units
-    #     return GasConstant._pressure_units[self.pressure_unit.lower()] * GasConstant._volume_units[self.volume_unit.lower()]
 
     @property
     def Pv(self): # Pv in volumetric energy units
@@ -153,7 +142,7 @@ class CubicEOS:
         return np.exp(logPhi) * self.P
 
     @property
-    def Pvap(self): # vapor pressure at temperature; P is retained
+    def Pvap(self): # vapor pressure at temperature T; P is retained
         saveP = self.P
         self.P = self.Pc * (self.T / self.Tc)**8
         keepgoing = True
@@ -175,6 +164,9 @@ class CubicEOS:
         self.P = saveP
         return Pvap
     
+    def unit_consistency(self, other: CubicEOS):
+        return self.pressure_unit == other.pressure_unit and self.volume_unit == other.volume_unit and self.temperature_unit == other.temperature_unit
+
     def DeltaH(self, other: CubicEOS, Cp: dict | float = None):
         if not self.unit_consistency(other):
             raise ValueError('inconsistent units')
@@ -206,13 +198,13 @@ class CubicEOS:
         dt1 = other.T - self.T
         dt2 = other.T**2 - self.T**2
         dt3 = other.T**3 - self.T**3
-        dS_ideal =  a * lrt + b * dt1 + c / 2 * dt2 + d / 3 * dt3 - self.R * self.R.factor * np.log(other.P / self.P)
+        dS_ideal =  a * lrt + b * dt1 + c / 2 * dt2 + d / 3 * dt3 - self.R * np.log(other.P / self.P)
         return other.s_departure + dS_ideal - self.s_departure
     
     def DeltaPV(self, other: CubicEOS):
         if not self.unit_consistency(other):
             raise ValueError('inconsistent units')
-        return other.Pv * other.e_v2t - self.Pv * self.e_v2t
+        return other.Pv - self.Pv
     
     def DeltaU(self, other: CubicEOS):
         return self.DeltaH(other) - self.DeltaPV(other)
