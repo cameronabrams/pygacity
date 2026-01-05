@@ -2,7 +2,7 @@ document:
   preamble: |
     \usepackage[T1]{fontenc}
     \usepackage{tgheros}
-    \renewcommand{\sfdefault}{qhv} % TeX Gyre Heros family name
+    \renewcommand{\sfdefault}{qhv}
     \renewcommand{\familydefault}{\sfdefault}
   structure:
     - source: header.tex # provided; must contain \begin{document}

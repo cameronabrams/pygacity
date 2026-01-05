@@ -1,6 +1,7 @@
 \begin{pycode}
 idx = '<<<idx>>>'
 group = <<<group>>>
+points = <<<points>>>
 MIXER = Pick.pick_state(
     dict(
         P1={'default':14,'pick':{'between':[13,15],'round':2}},
@@ -20,11 +21,11 @@ CP_over_R = MIXER.CP_over_R
 alpha = (T1 - T3) / (T3 - T2)
 P3 = pow(pow(T3**(1 + alpha) / T1 / T2**alpha, CP_over_R) * P1 * P2**alpha, 1 / (1 + alpha))
 cpr = tu.frac_or_int_as_tex(fr.Fraction(CP_over_R))
-if 'AnsSet' in locals():
-    AnsSet.register(idx, group=group, label=r'\(\alpha\)', value=np.round(alpha,5), formatter='{:.5f}')
-    AnsSet.register(idx, group=group, label=r'\(P\)', value=np.round(P3,3), units='bar', formatter='{:.3f}')
-\end{pycode}
 
+AnsSet.register(idx, group=group, label=r'\(\alpha\)', value=np.round(alpha,5), formatter='{:.5f}')
+AnsSet.register(idx, group=group, label=r'\(P\)', value=np.round(P3,3), units='bar', formatter='{:.3f}')
+\end{pycode}
+(\py{points} pts.)
 A stream of air at \py{P1} bar and \py{T1} K (labeled ``stream 1'') is to be cooled to \py{T3} K by mixing with another stream of air at \py{P2} bar and \py{T2} K (labeled ``stream 2'').  Let $\alpha$ be the ratio of the molar flow rate of the hotter stream to that of the cooler stream.  Compute (1) $\alpha$, and (2) the pressure $P$ of the mixed stream (labeled ``stream 3'').  You may assume this is carried out adiabatically and that air is an ideal gas for which $C_{\rm P}$ = $\py{cpr}R$.
 
 It may be helpful for you to remember, {\bf for the ideal gas}, that a change of state from $(T_A,P_A)$ to $(T_B,P_B)$ results in the following enthalpy and entropy changes, respectively:

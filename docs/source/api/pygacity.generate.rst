@@ -17,4 +17,5 @@ Submodules
    pygacity.generate.build
    pygacity.generate.config
    pygacity.generate.document
+   pygacity.generate.latexcompiler
    pygacity.generate.pick

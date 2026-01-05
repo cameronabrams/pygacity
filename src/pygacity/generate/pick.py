@@ -1,19 +1,42 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+
+"""
+Picker and Stepper classes for parameter selection
+"""
+
 import numpy as np
 from argparse import Namespace
 from itertools import product
 
 class Picker:
+    """
+    Picker class for randomly selecting parameter values.
+    """
     def __init__(self, serial=0):
         self.rng = np.random.default_rng(serial) if serial != 0 else None
 
-    def pick_state(self, specs):
-        # given the single instance of specs, return a single randomly picked state
+    def pick_state(self, specs: dict) -> Namespace:
+        """
+        Picks parameter values based on the provided specifications.
+        
+        Parameters
+        ----------
+        specs : dict
+            parameter specifications with picking rules
+            
+        Returns
+        -------
+        Namespace
+            namespace containing picked parameter values
+        """
         _pick_recursive(specs, self.rng)
         return Namespace(**specs)
 
 class Stepper:
-    def __init__(self, specs):
+    """
+    Stepper class for iterating over parameter spaces.
+    """
+    def __init__(self, specs: dict):
         _space_recursive(specs)
         self.space = Namespace(**specs)
         allv = []
@@ -35,7 +58,13 @@ class Stepper:
         except:
             raise StopIteration
         
-def _pick_recursive(specs, rng):
+def _pick_recursive(specs: dict, rng: np.random.Generator | None):
+    """
+    Recursively picks values in specs according to pick rules.
+
+    - **between**: picks a random value between two limits
+    - **pickfrom**/**from**: picks a random value from a given list
+    """
     if not type(specs) == dict:
         return
     for k, v in specs.items():        

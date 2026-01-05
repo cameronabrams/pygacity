@@ -6,6 +6,7 @@ import sys
 import tarfile
 
 from collections import UserList
+from dataclasses import dataclass
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -17,88 +18,56 @@ def on_rm_error(func, path, exc):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
+@dataclass
 class ByteCollector:
-    """A simple string manager
+    """
+    A simple string manager
     
     The main object in a ByteCollector instance is a string of bytes (byte_collector).
     The string can be appended to by anoter string or the contents of a file.
     The string can have "comments" written to it.
-
-    Attributes
-    ----------
-    byte_collector: str
-       the string
-    
-    line_length: int
-       number of bytes that represents the maximum length of one line of text
-    
-    comment_char: str(1)
-       beginning-of-line character that signals the line is a comment
-
-    Methods
-    -------
-    reset()
-        blanks the string
-    
-    write(msg)
-        appends msg to string
-
-    addline(msg)
-        appends msg to string with a line-end byte
-        
-    injest_file(filename)
-        appends the contents of filename to the string
-    
-    comment(msg)
-        appends the msg as a comment (or multiple comment
-        lines) to the string
-
-    log(msg)
-        uses the auxiliary function my_logger to write
-        a log line to the string
-    
-    banner(msg)
-        uses the auxiliary function my_logger to write
-        a banner line to the string
-    
     """
-    def __init__(self, comment_char='#', line_length=80):
-        self.line_length=line_length
-        self.comment_char=comment_char
-        self.byte_collector=''
+    line_length: int = 80
+    """ line length for comment wrapping """
+    comment_char: str = '#'
+    """ comment character """
+    byte_collector: str = ''
+    """ the collected string """
     
     def reset(self):
-        """Resets the string"""
-        self.byte_collector=''
+        """
+        Resets the string
+        """
+        self.byte_collector = ''
 
-    def write(self,msg):
-        """Appends msg to the string
+    def write(self, msg: str):
+        """
+        Appends msg to the string
         
         Parameters
         ----------
-        msg: str            for ln in:
-                outstr=ll+ln+rr
-                logf(fmt.format(outstr))
-
+        msg : str
            the message
         """
-        self.byte_collector+=msg
+        self.byte_collector += msg
 
-    def addline(self,msg,end='\n'):
-        """Appends msg to the string as a line
+    def addline(self, msg: str, end: str = '\n'):
+        """
+        Appends msg to the string as a line
         
         Parameters
         ----------
-        msg: str
+        msg : str
            the message
         
-        end: str, optional
+        end : str, optional
             end-of-line byte
         """
-        self.byte_collector+=f'{msg}{end}'
+        self.byte_collector += f'{msg}{end}'
 
-    def lastline(self,end='\n',exclude='#'):
-        """Returns last line in the string
+    def lastline(self, end: str = '\n', exclude: str = '#'):
+        """
+        Returns last line in the string
         
         Parameters
         ----------
@@ -108,97 +77,120 @@ class ByteCollector:
             comment byte
         """
         lines=[x for x in self.byte_collector.split(end) if (len(x)>0 and not x.startswith(exclude))]
-        if len(lines)>0:
+        if len(lines) > 0:
             return lines[-1]
         else:
             return None
     
-    def has_statement(self,statement,end='\n',exclude='#'):
-        """Determines if a particular statement is on at least one non-comment line
+    def has_statement(self, statement: str, end: str = '\n', exclude: str = '#'):
+        """
+        Determines if a particular statement is on at least one non-comment line
         
         Parameters
         ----------
-        statement: str
+        statement : str
             the statement; e.g., 'exit'
-        end: str, optional
+        end : str, optional
             end-of-line byte
-        exclude: str, optional
+        exclude : str, optional
             comment byte
         """
         lines=[x for x in self.byte_collector.split(end) if (len(x)>0 and not x.startswith(exclude))]
-        if len(lines)>0:
+        if len(lines) > 0:
             for l in lines:
                 if statement in l:
                     return True
         return False
     
-    def injest_file(self,filename):
-        """Appends contents of file 'filename' to the string
+    def injest_file(self, filename: str):
+        """
+        Appends contents of file 'filename' to the string
         
         Parameters
         ----------
-        filename: str
+        filename : str
            the name of the file
         """
         with open(filename,'r') as f:
-            self.byte_collector+=f.read()
+            self.byte_collector += f.read()
 
-    def comment(self,msg,end='\n'):
-        """Appends msg as a comment to the string
+    def comment(self, msg: str, end: str = '\n'):
+        """
+        Appends msg as a comment to the string
         
         Parameters
         ----------
-        msg: str
+        msg : str
            the message
         
-        end: str, optional
+        end : str, optional
             end-of-line byte
         """
-        comment_line=f'{self.comment_char} {msg}'
-        comment_words=comment_line.split()
-        comment_lines=['']
-        current_line_idx=0
+        comment_line = f'{self.comment_char} {msg}'
+        comment_words = comment_line.split()
+        comment_lines = ['']
+        current_line_idx = 0
         for word in comment_words:
-            test_line=' '.join(comment_lines[current_line_idx].split()+[word])
-            if len(test_line)>self.line_length:
+            test_line = ' '.join(comment_lines[current_line_idx].split() + [word])
+            if len(test_line) > self.line_length:
                 comment_lines.append(f'{self.comment_char} {word}')
-                current_line_idx+=1
+                current_line_idx += 1
             else:
-                comment_lines[current_line_idx]=test_line
+                comment_lines[current_line_idx] = test_line
         for line in comment_lines:
-            self.addline(line,end=end)
+            self.addline(line, end=end)
 
-    def log(self,msg):
-        my_logger(msg,self.addline)
+    def log(self, msg: str):
+        """
+        Logs msg using my_logger
+        
+        Parameters
+        ----------
+        msg : str
+           the message
+        """
+        my_logger(msg, self.addline)
 
-    def banner(self,msg):
-        my_logger(msg,self.addline,fill='#',width=80,just='^')
+    def banner(self, msg: str):
+        """
+        Logs msg as a banner using my_logger
+        
+        Parameters
+        ----------
+        msg : str
+           the message
+        """
+        my_logger(msg, self.addline, fill='#', width=80, just='^')
 
     def __str__(self):
         return self.byte_collector
     
 class FileCollector(UserList):
-    """A class for handling collections of files
-    
-    Methods
-    -------
-    flush()
-       remove all files in the collection
-       
-    archive()
-       make a tarball or zipfile of the collection
     """
-
+    A class for handling collections of files to be managed together 
+    as Paths
+    """
     def __init__(self, initial: list[str | Path] = None):
-        self.data: list[Path] = [Path(x) for x in initial] if initial is not None else []
-        super().__init__(self.data)
+        data: list[Path] = [Path(x) for x in initial] if initial is not None else []
+        super().__init__(data)
 
     def append(self, item: str | Path):
+        """
+        Appends a file path to the collection
+        
+        Parameters
+        ----------
+        item : str | Path
+            the file path to append
+        """
         p = Path(item)
         if p not in self.data:
             self.data.append(p) 
 
     def flush(self):
+        """
+        Deletes all files in the collection from disk
+        """
         logger.debug(f'Flushing file collector: {len(self.data)} entries.')
         for f in self.data:
             if f.is_file():
@@ -213,17 +205,27 @@ class FileCollector(UserList):
                 logger.debug(f'FileCollector.flush: path {f.as_posix()} does not exist.')
         self.clear()
 
+    def get_filenames(self) -> list[str]:
+        """
+        Returns list of filenames in the collection as strings
+        """
+        return [x.as_posix() for x in self.data]
+
     def __str__(self):
         cwd = Path.cwd()
         return ' '.join([x.relative_to(cwd).as_posix() for x in self.data])
 
-    def archive(self, basepath: Path, delete=False):
-        """If Linux, makes a tarball of the files in the collection; if Windows, makes a zipfile 
+    def archive(self, basepath: Path, delete: bool = False):
+        """
+        Archives the files in the collection into a single compressed file. If OS is Windows, makes a zipfile; if Linux, makes a tarball of the files in the collection.
         
         Parameters
         ----------
-        basename: str
+        basepath : Path
             basename of the resulting tarball or zipfile
+
+        delete : bool, optional
+            if True, deletes the original files after archiving (default is False)
         """
         # check the OS type first
         arcname = ''

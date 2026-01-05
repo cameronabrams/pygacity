@@ -1,4 +1,7 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+"""
+Configuration class for pygacity
+"""
 import logging
 import os
 import random
@@ -6,18 +9,30 @@ import stat
 import sys
 import yaml
 
-
 from argparse import Namespace
 from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path
 from shutil import which, rmtree
 
-from ..util.stringthings import chmod_recursive
+from ..util.stringthings import chmod_recursive_dirs_files
 
 logger = logging.getLogger(__name__)
 
 def is_executable(cmd: str) -> bool:
+    """
+    Checks if cmd is an executable in PATH
+    
+    Parameters
+    ----------
+    cmd : str
+       command name
+       
+    Returns
+    -------
+    bool
+       True if cmd is found in PATH, False otherwise
+    """
     return which(cmd) is not None
 
 class Config:
@@ -25,8 +40,18 @@ class Config:
     Configuration class for pygacity
     """
     resource_root = files('pygacity') / 'resources'
-    def __init__(self, args: Namespace = None):
+    """ Path to pygacity resources directory """
 
+    def __init__(self, args: Namespace = None):
+        """
+        Initializes the Config instance by loading configuration from a YAML file
+        or setting up a singlet build from command-line arguments.
+        
+        Parameters
+        ----------
+        args : **argparse.Namespace**, optional
+           command-line arguments
+        """
         if hasattr(args, 'f') and args.f:
             logger.debug(f'Reading {args.f}...')
             assert os.path.exists(args.f), f'Config file {args.f} not found'
@@ -36,8 +61,10 @@ class Config:
             assert 'build' in self.specs, f'Your config file does not specify document build parameters'
         elif hasattr(args, 'texfile') and args.texfile:
             # singlet problem build
+            self.specs = {}
             self.specs['document'], self.specs['build'] = self._config_singlet(args)
         else:
+            self.specs = {}
             self.specs['document'] = {}
             self.specs['build'] = {}
 
@@ -81,9 +108,19 @@ class Config:
             self.solution_document_specs = deepcopy(self.document_specs)
             self.solution_document_specs['class']['options'].append('solutions')
 
-    def _config_singlet(self, args):
+    def _config_singlet(self, args: Namespace) -> tuple[dict, dict]:
         """
         Builds a solution document for a single input tex file, no input config needed
+
+        Parameters
+        ----------
+        args : **argparse.Namespace**
+            command-line arguments
+
+        Returns
+        -------
+        tuple[dict, dict]
+            document specs and build specs dictionaries
         """
         tex_sourcefile = args.texfile
         docspecs = {
@@ -104,8 +141,7 @@ class Config:
                 {'pythontex': [
                     'setup',
                     'matplotlib',
-                    'sandlersteam',
-                    'chemeq'
+                    'sandler'
                 ]},
                 {'enumerate':[
                     {'source': tex_sourcefile,
@@ -132,6 +168,14 @@ class Config:
         return docspecs, buildspecs
 
     def retrieve_serials(self):
+        """
+        Retrieves or generates serial numbers for multiple copies
+        
+        Returns
+        -------
+        list of int
+            list of serial numbers for document copies
+        """
         if self.build_specs.get('copies', 1) > 1:
             if self.build_specs.get('serials', None):
                 # check for explict serials
@@ -213,7 +257,7 @@ class Config:
         else:
             if hasattr(args, 'overwrite') and args.overwrite:
                 permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-                chmod_recursive(build_path, permissions)
+                chmod_recursive_dirs_files(build_path)
                 rmtree(build_path)
                 build_path.mkdir(parents=True, exist_ok=True)
             else:

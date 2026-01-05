@@ -27,9 +27,6 @@ document:
         points: 25
     - source: footer.tex
 build:
-  copies: 1
-  serials:
-    - 1
   job-name: Assignment
   paths:
     build-dir: ./build

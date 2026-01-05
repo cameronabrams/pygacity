@@ -1,0 +1,10 @@
+.red, code.red { color: red; }
+.blue, code.blue { color: blue; }
+.green, code.green { color: green; }
+.pkg { color: #0077cc; font-weight: 600; }     /* Bright blue */
+.cls { color: #00aa00; font-weight: 600; }     /* Green */
+.mod { color: #ccc900; font-weight: 600; }     /* pale yellow */
+.meth { color: #9933cc; }                       /* Purple */
+.func { color: #ff6600; }                       /* Orange */
+.var { color: #cc0066; }                        /* Pink/magenta */
+.const { color: #996633; text-transform: uppercase; } /* Brown */

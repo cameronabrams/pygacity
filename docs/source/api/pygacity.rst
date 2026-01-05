@@ -13,7 +13,6 @@ Subpackages
    :maxdepth: 4
 
    pygacity.generate
-   pygacity.resources
    pygacity.topics
    pygacity.util
 

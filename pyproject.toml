@@ -1,9 +1,11 @@
 [build-system]
 requires = ["hatchling"]
+
 build-backend = "hatchling.build"
+
 [project]
 name = "pygacity"
-version = "0.6.0"
+version = "0.7.0"
 authors = [
   { name="Cameron F Abrams", email="cfa22@drexel.edu" },
 ]
@@ -19,15 +21,16 @@ dependencies = [
     "pandas",
     "scipy",
     "iapws",
-    "sandlersteam",
-    "sandlerprops",
+    "sandlertools",
     "roman",
     "progressbar",
     "pypdf2",
     "jinja2",
 ]
+
 [tool.pytest.ini_options]
 log_cli = true
+
 [project.scripts]
 pygacity="pygacity.cli:cli"
 
@@ -37,9 +40,11 @@ packages = ["src/pygacity"]
 [tool.hatch.build]
 include = [
   "src/pygacity/resources/**",
+  "examples/**",
 ]
 
 [tool.hatch.build.targets.sdist]
 include = [
   "src/pygacity/**",
+  "examples/**",
 ]

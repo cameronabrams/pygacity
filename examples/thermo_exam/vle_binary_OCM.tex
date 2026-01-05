@@ -82,11 +82,10 @@ gplot = acm_ocm(xplot, Aij)
 Pplot = xplot * gplot[0] * Pv[0] + (1 - xplot) * gplot[1] * Pv[1]
 yplot = xplot * gplot[0] * Pv[0] * np.reciprocal(Pplot)
 
-if 'AnsSet' in locals():
-    AnsSet.register(idx, group=group, label='a \(P_{\\rm bub}\)', value=np.round(Pbub,2), units='kPa', formatter='{:.2f}')
-    AnsSet.register(idx, group=group, label='b \(P_{\\rm dew}\)', value=np.round(Pdew,2), units='kPa', formatter='{:.2f}')
-    AnsSet.register(idx, group=group, label='c \(x_{\\rm az}\)', value=np.round(xazeo,4), formatter='{:.4f}')
-    AnsSet.register(idx, group=group, label='c \(P_{\\rm az}\)', value=np.round(Pazeo,2), units='kPa', formatter='{:.2f}')
+AnsSet.register(idx, group=group, label='a \(P_{\\rm bub}\)', value=np.round(Pbub,2), units='kPa', formatter='{:.2f}')
+AnsSet.register(idx, group=group, label='b \(P_{\\rm dew}\)', value=np.round(Pdew,2), units='kPa', formatter='{:.2f}')
+AnsSet.register(idx, group=group, label='c \(x_{\\rm az}\)', value=np.round(xazeo,4), formatter='{:.4f}')
+AnsSet.register(idx, group=group, label='c \(P_{\\rm az}\)', value=np.round(Pazeo,2), units='kPa', formatter='{:.2f}')
 
 df = pd.DataFrame({'x': xplot, 'y': yplot, 'g1': gplot[0], 'g2': gplot[1], 'P': Pplot})
 df.to_csv(f'pxy-{serial}-{idx}.csv', header=True, index=False)
@@ -106,6 +105,10 @@ plt.savefig(f'mypxy-{serial}-{idx}.pdf', bbox_inches='tight')
 pythontexFC.append(f'mypxy-{serial}-{idx}.pdf')
 logger.debug(f'VLE binary OCM Pxy plot saved to mypxy-{serial}-{idx}.pdf')
 plt.close()
+
+register_files = pythontexFC.get_filenames()
+
+logger.debug(f'Files to be registered with pythontex: {register_files}')
 
 \end{pycode}
 
@@ -159,7 +162,7 @@ Additionally, we need its derivative $df/dx$:
 
 NR says that the quantity $x - f/(df/dx)$ is a better approximation to the solution of the implicit equation than is just $x$.  So we follow an iterative strategy in which the "current" value of $x$ is updated to "new" value of $x$, which then becomes the "current" value to give as another "new" value, and so on.  When the absolute value of the correction term $f/(df/dx)$ falls below some tolerance $\epsilon$, then we stop and claim victory.
 
-To begin, we need an initial guess for $x$.  We know that ethanoate (species 1) is much more volatile than $n$-heptane (species 2) at the temperature because it has the higher vapor pressure.  So that means that we expect that, in the absence of any azeotropes, that the liquid in equilibrium with a vapor will have a much lower mole fraction of ethanoate than that vapor does.  So we expect $x$ to be much less than \py{f'{ydew:.2f}'}. Let's begin with $x$ = \py{f'{xinit:.2f}'} and use a tolerance $\epsilon$ of \py{tu.sci_notation_as_tex(epsilon,mantissa_fmt='{:.1e}')}:
+To begin, we need an initial guess for $x$.  We know that ethanoate (species 1) is much more volatile than $n$-heptane (species 2) at the temperature because it has the higher vapor pressure.  So that means that we expect that, in the absence of any azeotropes, that the liquid in equilibrium with a vapor will have a much lower mole fraction of ethanoate than that vapor does.  So we expect $x$ to be much less than \py{f'{ydew:.2f}'}. Let's begin with $x$ = \py{f'{xinit:.2f}'} and use a tolerance $\epsilon$ of \py{tu.format_sig(epsilon, sig=1)}:
 
 \begin{table}[h]
 \begin{center}
@@ -208,7 +211,7 @@ The figure below shows the full $Pxy$ diagram for this binary at \py{f'{T:.2f}'}
 \end{center}
 \end{figure}
 }{
-not showing plot yet
+not showing full $Pxy$ diagram for this binary at \py{f'{T:.2f}'} K yet
 }
 
 \end{enumerate}

@@ -1,42 +1,51 @@
 \begin{pycode}
+### BLOCK GLOBALS BEGIN ####
+### These should be resolved by substitution prior to execution ###
 idx = '<<<idx>>>'
 group = <<<group>>>
+### BLOCK GLOBALS END ####
 REACTOR = Pick.pick_state(
     dict(
         P1={'default':8,'pick':{'between':[7,10],'round':-1}}, # MPa
         T1={'default':500,'pick':{'between':[480,520], 'round':0}} # K
     )
 )
-my_compounds = {
-    'A': pure_props.get_compound('hydrogen (equilib)'),
-    'B': pure_props.get_compound('nitrogen'),
-    'C': pure_props.get_compound('ammonia'),
-}
-N0 = {
-    my_compounds['A']: 3.0,
-    my_compounds['B']: 1.0,
-    my_compounds['C']: 0.0
-}
-n0_table = tu.table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$N_{0,i}$ (mol)':[f'\({N0[c]}\)' for c in my_compounds.values()]})
 T = REACTOR.T1 # K
 P = REACTOR.P1 # bar
-Eq = ChemEqSystem(N0=N0, T=T, P=P) # no need to specify a reaction if all species are specified
-Eq.solve_lagrange()
-R = Reaction(R=[my_compounds['A'] ,my_compounds['B']], P=[my_compounds['C']])
-mock = ChemEqSystem(N0=N0, T=T, P=P, Reactions=[R])
-ka_calcslines = mock.texgen_kacalculations(sig=4)
-mock.solve_implicit(Xinit=[0.5]) # single reaction
-report = mock.report()
-rxnstr = R.as_tex()
-thermochemicaltable = mock.thermochemicaltable_as_tex()
-stotable = mock.stoichiometrictable_as_tex()
-stoprod = tu.StoProd_as_tex(bases=[rf'y_{{{c.as_tex()}}}' for c in my_compounds.values()], nu=R.nu)
-resultstable = tu.table_as_tex({'Species':[c.as_tex() for c in my_compounds.values()],r'$y_i$':[f'\({y:.4f}\)' for y in mock.ys]})
+d = SandlerProps
 
-if 'AnsSet' in locals():
-    AnsSet.register(idx, group=group, label=r'\(X_{\rm eq}\)', value=mock.Xeq[0], formatter='{:.5f}')
-    for y, c in zip(mock.ys, list(my_compounds.values())):
-        AnsSet.register(idx, group=group, label=rf'\(y_{{\rm {c.as_tex()}}}\)', value=y, formatter='{:.5f}')
+nitrogen = Component.from_compound(d.get_compound('nitrogen'), T=298.15, P=1.0)
+hydrogen = Component.from_compound(d.get_compound('hydrogen (equilib)'), T=298.15, P=1.0)               
+ammonia = Component.from_compound(d.get_compound('ammonia'), T=298.15, P=1.0)                 
+components = [nitrogen, hydrogen, ammonia]
+n0 = np.array([1.0, 3.0, 0.0])
+# system = ChemEqSystem(components=components, N0=n0, T=T, P=P)
+# system.solve_lagrange()
+
+n0_table = tu.table_as_tex({'Species':[c.as_tex() for c in components], r'$N_{0,i}$ (mol)': n0.tolist()}, sig=3)
+rxn = Reaction(components=components)
+
+# need to solve a mock system to get the tex strings
+# for equilibrium constants, etc
+mock = ChemEqSystem(components=components, N0=n0, T=T, P=P, reactions=[rxn])
+ka_calcslines = mock.texgen_kacalculations(sig=5)
+logger.debug(f'ka_calcslines: {ka_calcslines}')
+mock.solve_implicit(Xinit=[0.5]) # single reaction
+# report = mock.report()
+rxnstr = rxn.as_tex()
+sum_nu = rxn.sum_nu()
+thermochemicaltable = mock.thermochemicaltable_as_tex(sig=6)
+stotable = mock.stoichiometrictable_as_tex(sig=3)
+stoprod_activity = rxn.stoichiometric_product_as_tex(base_string=rf'a')
+stoprod_pp = rxn.stoichiometric_product_as_tex(base_string=rf'Py', parens=True)
+PP = f'P^{{{sum_nu}}}'
+stoprod_y = rxn.stoichiometric_product_as_tex(base_string=rf'y')
+resultstable = tu.table_as_tex({'Species':[c.as_tex() for c in components],r'$y_i$':mock.ys}, sig=4)
+
+# register answers
+AnsSet.register(idx, group=group, label=r'\(X_{\rm eq}\)', value=mock.Xeq[0], formatter='{:.5f}')
+for y, c in zip(mock.ys, components):
+    AnsSet.register(idx, group=group, label=rf'\(y_{{\rm {c.as_tex()}}}\)', value=y, formatter='{:.5f}')
 \end{pycode}
 
 Consider the following reaction:
@@ -50,9 +59,9 @@ The initial molar feed composition to a reactor is as follows:
 \py{n0_table}
 \end{center}
 
-If the reactor is operated at \py{T} K and \py{P} bar, determine the equilibrium mole fractions of each species in the reactor effluent.  Assume ideal gas behavior.
+If the reactor is operated at constant \py{T} K and \py{P} bar, determine the equilibrium mole fractions of each species in the reactor effluent.  You can assume ideal-gas behavior, and that the simplified van't Hoff equation applies for the temperature dependence of the equilibrium constant.
 
-The following thermochemical data may be useful:
+The following thermochemical formation energies at standard state ($P^\circ$ = 1 bar) may be useful:
 
 \begin{center}
 \py{thermochemicaltable}
@@ -60,15 +69,30 @@ The following thermochemical data may be useful:
 
 \ifshowsolutions\vspace{1em}\Solutionheader\\
 
-At \py{T} K, the equilibrium constant for the reaction at the reference temperature $T_0$, followed by the equilibrium constant at the operating temperature $T$, are calculated as follows:
+At \py{T} K, the equilibrium constant for the reaction at the reference temperature $T_0$, followed by the equilibrium constant at the operating temperature $T$, are calculated as follows (via the simplified van't Hoff equation):
 
 \py{ka_calcslines}
 
-Let's set up the stoichiometric table for the reaction, where we let $X$ be the extent of reaction:
+We know generally that $K_a$ is the stoichiometric product of activities (i.e., the product of activities each raised to the species' stoichiometric coefficients). So we need to construct the stoichiometric product of the reaction, which is fundamentally expressed using species {\em activities} $a_i$:
+
+\[
+a_i = \frac{f_i}{P^\circ}
+\]
+
+where $f_i$ is fugacity and $P^\circ$ is the standard state pressure (1 bar).  For an ideal gas, fugacity is equal to partial pressure, so we can write the stoichiometric product as follows:
+
+\[
+K_a(T) = \py{stoprod_activity} = \py{stoprod_pp} = \py{PP}\py{stoprod_y}
+\]
+
+Note that we have left off the standard state pressure since it is 1 bar; this however requires that we express all pressures in bar when calculating.
+
+To resolve this equation, let's set up the stoichiometric table for the reaction, where we let $X$ be the extent of reaction:
 
 \py{stotable}
 
-Plugging each expression for $y_i$ into the equilibrium expression and solving for $X$ (implicitly) gives:
+Plugging each expression for $y_i$ into the stoichiometric product yields a single equation in the unknown $X$. Solving for $X$ (implicitly) gives:
+
 \[
 X = \py{f'{mock.Xeq[0]:.5f}'}
 \]

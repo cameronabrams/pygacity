@@ -1,4 +1,8 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+"""
+Document build functions for pygacity
+"""
+
 from copy import deepcopy
 import logging
 import os
@@ -17,6 +21,9 @@ logging.getLogger("ycleptic").setLevel(logging.WARNING)
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 def build(args):
+    """
+    Main build function for pygacity.
+    """
     FC = FileCollector()
     config = Config(args)
 
@@ -41,12 +48,13 @@ def build(args):
     serials = config.retrieve_serials()
 
     for i, serial in enumerate(serials):
-        outer_substitutions = dict(serial=serial, build_dir=build_dir, cache_dir=cache_dir)
+        outer_substitutions = dict(serial=serial, build_dir=build_dir, cache_dir=cache_dir, solutions=False)
         base_doc.make_substitutions(outer_substitutions)
         base_builder.build_document(base_doc)
         FC.append(f'{base_builder.working_job_name}.tex')
         logger.info(f'serial # {serial} ({i+1}/{len(serials)}) => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{base_builder.working_job_name}.pdf')
         if config.solutions:
+            outer_substitutions['solutions'] = True
             solution_doc.make_substitutions(outer_substitutions)
             soln_builder.build_document(solution_doc)
             FC.append(f'{soln_builder.working_job_name}.tex')
@@ -61,21 +69,45 @@ def build(args):
     buildfiles_archive = base_builder.FC.archive(build_path / 'buildfiles', delete=True)
     logger.info(f'Archived build files to {buildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')
 
-    pythontex_usergenerated = cache_path.glob('pythontex-usergenerated*.pkl')
+    pythontex_usergenerated = list(cache_path.glob('pythontex-usergenerated-files-*.pkl'))
     if len(pythontex_usergenerated) > 0:
         UG_FC = FileCollector()
         for f in pythontex_usergenerated:
             with open(f, 'rb') as f:
                 obj = pickle.load(f)
+                assert isinstance(obj, FileCollector)
+                logger.debug(f'Loaded pythontex usergenerated pickle file from {f} with {len(obj.data)} entries.')
             UG_FC.extend([build_path / x for x in obj.data])
+            for f in pythontex_usergenerated:
+                logger.debug(f'Removing temporary pythontex usergenerated pickle file {f}...')
+        num_files = len(UG_FC.data)
         usergen_archive = UG_FC.archive(build_path / 'usergenerated', delete=True)
-        logger.info(f'Archived user-generated files to {usergen_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+        logger.info(f'Archived {num_files} user-generated files to {usergen_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+    else:
+        logger.debug('No user-generated files to archive.')
 
     if config.solutions:
         solnbuildfiles_archive = soln_builder.FC.archive(build_path / 'solnbuildfiles', delete=True)
         logger.info(f'Archived solution build files to {solnbuildfiles_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+        pythontex_usergenerated = list(cache_path.glob('pythontex-solutions-usergenerated-files-*.pkl'))
+        if len(pythontex_usergenerated) > 0:
+            UG_FC = FileCollector()
+            for f in pythontex_usergenerated:
+                with open(f, 'rb') as f:
+                    obj = pickle.load(f)
+                UG_FC.extend([build_path / x for x in obj.data])
+                for f in pythontex_usergenerated:
+                    logger.debug(f'Removing temporary pythontex usergenerated pickle file {f}...')
+            num_files = len(UG_FC.data)
+            usergen_archive = UG_FC.archive(build_path / 'solutions-usergenerated', delete=True)
+            logger.info(f'Archived {num_files} user-generated files to {usergen_archive.absolute().relative_to(Path.cwd()).as_posix()}')
+        else:
+            logger.debug('No user-generated files to archive.')
 
 def answerset(config: Config = None) -> str:
+    """
+    Generates an answer set document from cached answer sets in the build cache.
+    """
     build_path: Path = config.build_path
     pickle_cache: Path = config.cache_path
     if not pickle_cache.exists():
@@ -109,6 +141,9 @@ def answerset(config: Config = None) -> str:
     return Path.cwd() / f'{AnswerSetBuilder.working_job_name}.tex'
 
 def answerset_subcommand(args):
+    """
+    CLI subcommand to build an answer set document from a previous build.
+    """
     logger.info(f'Generating answer set document from previous build specified in {args.f}...')
     config = Config(args.f)
     tex_file = answerset(config)

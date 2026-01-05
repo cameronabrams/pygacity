@@ -13,14 +13,13 @@ T1C = DSUH.T1C
 Psat = DSUH.Psat
 TLC = DSUH.TLC
 mdot = DSUH.mdot
-inlet = SANDLER(T=T1C, P=P1)
+inlet = SANDLER(TC=T1C, P=P1)
 outlet = SANDLER(P=Psat, x=1.0)
-inL = SANDLER(T=TLC, x=0.0)
+inL = SANDLER(TC=TLC, x=0.0)
 
 mLdot = mdot * ((inlet.h - outlet.h)/(inlet.h - inL.h))
 m_show = float(np.round(mLdot, 3))
-if 'AnsSet' in locals():
-    AnsSet.register(idx, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=m_show, units='kg s$^{-1}$', formatter='{:.3f}')
+AnsSet.register(idx, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=m_show, units='kg s$^{-1}$', formatter='{:.3f}')
 \end{pycode}
 Superheated steam at \py{f'{P1:,.0f}'} MPa and \py{T1C}$^\circ$C is to be converted to saturated steam at \py{f'{Psat:,.0f}'} MPa in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{TLC}$^\circ$C.  The unit should produce saturated steam at a rate of \py{mdot} kg~s$^{-1}$.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
 

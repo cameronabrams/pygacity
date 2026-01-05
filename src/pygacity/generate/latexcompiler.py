@@ -1,3 +1,7 @@
+# Author: Cameron F. Abrams, <cfa22@drexel.edu>
+"""
+LaTeX compilation functions for pygacity
+"""
 import logging
 
 from pathlib import Path
@@ -9,7 +13,30 @@ from .document import Document
 logger = logging.getLogger(__name__)
 
 class LatexCompiler:
+    """ 
+    LaTeX compiler class for building documents.
     
+    Attributes
+    ----------
+    specs : dict
+        build specifications
+    pdflatex : str
+        path to pdflatex executable
+    pythontex : str
+        path to pythontex executable
+    searchdirs : list of str
+        list of directories to search for included files (each prefixed with -include-directory=)
+    output_dir : str
+        output directory for compiled files (prefixed with -output-directory=)
+    cache_dir : str
+        cache directory for temporary files
+    job_name : str
+        base job name for output files (prefixed with -jobname=)
+    working_job_name : str
+        current working job name for output files
+    FC : FileCollector
+        file collector for tracking generated files
+    """
     def __init__(self, build_specs: dict, searchdirs: list = []):
         self.specs = build_specs
         self.pdflatex = self.specs['paths']['pdflatex']
@@ -22,10 +49,24 @@ class LatexCompiler:
         self.FC = FileCollector()
 
     def build_commands(self, document: Document = None):
+        """
+        Builds the list of commands needed to compile the document.
+        
+        Parameters
+        ----------
+        document : **Document**, optional
+            the **Document** instance to compile (default is None)
+            
+        Returns
+        -------
+        list of Command
+            list of **Command** instances to run for compilation
+        """
         commands = []
         if not document:
             return commands
         serial = document.substitutions.get('serial', 0)
+        is_solutions = document.substitutions.get('solutions', False)
         self.working_job_name = self.job_name
         if isinstance(serial, int) and serial > 0:
             self.working_job_name = self.job_name + f'-{serial}'
@@ -62,13 +103,26 @@ class LatexCompiler:
         self.FC.append(f'{self.output_dir}/{self.working_job_name}.pytxcode')
         if has_pycode:
             self.FC.append(f'{self.output_dir}/pythontex-files-{self.working_job_name}')
-            self.FC.append(f'{self.output_dir}/pythontex-{serial}.log')
+            if not is_solutions:
+                self.FC.append(f'{self.output_dir}/pythontex-{serial}.log')
+            else:
+                self.FC.append(f'{self.output_dir}/pythontex-solutions-{serial}.log')
             commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
 
         commands.append(Command(repeated_command, ignore_codes=[1]))
         return commands
 
-    def build_document(self, document=None, cleanup=False):
+    def build_document(self, document: Document = None, cleanup: bool = False):
+        """
+        Builds the specified document by running the necessary commands.
+        
+        Parameters
+        ----------
+        document : **Document**, optional
+            the **Document** instance to compile (default is None)
+        cleanup : bool, optional
+            if True, deletes intermediate files after build (default is False)
+            """
         commands = self.build_commands(document)
         for c in commands:
             logger.debug(f'Running command: {c.c}')

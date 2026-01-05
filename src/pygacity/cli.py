@@ -50,11 +50,13 @@ def cli():
     }
     parser = ap.ArgumentParser(
         prog='pygacity',
+        description='pygacity -- build customized engineering assignment/exam documents',
+        epilog='(c) 2025 Cameron F. Abrams <cfa22@drexel.edu>'
     )
     parser.add_argument(
         '-b',
         '--banner',
-        default=True,
+        default=False,
         action=ap.BooleanOptionalAction,
         help='toggle banner message'
     )

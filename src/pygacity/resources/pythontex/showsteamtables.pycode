@@ -1,4 +1,0 @@
-if 'STReq' in locals():
-    steamtables = STReq.to_latex()
-    if len(steamtables) > 0:
-        print(steamtables)

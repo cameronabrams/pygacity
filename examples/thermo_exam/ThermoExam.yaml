@@ -17,8 +17,7 @@ document:
     - pythontex:
         - setup
         - matplotlib
-        - sandlersteam
-        - chemeq
+        - sandler
     - text: |
             \examheader{Exam I}{January 13, 2026}
             \noindent\textbf{Instructions:} This exam is closed book, and you are allowed 

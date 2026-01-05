@@ -14,7 +14,6 @@ Submodules
 
    pygacity.util.collectors
    pygacity.util.command
-   pygacity.util.corrsts_wpd2csv
    pygacity.util.pdfutils
    pygacity.util.stringthings
    pygacity.util.texutils

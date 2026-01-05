@@ -1,4 +1,9 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
+
+"""
+LaTeX compound block class for pygacity
+"""
+
 from __future__ import annotations
 import logging
 import os
@@ -12,6 +17,25 @@ from shutil import copy2
 logger = logging.getLogger(__name__)
 
 def path_resolver(filename: str, search_paths: list[Path] = [], ext: str ='') -> Path:
+    """
+    Resolves a filename to a **Path** object, checking the local directory first,
+    then searching the provided search paths. If the file is not found, raises
+    a **FileNotFoundError**.
+    
+    Parameters
+    ----------
+    filename : str
+        the name of the file to locate
+    search_paths : list of **Path**, optional
+        list of directories to search if the file is not found locally
+    ext : str, optional
+        file extension to append if not already present
+    
+    Returns
+    -------
+    Path
+        the resolved **Path** object for the file
+    """
     local_filename = filename if filename.endswith(ext) else filename + ext
     # check local directory first
     local_path = Path(local_filename)
@@ -28,10 +52,18 @@ def path_resolver(filename: str, search_paths: list[Path] = [], ext: str ='') ->
                                  f'or search path {spm}.'))
 
 class LatexCompoundBlock:
+    """
+    A LaTeX compound block with support for nested enumerate/itemize,
+    external source files, substitutions, and embedded pythontex code.
+    """
     resources_root: Path = files('pygacity') / 'resources'
+    """ The root path for pygacity resources """
     templates_dir: Path = resources_root / 'templates'
-    pythontex_dir = resources_root / 'pythontex'
+    """ The directory containing LaTeX template files """
+    # pythontex_dir = resources_root / 'pythontex'
+    """ The directory containing pythontex source files """
     substitution_delimiters: tuple = (r'<<<', r'>>>')
+    """ The delimiters for substitution keys in LaTeX text """
 
     def __init__(self, block_specs: dict, parent_idx: str = '', idx: int = 0):
         self.block_specs = block_specs
@@ -74,16 +106,40 @@ class LatexCompoundBlock:
                 raise ValueError('Block cannot specify "pythontex" files along with "text" content or a "source" file.')
 
     def load(self) -> LatexCompoundBlock:
+        """
+        Loads the block's text contents from source files if specified,
+        processes substitutions to identify keys, and recursively loads
+        child blocks.
+        
+        Returns
+        -------
+        LatexCompoundBlock
+            the loaded block instance
+        """
         if self.sourcename:
             self.sourcepath = path_resolver(self.sourcename, search_paths=[self.templates_dir])
             with open(self.sourcepath, 'r') as f:
                 self.textcontents = f.read()
         elif len(self.pythontex) > 0:
             self.textcontents = r'\begin{pycode}' + '\n'
+            ## document-specific substitutions; manager does thes via string replacement later
+            self.textcontents += '### DOCUMENT GLOBALS BEGIN ####\n'
+            self.textcontents += '### These should be resolved by subsitution prior to execution ###\n'
+            self.textcontents += 'serial = <<<serial>>>\n'
+            self.textcontents += '_build_dir = "<<<build_dir>>>"\n'
+            self.textcontents += '_cache_dir = "<<<cache_dir>>>"\n'
+            self.textcontents += 'solutions = <<<solutions>>>\n'
+            ## block-specific substitutions; can do these now
+            self.textcontents += '### These are block-specific ###\n'
+            self.textcontents += f'idx = {self.idx}\n'
+            self.textcontents += f'points = {self.points}\n'
+            self.textcontents += f'group = {self.group}\n'
+            self.textcontents += '### DOCUMENT GLOBALS END ####\n'
             for ptfile in self.pythontex:
-                ptpath = path_resolver(ptfile, search_paths=[LatexCompoundBlock.pythontex_dir], ext='.pycode')
-                with open(ptpath, 'r') as f:
-                    self.textcontents += f.read() + '\n\n'
+                self.textcontents += f'from pygacity.pythontex.{ptfile} import *\n'
+                # ptpath = path_resolver(ptfile, search_paths=[LatexCompoundBlock.pythontex_dir], ext='.py')
+                # with open(ptpath, 'r') as f:
+                #     self.textcontents += f.read() + '\n\n'
             self.textcontents += r'\end{pycode}' + '\n'
         self.has_pycode = r'\begin{pycode}' in self.textcontents or self.has_pycode
         # check contents for substitution keys and embedded graphics files
@@ -119,6 +175,16 @@ class LatexCompoundBlock:
         return self
 
     def substitute(self, super_substitutions: dict = {}, match_all: bool = True):
+        """
+        Applies substitutions to the block's text contents and recursively to its children.
+        
+        Parameters
+        ----------
+        super_substitutions : dict, optional
+            substitutions from parent blocks
+        match_all : bool, optional
+            if True, raises KeyError if any substitution key has no associated value    
+        """
         self.processedcontents = self.textcontents[:]
         substitutions = deepcopy(super_substitutions)
         logger.debug(f'block at idx {self.idx} incoming substitutions: {substitutions}')
@@ -136,6 +202,19 @@ class LatexCompoundBlock:
             child.substitute(super_substitutions=substitutions, match_all=match_all)
 
     def copy_referenced_configs(self, output_dir: str):
+        """
+        Copies any referenced configuration files to the specified output directory.
+        
+        Parameters
+        ----------
+        output_dir : str
+            the directory to copy configuration files to
+        
+        Returns
+        -------
+        list of str
+            list of paths to the copied configuration files
+        """
         config_paths = []
         if self.config_path and self.config_path.exists():
             dest_path = Path(output_dir) / self.config_path.name
@@ -150,6 +229,15 @@ class LatexCompoundBlock:
         return config_paths
 
     def __str__(self):
+        """
+        Returns the processed contents of the block as a string, including any
+        enumerate/itemize environments.
+        
+        Returns
+        -------
+        str
+            the processed LaTeX contents of the block
+        """
         contents = self.processedcontents
         if self.enumerate:
             enum_str = r'\begin{enumerate}' + '\n'

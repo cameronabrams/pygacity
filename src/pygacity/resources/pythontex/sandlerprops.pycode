@@ -1,3 +1,0 @@
-from sandlerprops.properties import PropertyDatabase
-
-SandlerProps = PropertyDatabase()

@@ -83,11 +83,36 @@ html_theme_options = {
 }
 
 html_static_path = ['_static']
+html_css_files = ['custom.css']
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
 
 mermaid_params = ['--theme', 'dark', '--width', '600']
+
+rst_prolog = """
+.. role:: red
+.. role:: blue
+.. role:: green
+.. role:: red-code(code)
+   :class: red
+.. role:: blue-code(code)
+   :class: blue
+.. role:: green-code(code)
+   :class: green
+.. role:: pkg(code)
+   :class: pkg
+.. role:: cls(code)
+   :class: cls
+.. role:: meth(code)
+   :class: meth
+.. role:: func(code)
+   :class: func
+.. role:: var(code)
+   :class: var
+.. role:: const(code)
+   :class: const
+"""
 
 def setup(app):
     print("✅ Setting up custom directives...") 
