@@ -48,7 +48,7 @@ def build(args):
     serials = config.retrieve_serials()
 
     for i, serial in enumerate(serials):
-        outer_substitutions = dict(serial=serial, build_dir=build_dir, cache_dir=cache_dir, solutions=False)
+        outer_substitutions = dict(serial=serial, seriallabel='ser.', build_dir=build_dir, cache_dir=cache_dir, solutions=False)
         base_doc.make_substitutions(outer_substitutions)
         base_builder.build_document(base_doc)
         FC.append(f'{base_builder.working_job_name}.tex')

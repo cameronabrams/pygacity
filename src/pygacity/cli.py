@@ -97,13 +97,6 @@ def cli():
         action=ap.BooleanOptionalAction,
         help='completely remove old save dir and build new exams')
     command_parsers['build'].add_argument(
-        '-s',
-        '--solutions',
-        type=bool,
-        default=True,
-        action=ap.BooleanOptionalAction,
-        help='build solutions document(s)')
-    command_parsers['build'].add_argument(
         'f',
         help='mandatory YAML input file')
     command_parsers['answerset'].add_argument(
@@ -136,13 +129,6 @@ def cli():
         default=True,
         action=ap.BooleanOptionalAction,
         help='completely remove old save dir and build new exams')
-    command_parsers['singlet'].add_argument(
-        '-s',
-        '--solutions',
-        type=bool,
-        default=False,
-        action=ap.BooleanOptionalAction,
-        help='build solutions document(s) (singlet builds are only solutions)')
     args = parser.parse_args()
 
     setup_logging(args)

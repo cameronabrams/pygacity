@@ -100,13 +100,11 @@ class Config:
             random.seed(self.build_specs['seed'])
             logger.info(f'Setting random seed to {self.build_specs["seed"]}.')
 
-        self.solutions = False
-        if hasattr(args, 'solutions') and args.solutions:
-            self.solutions = True
-            self.solution_build_specs = deepcopy(self.build_specs)
-            self.solution_build_specs['job-name'] = self.build_specs.get('job-name', 'document') + '_soln'
-            self.solution_document_specs = deepcopy(self.document_specs)
-            self.solution_document_specs['class']['options'].append('solutions')
+        self.solutions = self.build_specs.get('solutions', True)
+        self.solution_build_specs = deepcopy(self.build_specs)
+        self.solution_build_specs['job-name'] = self.build_specs.get('job-name', 'document') + '_soln'
+        self.solution_document_specs = deepcopy(self.document_specs)
+        self.solution_document_specs['class']['options'].append('solutions')
 
     def _config_singlet(self, args: Namespace) -> tuple[dict, dict]:
         """

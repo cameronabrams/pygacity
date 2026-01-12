@@ -117,30 +117,6 @@ rst_prolog = """
 def setup(app):
     print("✅ Setting up custom directives...") 
     app.add_css_file("css/custom.css")
-    # from pestifer.sphinxext.tclscript import TclScriptDirective
-    # app.add_directive("tclscript", TclScriptDirective)
-    # app.connect("builder-inited", _md_to_rst)
 
-# def _md_to_rst(app):
-#     root = Path(__file__).resolve().parents[2]
-#     md = root / "CHANGELOG.md"
-#     rst = Path(__file__).resolve().parent / "CHANGELOG.rst"
-#     if not md.exists():
-#         logger.warning(f"CHANGELOG.md not found at project root {root}")
-#         return
-#     # Skip if up-to-date (unless forced)
-#     force = os.environ.get("SPHINX_FORCE_CHANGELOG", "") == "1"
-#     if rst.exists() and not force:
-#         if rst.stat().st_mtime >= md.stat().st_mtime:
-#             logger.info("CHANGELOG.rst is up to date; skipping conversion.")
-#             return
-#     text = md.read_text(encoding="utf-8")
-#     try:
-#         import pypandoc
-#         rst_text = pypandoc.convert_text(text, "rst", format="gfm")
-#     except Exception as e:
-#         logger.warning(f"Could not convert CHANGELOG.md -> .rst: {e}")
-#         return
-#     rst.write_text(rst_text, encoding="utf-8")
 
     
