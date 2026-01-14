@@ -1,4 +1,4 @@
-from sandlertools import SaturatedSteamTables, UnsaturatedSteamTable
+from sandlersteam import SaturatedSteamTables, UnsaturatedSteamTable
 
 def add_headers(tblstr, hdllist, strs):
     tbllns = tblstr.split('\n')
@@ -18,64 +18,6 @@ def add_headers(tblstr, hdllist, strs):
                 i += 1
         tblstr = '\n'.join(tbllns)
     return tblstr
-
-class Request:
-    """ Class to handle requests for latex-formatted steam tables"""
-    def __init__(self):
-        self.suph = []
-        self.subc = []
-        self.satdP = False
-        self.satdT = False
-
-    def register(self, *args, **kwargs):
-        if 'satdP' in args:
-            self.satdP = True
-        if 'satdT' in args:
-            self.satdT = True
-        if 'suphP' in kwargs:
-            P = kwargs['suphP']
-            if P in st['suph'].uniqs['P'] and not P in self.suph:
-                self.suph.append(P)
-        if 'subcP' in kwargs:
-            P = kwargs['subcP']
-            if P in st['subc'].uniqs['P'] and not P in self.subc:
-                self.subc.append(P)
-        return self
-
-    def to_latex(self):
-        unit_string = r"""\noindent $\hat{V}\ [=]\ \mbox{m$^3$/kg}$; $\hat{U}\ [=]\ \mbox{kJ/kg}$; $\hat{H}\ [=]\ \mbox{kJ/kg}$; $\hat{S}\ [=]\ \mbox{kJ/kg-K}$"""
-        tables = []
-        if any(self.suph) or self.satdP or self.satdP:
-            tables.append(r"""
-\clearpage
-\noindent THERMODYNAMIC PROPERTIES OF STEAM (Selected)\\*[1cm]""")
-        if any(self.suph):
-            tables.append(r"""Superheated steam:\\*[0mm]""")
-        for p in sorted(self.suph):
-            tables.append(st['suph'].to_latex(P=p))
-        if any(self.suph):
-            tables.append(unit_string+r'\\*[1cm]')
-
-        if any(self.subc):
-            tables.append(r"""Subcooled liquid:\\*[1cm]""")
-        for p in sorted(self.subc):
-            tables.append(st['subc'].to_latex(P=p))
-        
-        if self.satdP or self.satdT:
-            if len(self.suph) + len(self.subc) > 1:
-                tables.append(r"""\clearpage""")
-            tables.append(r"""Saturated steam:\\*[5mm]""")
-            if self.satdP:
-                tables.append(st['satd'].to_latex(by='P'))
-                tables.append(unit_string)
-            if self.satdT:
-                if self.satdP:
-                    tables.append(r"""\clearpage""")
-                tables.append(st['satd'].to_latex(by='T'))
-                tables.append(unit_string)
-        
-        return '\n'.join(tables)
-        
 
 def satd_to_latex(self, **kwargs) -> str | None:
     by = kwargs.get('by', 'TC')
@@ -273,6 +215,58 @@ def unsatd_to_latex(self, P: float):
     else:
         return None
 
+
+# class RandomSample(State):
+#     def __init__(self,phase='suph', satdDOF='TC', seed=None, Prange=None, Trange=None):
+#         if phase == 'satd':
+#             if satdDOF == 'TC':
+#                 sample_this = SteamTables[phase].DF['TC']
+#             else:
+#                 sample_this = SteamTables[phase].DF['P']
+#         elif phase == 'suph' or phase == 'subc':
+#             sample_this = SteamTables[phase].data
+#         abs_mins = {'TC': sample_this['TC'].min(), 'P': sample_this['P'].min()}
+#         abs_maxs = {'TC': sample_this['TC'].max(), 'P': sample_this['P'].max()}
+#         sample = sample_this.sample(n=1, random_state=seed)
+#         TC = sample['TC'].values[0]
+#         P = sample['P'].values[0]
+#         if Trange and not Prange:
+#             if Trange[0] < abs_mins['TC']:
+#                 raise ValueError(f'Trange[0] ({Trange[0]}) is below the minimum TC in the data ({abs_mins["TC"]})')
+#             if Trange[1] > abs_maxs['TC']:
+#                 raise ValueError(f'Trange[1] ({Trange[1]}) is above the maximum TC in the data ({abs_maxs["TC"]})')
+#             while not Trange[0] < TC < Trange[1]:
+#                 sample = sample_this.sample(n=1)
+#                 TC = sample['TC'].values[0]
+#         if Prange and not Trange:
+#             if Prange[0] < abs_mins['P']:
+#                 raise ValueError(f'Prange[0] ({Prange[0]}) is below the minimum P in the data ({abs_mins["P"]})')
+#             if Prange[1] > abs_maxs['P']:
+#                 raise ValueError(f'Prange[1] ({Prange[1]}) is above the maximum P in the data ({abs_maxs["P"]})')
+#             while not Prange[0] < P < Prange[1]:
+#                 sample = sample_this.sample(n=1)
+#                 P = sample['P'].values[0]
+#         if Prange and Trange:
+#             if Trange[0] < abs_mins['TC']:
+#                 raise ValueError(f'Trange[0] ({Trange[0]}) is below the minimum TC in the data ({abs_mins["TC"]})')
+#             if Trange[1] > abs_maxs['TC']:
+#                 raise ValueError(f'Trange[1] ({Trange[1]}) is above the maximum TC in the data ({abs_maxs["TC"]})')
+#             if Prange[0] < abs_mins['P']: 
+#                 raise ValueError(f'Prange[0] ({Prange[0]}) is below the minimum P in the data ({abs_mins["P"]})')
+#             if Prange[1] > abs_maxs['P']: 
+#                 raise ValueError(f'Prange[1] ({Prange[1]}) is above the maximum P in the data ({abs_maxs["P"]})')
+#             while not Prange[0] < P < Prange[1] or not Trange[0] < TC < Trange[1]:
+#                 sample = sample_this.sample(n=1)
+#                 TC = sample['TC'].values[0]
+#                 P = sample['P'].values[0]
+#         if phase == 'satd':
+#             if satdDOF == 'TC':
+#                 super().__init__(TC=TC, x=1.0)
+#             else:
+#                 super().__init__(P=P, x=1.0)
+#         else:
+#             super().__init__(TC=TC, P=P)
+    
 
 SaturatedSteamTables.to_latex = satd_to_latex
 UnsaturatedSteamTable.to_latex = unsatd_to_latex

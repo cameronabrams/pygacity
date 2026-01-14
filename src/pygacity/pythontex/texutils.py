@@ -204,7 +204,8 @@ def polynomial_as_tex(p: Polynomial, x: str = 'x', coeff_round: int = 0):
     str
         LaTeX formatted polynomial string
     """
-    coeff = p.coef
+    # Polynomial.coeff are in ascending order; reverse for processing
+    coeff = p.coef[::-1]
     if coeff_round == 0:
         coeff = coeff.astype(int)
     term_strings = []
