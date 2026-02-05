@@ -9,17 +9,13 @@ from sandlertools import SandlerSteamState as SANDLER
 from sandlertools import get_tables
 from sandlertools import Component, Reaction, ChemEqSystem
 from sandlertools import (
-    CorrespondingStatesChartReader, 
-    GasConstant, IdealGasEOS, VanDerWaalsEOS, PengRobinsonEOS )
+    CSState, ureg,
+    R, IdealGasEOS, VanDerWaalsEOS, PengRobinsonEOS )
 
-R_pv = GasConstant("bar", "m3")
-R = GasConstant("pa", "m3")
 SandlerProps = get_database()
 
 SteamTables = get_tables()
 suphPavail = SteamTables['suph'].uniqs['P']
-
-CSReader = CorrespondingStatesChartReader()
 
 class Request:
     """ Class to handle requests for latex-formatted steam tables"""
