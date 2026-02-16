@@ -8,6 +8,7 @@ import shutil
 import argparse as ap
 
 from .generate.build import build, answerset_subcommand
+from .util.distribute import distribute_subcommand
 from .util.pdfutils import combine_pdfs
 from .util.stringthings import oxford, banner
 
@@ -46,7 +47,11 @@ def cli():
         'singlet': dict(
             func = build,
             help = 'build a single problem'
-        )
+        ),
+        'distribute': dict(
+            func = distribute_subcommand,
+            help = 'distribute built exam PDFs to students',
+        ),
     }
     parser = ap.ArgumentParser(
         prog='pygacity',
@@ -129,6 +134,54 @@ def cli():
         default=True,
         action=ap.BooleanOptionalAction,
         help='completely remove old save dir and build new exams')
+    command_parsers['distribute'].add_argument(
+        'build_dir',
+        help='directory containing built exam PDFs')
+    command_parsers['distribute'].add_argument(
+        'gradebook',
+        help='path to Blackboard Learn gradebook CSV')
+    command_parsers['distribute'].add_argument(
+        '-o',
+        '--output-dir',
+        type=str,
+        default='distributed',
+        help='root directory for per-student subfolders (default: distributed/)')
+    command_parsers['distribute'].add_argument(
+        '-fc',
+        '--filter-column',
+        type=str,
+        default=None,
+        help='gradebook column where "yes" or "true" selects students to receive exams')
+    command_parsers['distribute'].add_argument(
+        '--email',
+        default=False,
+        action=ap.BooleanOptionalAction,
+        help='send exams to students via Outlook')
+    command_parsers['distribute'].add_argument(
+        '--email-suffix',
+        type=str,
+        default='@drexel.edu',
+        help='suffix appended to Username for email address (default: @drexel.edu)')
+    command_parsers['distribute'].add_argument(
+        '--subject',
+        type=str,
+        default='Your exam',
+        help='email subject line')
+    command_parsers['distribute'].add_argument(
+        '--body',
+        type=str,
+        default='Attached is your exam. Please contact your instructor with any questions.',
+        help='plain-text email body')
+    command_parsers['distribute'].add_argument(
+        '--dry-run',
+        default=False,
+        action=ap.BooleanOptionalAction,
+        help='preview email actions without actually sending')
+    command_parsers['distribute'].add_argument(
+        '--include-solutions',
+        default=True,
+        action=ap.BooleanOptionalAction,
+        help='include solution PDFs in student folders and emails (default: yes; use --no-include-solutions to omit)')
     args = parser.parse_args()
 
     setup_logging(args)

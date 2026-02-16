@@ -53,6 +53,7 @@
 \RequirePackage{tikz}
 \RequirePackage{listings}
 \RequirePackage{pythontex}
+\RequirePackage{tcolorbox}
 
 % lists / headers
 \RequirePackage{enumitem}

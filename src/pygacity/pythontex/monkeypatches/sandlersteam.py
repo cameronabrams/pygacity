@@ -1,4 +1,6 @@
 from sandlersteam import SaturatedSteamTables, UnsaturatedSteamTable
+import pandas as pd
+import numpy as np
 
 def add_headers(tblstr, hdllist, strs):
     tbllns = tblstr.split('\n')
@@ -20,17 +22,17 @@ def add_headers(tblstr, hdllist, strs):
     return tblstr
 
 def satd_to_latex(self, **kwargs) -> str | None:
-    by = kwargs.get('by', 'TC')
-    cp = 'TC' if by == 'P' else 'P'
+    by = kwargs.get('by', 'T')
+    cp = 'T' if by == 'P' else 'P'
     assert by in 'PT'
     block = self.DF[by]
     if not block.empty:
-        splits = [block[block['TC'] < 97.0], block[block['TC'] > 97.0]]
+        splits = [block[block['T'] < 97.0], block[block['T'] > 97.0]]
         splits[0].loc[:,'P']=splits[0].loc[:,'P']*1000 # kPa from MPa
         strsplits = []
         for bs, pu in zip(splits,['kPa', 'MPa']):
             block_floatsplit = pd.DataFrame()
-            cols = [by, cp, 'VL', 'VV', 'UL', 'DU', 'UV', 'HL', 'DH', 'HV', 'SL', 'DS', 'SV']
+            cols = [by, cp, 'vL', 'vV', 'uL', 'Du', 'uV', 'hL', 'Dh', 'hV', 'sL', 'Ds', 'sV']
             # fmts=r'r@{}l'*len(cols)
             fmts =  r'>{\raggedleft}p{4mm}@{}p{4mm}>{\raggedleft}p{4mm}@{}p{4mm}' # T/P, P/T
             fmts += r'>{\raggedleft}p{2mm}@{}p{10mm}' # VL
@@ -89,17 +91,17 @@ def satd_to_latex(self, **kwargs) -> str | None:
                                 if f == 0.0: fs = ''
                                 else:
                                     while len(fs) > 3 and fs[-1] == '0': fs = fs[:-1]
-                    elif c == 'TC' and by == 'TC':
+                    elif c == 'T' and by == 'T':
                         if f == 0.0: fs = ''
                         else:
                             while len(fs) > 3 and fs[-1] == '0': fs = fs[:-1]
-                    elif c == 'TC' and by == 'P':
+                    elif c == 'T' and by == 'P':
                         while len(fs) > 3 and fs[-1] == '0': fs = fs[:-1]
                     else:
-                        if c == 'VL':
+                        if c == 'vL':
                             while len(fs) > 7 and fs[-1] == '0': fs = fs[:-1]
                             fs = fs[:4] + ' ' + fs[4:]
-                        elif c == 'VV':
+                        elif c == 'vV':
                             if v > 10:
                                 while len(fs) > 3 and fs[-1] == '0': fs = fs[:-1]
                             elif v > 2:
@@ -115,7 +117,7 @@ def satd_to_latex(self, **kwargs) -> str | None:
                             elif len(fs) == 7:
                                 fs = fs[:4] + ' ' + fs[4:]
 
-                        elif c == 'UL' or c == 'HL':
+                        elif c == 'uL' or c == 'hL':
                             if v < 1400:
                                 while len(fs) > 3 and fs[-1] == '0': fs = fs[:-1]
                             else:
@@ -172,10 +174,10 @@ def satd_to_latex(self, **kwargs) -> str | None:
 
 def unsatd_to_latex(self, P: float):
     # generates latex version of a P-block of the superheated/subcooled steam table
-    block  = self.data[self.data['P'] == P][['TC','V','U','H','S']]
+    block  = self.data[self.data['P'] == P][['T','v','u','h','s']]
     if not block.empty:
         block_floatsplit =  pd.DataFrame()
-        for c in ['TC', 'V', 'U', 'H', 'S']:
+        for c in ['T', 'v', 'u', 'h', 's']:
             w = block[c].astype(int)
             dd = np.round((block[c] - w), 10).astype(str)
             d = []
@@ -183,7 +185,7 @@ def unsatd_to_latex(self, P: float):
             for a, s in zip(w, dd):
                 if '.' in s:
                     ss = s[1:]
-                if ss == '.0' and c == 'TC':
+                if ss == '.0' and c == 'T':
                     d.append('')
                 else:
                     if a == 0: # this is a fractional number
@@ -217,27 +219,27 @@ def unsatd_to_latex(self, P: float):
 
 
 # class RandomSample(State):
-#     def __init__(self,phase='suph', satdDOF='TC', seed=None, Prange=None, Trange=None):
+#     def __init__(self,phase='suph', satdDOF='T', seed=None, Prange=None, Trange=None):
 #         if phase == 'satd':
-#             if satdDOF == 'TC':
-#                 sample_this = SteamTables[phase].DF['TC']
+#             if satdDOF == 'T':
+#                 sample_this = SteamTables[phase].DF['T']
 #             else:
 #                 sample_this = SteamTables[phase].DF['P']
 #         elif phase == 'suph' or phase == 'subc':
 #             sample_this = SteamTables[phase].data
-#         abs_mins = {'TC': sample_this['TC'].min(), 'P': sample_this['P'].min()}
-#         abs_maxs = {'TC': sample_this['TC'].max(), 'P': sample_this['P'].max()}
+#         abs_mins = {'T': sample_this['T'].min(), 'P': sample_this['P'].min()}
+#         abs_maxs = {'T': sample_this['T'].max(), 'P': sample_this['P'].max()}
 #         sample = sample_this.sample(n=1, random_state=seed)
-#         TC = sample['TC'].values[0]
+#         T = sample['T'].values[0]
 #         P = sample['P'].values[0]
 #         if Trange and not Prange:
-#             if Trange[0] < abs_mins['TC']:
-#                 raise ValueError(f'Trange[0] ({Trange[0]}) is below the minimum TC in the data ({abs_mins["TC"]})')
-#             if Trange[1] > abs_maxs['TC']:
-#                 raise ValueError(f'Trange[1] ({Trange[1]}) is above the maximum TC in the data ({abs_maxs["TC"]})')
-#             while not Trange[0] < TC < Trange[1]:
+#             if Trange[0] < abs_mins['T']:
+#                 raise ValueError(f'Trange[0] ({Trange[0]}) is below the minimum T in the data ({abs_mins["T"]})')
+#             if Trange[1] > abs_maxs['T']:
+#                 raise ValueError(f'Trange[1] ({Trange[1]}) is above the maximum T in the data ({abs_maxs["T"]})')
+#             while not Trange[0] < T < Trange[1]:
 #                 sample = sample_this.sample(n=1)
-#                 TC = sample['TC'].values[0]
+#                 T = sample['T'].values[0]
 #         if Prange and not Trange:
 #             if Prange[0] < abs_mins['P']:
 #                 raise ValueError(f'Prange[0] ({Prange[0]}) is below the minimum P in the data ({abs_mins["P"]})')
@@ -247,25 +249,25 @@ def unsatd_to_latex(self, P: float):
 #                 sample = sample_this.sample(n=1)
 #                 P = sample['P'].values[0]
 #         if Prange and Trange:
-#             if Trange[0] < abs_mins['TC']:
-#                 raise ValueError(f'Trange[0] ({Trange[0]}) is below the minimum TC in the data ({abs_mins["TC"]})')
-#             if Trange[1] > abs_maxs['TC']:
-#                 raise ValueError(f'Trange[1] ({Trange[1]}) is above the maximum TC in the data ({abs_maxs["TC"]})')
+#             if Trange[0] < abs_mins['T']:
+#                 raise ValueError(f'Trange[0] ({Trange[0]}) is below the minimum T in the data ({abs_mins["T"]})')
+#             if Trange[1] > abs_maxs['T']:
+#                 raise ValueError(f'Trange[1] ({Trange[1]}) is above the maximum T in the data ({abs_maxs["T"]})')
 #             if Prange[0] < abs_mins['P']: 
 #                 raise ValueError(f'Prange[0] ({Prange[0]}) is below the minimum P in the data ({abs_mins["P"]})')
 #             if Prange[1] > abs_maxs['P']: 
 #                 raise ValueError(f'Prange[1] ({Prange[1]}) is above the maximum P in the data ({abs_maxs["P"]})')
-#             while not Prange[0] < P < Prange[1] or not Trange[0] < TC < Trange[1]:
+#             while not Prange[0] < P < Prange[1] or not Trange[0] < T < Trange[1]:
 #                 sample = sample_this.sample(n=1)
-#                 TC = sample['TC'].values[0]
+#                 T = sample['T'].values[0]
 #                 P = sample['P'].values[0]
 #         if phase == 'satd':
-#             if satdDOF == 'TC':
-#                 super().__init__(TC=TC, x=1.0)
+#             if satdDOF == 'T':
+#                 super().__init__(T=T, x=1.0)
 #             else:
 #                 super().__init__(P=P, x=1.0)
 #         else:
-#             super().__init__(TC=TC, P=P)
+#             super().__init__(T=T, P=P)
     
 
 SaturatedSteamTables.to_latex = satd_to_latex

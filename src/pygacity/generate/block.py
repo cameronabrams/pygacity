@@ -118,7 +118,8 @@ class LatexCompoundBlock:
         """
         if self.sourcename:
             self.sourcepath = path_resolver(self.sourcename, search_paths=[self.templates_dir])
-            with open(self.sourcepath, 'r') as f:
+            logger.debug(f'Block at idx {self.idx} resolved source file {self.sourcename} to {self.sourcepath}')
+            with open(self.sourcepath, 'r', encoding='utf-8') as f:
                 self.textcontents = f.read()
         elif len(self.pythontex) > 0:
             self.textcontents = r'\begin{pycode}' + '\n'

@@ -139,7 +139,7 @@ class AnswerSet(UserDict):
                 new_index = str(index)[len(common_prefix):]
                 new_D[new_index] = AL
             self.data = new_D
-        with open(self.dumpname, 'w') as f:
+        with open(self.dumpname, 'w', encoding='utf-8') as f:
             yaml.safe_dump(self.data, f)
 
 class AnswerSuperSet(UserList[AnswerSet]):

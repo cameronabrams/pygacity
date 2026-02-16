@@ -82,7 +82,7 @@ class Document:
         local_output_name : str, optional
             base name for the output .tex file (default is 'local_document')
         """
-        with open(local_output_name + '.tex', 'w') as f:
+        with open(local_output_name + '.tex', 'w', encoding='utf-8') as f:
             f.write('% Automatically generated LaTeX source file\n')
             class_specs = self.specs.get('class', {})
             logger.debug(f'Document.write_source with class_specs: {class_specs}')

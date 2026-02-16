@@ -7,12 +7,12 @@ import fractions as fr
 import numpy as np
 import pandas as pd
 import logging
-
+import pint
 from numpy.polynomial import Polynomial
 
 logger = logging.getLogger(__name__)
 
-def Cp_as_tex(Cp_coeff: dict | list, decoration='*', sig: int = 5) -> str:
+def Cp_as_tex(Cp_coeff: dict | list, decoration='*', sig: int = 5, inline: bool = False) -> str:
     """
     Formats a heat capacity polynomial as a LaTeX string.
     
@@ -33,14 +33,16 @@ def Cp_as_tex(Cp_coeff: dict | list, decoration='*', sig: int = 5) -> str:
     idx = [0, 1, 2, 3]
     if type(Cp_coeff) == dict:
         idx = 'abcd'
-    sgns=[]
-    for i in range(4):
-        sgns.append('-' if Cp_coeff[idx[i]]<0 else '+')
-    retstr = r'$C_p^' + f'{decoration}' + r'$ = ' + f'{Cp_coeff[idx[0]]:.3f} {sgns[1]} '
-    retstr += format_sig(np.abs(Cp_coeff[idx[1]]),sig=sig)+r' $T$ '+f'{sgns[2]} '
-    retstr += format_sig(np.abs(Cp_coeff[idx[2]]),sig=sig)+r' $T^2$ '+f'{sgns[3]} '
-    retstr += format_sig(np.abs(Cp_coeff[idx[3]]),sig=sig)+r' $T^3$'
-    return(retstr)
+    formula = rf'C_p^{{{decoration}}}(T) = '
+    formula += format_sig(Cp_coeff[idx[0]], sig=sig, use_tex=True)
+    powers = ['T', 'T^2', 'T^3']
+    for i in range(1, 4):
+        sgn = '-' if Cp_coeff[idx[i]] < 0 else '+'
+        formula += f' {sgn} '
+        formula += format_sig(np.abs(Cp_coeff[idx[i]]), sig=sig, use_tex=True)
+        formula += r'\,' + powers[i - 1]
+    delim = '$' if inline else '$$'
+    return f'{delim}{formula}{delim}'
 
 def table_as_tex(table: dict | pd.DataFrame, sig: int = 5, 
                  drop_zeros: list[bool] = None, total_row: list[str] = [],
@@ -101,13 +103,13 @@ def table_as_tex(table: dict | pd.DataFrame, sig: int = 5,
         tablestring = tmpstr
     return tablestring
 
-def format_sig(x: float, sig: int = 5, use_tex: bool = True) -> str:
+def format_sig(x: float | pint.Quantity, sig: int = 5, use_tex: bool = True) -> str:
     """
     Formats a floating point number to a specified number of significant figures.
     
     Parameters
     ----------
-    x : float
+    x : float or pint.Quantity
         the number to format
     sig : int, optional
         number of significant figures, default is 5
@@ -119,30 +121,30 @@ def format_sig(x: float, sig: int = 5, use_tex: bool = True) -> str:
     s : str
         formatted string
     """
-    logger.debug(f'format_sig: x={x}, sig={sig}, use_tex={use_tex}\n')
     from math import log10, floor
-    
+
+    if isinstance(x, pint.Quantity):
+        x = x.magnitude
+
+    logger.debug(f'format_sig: x={x}, sig={sig}, use_tex={use_tex}\n')
+
     if x == 0:
-        logger.debug('x is zero\n')
         return "0." + "0" * (sig - 1)
-    
-    # Determine the order of magnitude
+
     magnitude = floor(log10(abs(x)))
-    
-    # Calculate decimal places needed
-    decimal_places = sig - magnitude - 1
-    
-    if decimal_places >= 0:
-        # Use fixed-point notation
-        result = f"{x:.{decimal_places}f}"    
-    elif use_tex:
-        s = format(x, f",.{sig}g")
-        mantissa, exponent = s.split("e")
+
+    if -sig <= magnitude < sig:
+        decimal_places = sig - 1 - magnitude
+        result = f"{x:.{decimal_places}f}"
+    else:
+        formatted = f"{x:.{sig - 1}e}"
         if use_tex:
-            exponent = int(exponent)
+            mantissa, exp_str = formatted.split('e')
+            exponent = int(exp_str)
             result = rf"{mantissa}\times 10^{{{exponent}}}"
         else:
-            result = format(x, f",.{sig-1}g")
+            result = formatted
+
     logger.debug(f'Formatted result: {result}\n')
     return result
 
