@@ -33,6 +33,12 @@ extensions = [
 
 autosummary_generate = True  # Enable autosummary tables
 
+# These packages either aren't installed in the docs environment or trigger
+# heavy side-effects (e.g. sandlertools calls get_tables() at import time,
+# which hits a pandas dtype incompatibility in sandlersteam).  Mocking them
+# lets autodoc extract docstrings without actually importing the packages.
+autodoc_mock_imports = ['sandlertools', 'sandlersteam', 'iapws']
+
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
@@ -115,7 +121,7 @@ rst_prolog = """
 """
 
 def setup(app):
-    print("✅ Setting up custom directives...") 
+    print("Setting up custom directives...")
     app.add_css_file("css/custom.css")
 
 

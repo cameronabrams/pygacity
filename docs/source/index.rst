@@ -25,3 +25,4 @@ Contents
    examples
    The ``autoprob`` LaTeX Package <autoprob/autoprob>
    API <api/API>
+   changelog

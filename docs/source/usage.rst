@@ -19,7 +19,7 @@ Building Documents
 
 
 Generating Pygacity-Compatible LaTeX Code
-+++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++
 
 The majority of work in creating a document with ``pygacity`` is in creating pygacity-compatible LaTeX code for problems, exercises, and other types of document content.  The following sections provide guidance on these tasks.
 
@@ -33,11 +33,12 @@ The majority of work in creating a document with ``pygacity`` is in creating pyg
 Other Subcommands
 +++++++++++++++++
 
-``pygacity`` also has three other subcommands:
+``pygacity`` also has four other subcommands:
 
-.. toctree:: 
+.. toctree::
    :maxdepth: 2
 
    subcommands/singlet
    subcommands/answerset
    subcommands/combine
+   subcommands/distribute

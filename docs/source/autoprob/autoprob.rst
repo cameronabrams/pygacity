@@ -1,7 +1,7 @@
 .. _autoprob:
 
-The ``autoprob`` LaTeX Package
-===============================
+The autoprob LaTeX Package
+==========================
 
 ``pygacity`` uses its own custom LaTeX document class called ``autoprob`` to create assignment and exam documents.  This document class is built on top of the standard ``article`` document class, and includes several additional features specifically designed for creating problem-based documents.  The ``autoprob`` document class is included with the ``pygacity`` package, and is automatically used when building documents with ``pygacity``.  If you want to use it outside ``pygacity``, you can find the ``autoprob.cls`` file in the ``pygacity`` installation directory under ``resources/autoprob-package/tex/latex/autoprob.cls``.
 

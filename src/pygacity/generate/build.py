@@ -17,7 +17,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-logging.getLogger("ycleptic").setLevel(logging.WARNING)
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 def build(args):

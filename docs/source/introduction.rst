@@ -17,6 +17,7 @@ How Easy is Pygacity to Use?
 If you are already used to LaTeX and Python, you should find it pretty easy to use Pygacity.  At its most simplistic, generating an assignment or exam document requires the following steps:
 
 1. For each numerical problem you want to include:
+
    a. Write/generate Python code that solves the problem.
    b. Generate Latex code for that can be imported after an ``\item`` directive for each problem.  The ``tex`` file containing this code should begin with a ``\begin{pycode}`` block that contains the Python code.  Within the text of the problem (and its solution), you can include references to numerical values using ``\py{}`` directives.  
 2. To include short-answer, fill-in-the-blank, multiple-choice, and/or true/false questions, generate one or more YAML files containing question databases.

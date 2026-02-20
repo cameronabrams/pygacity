@@ -14,6 +14,6 @@ Submodules
 
    pygacity.util.collectors
    pygacity.util.command
+   pygacity.util.distribute
    pygacity.util.pdfutils
    pygacity.util.stringthings
-   pygacity.util.texutils

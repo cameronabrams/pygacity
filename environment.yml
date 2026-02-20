@@ -1,0 +1,30 @@
+name: pygacity
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  # Scientific stack (well-supported on conda-forge)
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - numexpr
+  - pint
+  # Utilities
+  - pyyaml
+  - jinja2
+  - progressbar2
+  # Testing
+  - pytest
+  - pip
+  - pip:
+    # Packages with limited/no conda-forge support
+    - iapws
+    - roman
+    - pypdf2
+    - colorist
+    # sandlertools is a PyPI metapackage that pulls in sandlersteam, etc.
+    - sandlertools
+    # Install pygacity itself in editable mode
+    - -e .
