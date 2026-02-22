@@ -2,19 +2,19 @@
 Monkeypatches for ChemEqSystem class in sandler module (imported from sandlertools) to add LaTeX reporting capabilities.
 """
 
-from ..sandler import ChemEqSystem
+from sandlertools import ChemEqSystem
 from ..texutils import format_sig, table_as_tex, Cp_as_tex, algebraify, symneg
 import roman
 import numpy as np
 
-def texgen_kacalculations(self, simplified=True, sig=5) -> str:
-    """ 
+def texgen_kacalculations(self, simplified=False, sig=5) -> str:
+    """
     Generates LaTeX string for equilibrium constant calculations.
-    
+
     Parameters
     ----------
     simplified : bool, optional
-        whether to use simplified van't Hoff equation (default is True)
+        whether to use simplified van't Hoff equation (default is False)
     sig : int, optional
         number of significant figures for formatting (default is 5)
         
@@ -24,9 +24,12 @@ def texgen_kacalculations(self, simplified=True, sig=5) -> str:
         LaTeX formatted string of equilibrium constant calculations
     """
     ka_calcslines = []
-    Rval = f'{self.R:.3f}'
-    Tval = f'{self.T:.2f}'
-    T0val = f'{self.T0:.2f}'
+    R_val  = self.R.m_as('J/(mol*K)') if hasattr(self.R,  'magnitude') else float(self.R)
+    T_val  = self.T.m_as('K')         if hasattr(self.T,  'magnitude') else float(self.T)
+    T0_val = self.T0.m_as('K')        if hasattr(self.T0, 'magnitude') else float(self.T0)
+    Rval  = f'{R_val:.3f}'
+    Tval  = f'{T_val:.2f}'
+    T0val = f'{T0_val:.2f}'
     for i in range(self.M):
         rxn_super = ''
         if self.M > 1:
@@ -71,6 +74,7 @@ def texgen_kacalculations(self, simplified=True, sig=5) -> str:
             logratio = bigterm1 + bigterm2
             self.KaT = self.Ka0 * np.exp(logratio)"""
             vht = self.vantHoff_terms
+            Cp = self.dCp[4*i:4*(i+1)]   # heat-capacity difference coefficients for reaction i
             # second line -- show full van't Hoff calculation symbolically
             lnKK = r'\ln\frac{' + kaT + r'}{' + ka0 + r'}'
             arg1 = r'\frac{a}{R}\ln{\frac{T}{T_0}}'
@@ -87,17 +91,17 @@ def texgen_kacalculations(self, simplified=True, sig=5) -> str:
             bigterm2 = rtdiff + r' \left(' + term5 + r' + ' + term6 + r' + ' + term7 + r' + ' + term8 + r' + ' + term9 + r'\right)'
             ka_calcslines.append( lnKK + r' & = ' + bigterm1 + r'\\')
             ka_calcslines.append(        r' & + ' + bigterm2 + r'\\')
-            arg1_subst_var = f'\\frac{{{Cp[0]:.3f}}}{{{self.R:.3f}}}\\ln{{\\frac{{{self.T:.2f}}}{{{self.T0:.2f}}}}}'
-            arg2_subst_var = f'\\frac{{{Cp[1]:.4f}}}{{2\\times{self.R:.3f}}}({self.T:.2f} - {self.T0:.2f})'
-            arg3_subst_var = f'\\frac{{{Cp[2]:.4f}}}{{6\\times{self.R:.3f}}}({self.T**2:.2f} - {self.T0**2:.2f})'
-            arg4_subst_var = f'\\frac{{{Cp[3]:.4f}}}{{12\\times{self.R:.3f}}}({self.T**3:.2f} - {self.T0**3:.2f})'
+            arg1_subst_var = f'\\frac{{{Cp[0]:.3f}}}{{{R_val:.3f}}}\\ln{{\\frac{{{T_val:.2f}}}{{{T0_val:.2f}}}}}'
+            arg2_subst_var = f'\\frac{{{Cp[1]:.4f}}}{{2\\times{R_val:.3f}}}({T_val:.2f} - {T0_val:.2f})'
+            arg3_subst_var = f'\\frac{{{Cp[2]:.4f}}}{{6\\times{R_val:.3f}}}({T_val**2:.2f} - {T0_val**2:.2f})'
+            arg4_subst_var = f'\\frac{{{Cp[3]:.4f}}}{{12\\times{R_val:.3f}}}({T_val**3:.2f} - {T0_val**3:.2f})'
             bigterm1_subst = arg1_subst_var + r' + ' + arg2_subst_var + r' + ' + arg3_subst_var + r' + ' + arg4_subst_var
-            rtdiff_subst = f'\\frac{{1}}{{{self.R:.3f}}}\\left(\\frac{{1}}{{{self.T:.2f}}} - \\frac{{1}}{{{self.T0:.2f}}}\\right)'
+            rtdiff_subst = f'\\frac{{1}}{{{R_val:.3f}}}\\left(\\frac{{1}}{{{T_val:.2f}}} - \\frac{{1}}{{{T0_val:.2f}}}\\right)'
             term5_subst = n_hr_val
-            term6_subst = f'{Cp[0]:.3f} \\times {self.T0:.2f}'
-            term7_subst = f'\\frac{{{Cp[1]:.4f}}}{{2}} \\times {self.T0**2:.2f}'
-            term8_subst = f'\\frac{{{Cp[2]:.4f}}}{{3}} \\times {self.T0**3:.2f}'
-            term9_subst = f'\\frac{{{Cp[3]:.4f}}}{{4}} \\times {self.T0**4:.2f}'
+            term6_subst = f'{Cp[0]:.3f} \\times {T0_val:.2f}'
+            term7_subst = f'\\frac{{{Cp[1]:.4f}}}{{2}} \\times {T0_val**2:.2f}'
+            term8_subst = f'\\frac{{{Cp[2]:.4f}}}{{3}} \\times {T0_val**3:.2f}'
+            term9_subst = f'\\frac{{{Cp[3]:.4f}}}{{4}} \\times {T0_val**4:.2f}'
             bigterm2_subst = rtdiff_subst + r' \left(' + term5_subst + r' + ' + term6_subst + r' + ' + term7_subst + r' + ' + term8_subst + r' + ' + term9_subst + r'\right)'
             ka_calcslines.append( r'& = ' + bigterm1_subst + r'\\')
             ka_calcslines.append( r'& + ' + bigterm2_subst + r'\\')
@@ -115,7 +119,7 @@ def texgen_kacalculations(self, simplified=True, sig=5) -> str:
             bigterm2_eval = rtdiff_eval + r' \left(' + term5_eval + r' + ' + term6_eval + r' + ' + term7_eval + r' + ' + term8_eval + r' + ' + term9_eval + r'\right)'
             ka_calcslines.append( r'& = ' + bigterm1_eval + r'\\')
             ka_calcslines.append( r'& + ' + bigterm2_eval + r'\\')
-            logratio_eval = f'{vht["logratio"]:.5f}'
+            logratio_eval = f'{float(vht["logratio"][i]):.5f}'
             ka_calcslines.append( r'& = ' + logratio_eval + r'\\')
             ka_calcslines.append( kaT + r' & = ' + ka0_val + r'\exp\left[' + logratio_eval + r'\right]\\')
             ka_calcslines.append( r'& = ' + kaT_val + r'\\')
@@ -180,10 +184,18 @@ def thermochemicaltable_as_tex(self, sig: int = 3):
     str
         LaTeX formatted thermochemical data table
     """
+    # if self.dHf is a pint.Quantity, get its units
+    # to use in the table header
+    if hasattr(self.components[0].dHf, 'units'):
+        dHf_units = f'{self.components[0].dHf.units:~P}'
+        dGf_units = f'{self.components[0].dGf.units:~P}'
+    else:
+        dHf_units = 'J/mol'
+        dGf_units = 'J/mol'
     return table_as_tex({
         'Species':[c.as_tex() for c in self.components],
-        r'$\hf$ (J/mol)':[c.dHf for c in self.components],
-        r'$\gf$ (J/mol)':[c.dGf for c in self.components]},
+        rf'$\hf$ ({dHf_units})':[c.dHf.m for c in self.components],
+        rf'$\gf$ ({dGf_units})':[c.dGf.m for c in self.components]},
         drop_zeros=[False,True,True], sig = sig)
 
 ChemEqSystem.texgen_kacalculations = texgen_kacalculations

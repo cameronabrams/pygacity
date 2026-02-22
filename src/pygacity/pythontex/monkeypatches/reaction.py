@@ -2,7 +2,7 @@
 Monkeypatches for the Reaction class to add LaTeX output functionality.
 """
 
-from ..sandler import Reaction
+from sandlertools import Reaction
 from ..texutils import frac_or_int_as_tex
 
 import fractions as fr

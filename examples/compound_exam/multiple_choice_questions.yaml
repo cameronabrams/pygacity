@@ -94,3 +94,26 @@ content:
       D: Niels Bohr
     A: B
     text: Albert Einstein is often referred to as the "Father of Modern Physics" for his contributions to the field, including the theory of relativity.
+  - Q: "Which of the following statements about Newton's laws of motion are correct?
+      (Select the best answer.)"
+    shuffle_choices: false
+    choices:
+      A: The first law states that an object at rest stays at rest unless acted on by a net force.
+      B: The second law states that F = ma.
+      C: Both A and B are correct.
+      D: Neither A nor B is correct.
+    A: C
+    text: Both statements are correct. Choice C cross-references A and B by label,
+      so shuffling choices would make the cross-references wrong. shuffle_choices is
+      set to false for this question to override the global shuffle_choices setting.
+  - Q: Which of the following is a fossil fuel?
+    fixed_last: true
+    choices:
+      A: Solar energy
+      B: Wind energy
+      C: Natural gas
+      D: None of the above.
+    A: C
+    text: Natural gas is a fossil fuel. The other options are renewable energy sources.
+      The last choice "None of the above" is pinned in place with fixed_last, while
+      choices A-C are shuffled freely.

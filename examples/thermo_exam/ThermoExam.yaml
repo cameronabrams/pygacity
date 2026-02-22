@@ -45,6 +45,7 @@ document:
 build:
   seed: 12345
   copies: 3
+  serial-hex: true
   job-name: ExamI
   paths:
     build-dir: ./build

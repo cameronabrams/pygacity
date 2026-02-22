@@ -26,9 +26,9 @@ content:
   - Q: The capital of ___ is Canberra.
     A: Australia
     text: Canberra is the capital city of Australia.
-  - Q: The capital of ___ is Brasília.
+  - Q: The capital of ___ is Bras\'ilia.
     A: Brazil
-    text: Brasília has been the capital of Brazil since 1960.
+    text: Bras\'ilia has been the capital of Brazil since 1960.
   - Q: The capital of ___ is New Delhi.
     A: India
     text: New Delhi has been the capital of India since 1911.

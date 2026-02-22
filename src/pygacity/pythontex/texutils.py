@@ -12,6 +12,32 @@ from numpy.polynomial import Polynomial
 
 logger = logging.getLogger(__name__)
 
+def latex_quotes(s: str) -> str:
+    """
+    Converts straight double-quotes in a string to LaTeX-style curly quotes.
+
+    Each ``"`` is replaced alternately with ` `` ` (opening) and ``''`` (closing).
+
+    Parameters
+    ----------
+    s : str
+        input string, possibly containing straight double-quote characters
+
+    Returns
+    -------
+    str
+        string with straight double-quotes replaced by LaTeX quote pairs
+    """
+    result = []
+    open_quote = True
+    for ch in str(s):
+        if ch == '"':
+            result.append('``' if open_quote else "''")
+            open_quote = not open_quote
+        else:
+            result.append(ch)
+    return ''.join(result)
+
 def Cp_as_tex(Cp_coeff: dict | list, decoration='*', sig: int = 5, inline: bool = False) -> str:
     """
     Formats a heat capacity polynomial as a LaTeX string.

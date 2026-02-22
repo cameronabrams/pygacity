@@ -26,6 +26,42 @@ There are three source values that are treated specially by pygacity:
 - ``short.tex``: This file is used to define macros and environments for short answer, multiple choice, fill-in-the-blank, and true-false questions.  If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.
 - ``footer.tex``: If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  The main thing to note about this footer file is that it ends the document with the ``\end{document}`` command.
 
+``source`` blocks also permit user-defined substitutions, which replace placeholder
+keys embedded in the source file with specified values.  Placeholder keys are
+delimited by ``<<<`` and ``>>>`` in the source file, for example:
+
+.. code-block:: latex
+
+    \section{<<<PROB_TITLE>>>}
+
+Substitutions can be specified in two equivalent forms in the YAML input.
+
+**Dictionary form** — keys and values are given directly as a mapping:
+
+.. code-block:: yaml
+
+    - source: introduction.tex
+      substitutions:
+          PROB_TITLE: "My Awesome Problem Set"
+          SEMESTER: "Spring 2026"
+
+**List form** — each substitution is a two-key dictionary with ``search`` and
+``replace`` entries.  This form is useful when the order of substitutions matters
+or when the same key appears more than once:
+
+.. code-block:: yaml
+
+    - source: introduction.tex
+      substitutions:
+          - search: PROB_TITLE
+            replace: "My Awesome Problem Set"
+          - search: SEMESTER
+            replace: "Spring 2026"
+
+Both forms produce identical results.  Every ``<<<KEY>>>`` placeholder found in
+the source file that has a matching entry in the substitution mapping will be
+replaced with the corresponding value before the document is compiled.
+
 .. _text_blocks:
 
 ``text`` blocks

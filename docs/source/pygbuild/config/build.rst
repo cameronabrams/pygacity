@@ -15,15 +15,16 @@ This is just an integer to seed the random number generator.  This is useful for
 
 This is an integer specifying the number of copies of the document to be generated.  This is useful for creating multiple versions of a document with different randomized content.  If not specified, this defaults to 1.
 
-``serials``, ``serial-digits``, ``serial-range``, and ``serial-file``
----------------------------------------------------------------------
+``serials``, ``serial-digits``, ``serial-range``, ``serial-file``, and ``serial-hex``
+--------------------------------------------------------------------------------------
 
 When ``copies`` is greater than 1 (or not specified so that it defaults to 1), ``pygacity`` uses serial numbers to differentiate multiple copies of a document when generating randomized content.  The following attributes control the generation of serial numbers:
 
 - ``serials``: A list of integers specifying the serial numbers to be used.  If this attribute is provided, it overrides the other three serial-related attributes.
 - ``serial-range``: A list of two integers specifying the inclusive range of serial numbers to be used.  For example, ``[1, 10]`` would generate serial numbers from 1 to 10.
-- ``serial-digits``: An integer specifying the number of digits to use for serial numbers.  Serial numbers will be zero-padded to this length.  For example, if ``serial-digits`` is set to 3, serial number 5 would be represented as ``005``.
-- ``serial-file``: A string specifying the path to a text file containing a list of serial numbers, one per line.  If this attribute is provided, it overrides the other three serial-related attributes.
+- ``serial-digits``: An integer specifying the number of decimal digits in randomly generated serial numbers (default: ``8``).  The serial is drawn uniformly from the range ``[10^(n-1), 10^n - 1]`` where *n* is ``serial-digits``.
+- ``serial-file``: A string specifying the path to a text file containing a list of serial numbers, one per line.  If this attribute is provided, it overrides the other serial-generation attributes.
+- ``serial-hex``: A boolean (default: ``false``).  When ``true``, the serial number is displayed and used in output filenames as a lowercase hexadecimal string (e.g. ``1ad3e52``) rather than as a decimal integer.  The underlying integer is unchanged, so reproducibility of randomized content is fully preserved — only the visual representation differs.  For example, a serial of ``28114514`` would appear as ``1ad3e52`` in filenames and in the document header.
 
 If none of these attributes are specified, or if ``copies`` is set to 1, no serial numbers will be used.
 

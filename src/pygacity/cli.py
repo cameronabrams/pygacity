@@ -121,10 +121,9 @@ def cli():
         default='out.pdf',
         help='name of new output PDF to be created')
     command_parsers['singlet'].add_argument(
-        '-t',
-        '--texfile',
+        'texfile',
         type=str,
-        help='name of tex file containing single problem'
+        help='tex file containing single problem'
     )
     command_parsers['singlet'].add_argument(
         '-o',

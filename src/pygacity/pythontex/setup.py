@@ -19,6 +19,7 @@ from pygacity.util.collectors import FileCollector
 # during document compilation
 pythontex_module = sys.modules['__main__']
 serial: int = getattr(pythontex_module, 'serial', 0)
+serialstr: str = getattr(pythontex_module, 'serialstr', str(serial))
 build_dir: str = getattr(pythontex_module, 'build_dir', '.')
 cache_dir: str = getattr(pythontex_module, 'cache_dir', '.cache')
 is_solutions: bool = getattr(pythontex_module, 'solutions', False)
@@ -50,7 +51,7 @@ logger.debug(f'Pickling to {pythontex_pickle_cache.as_posix()}')
 
 rng = np.random.default_rng(seed=serial)
 Pick = Picker(serial=serial)
-AnsSet = AnswerSet(serial=serial)
+AnsSet = AnswerSet(serial=serial, serialstr=serialstr)
 pythontexFC = FileCollector()
 logger.debug(f'rng at {id(rng)}')
 logger.debug(f'Pick at {id(Pick)}')

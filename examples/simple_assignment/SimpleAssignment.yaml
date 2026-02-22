@@ -7,13 +7,20 @@ document:
   structure:
     - source: header.tex
       substitutions:
-        Universityname: University of Nowhere
-        Departmentname: ABC 1234
-        Instructorname: Eustace T. Smartypants
-        Instructoremail: ets@unow.edu
-        Coursename: BIO 5678 - Introduction to Applied Pyrohydrodynamics
-        Termcode: 202525
-        Termname: Winter 2025-2026
+        - search: Universityname
+          replace: University of Nowhere
+        - search: Departmentname
+          replace: ABC 1234
+        - search: Instructorname
+          replace: Eustace T. Smartypants
+        - search: Instructoremail
+          replace: ets@unow.edu
+        - search: Coursename
+          replace: BIO 5678 - Introduction to Applied Pyrohydrodynamics
+        - search: Termcode
+          replace: 202525
+        - search: Termname
+          replace: Winter 2025-2026
     - text: |
           \asnheader{Assignment 1: Random Topics}{January 13, 2026}
     - enumerate:

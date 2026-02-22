@@ -7,6 +7,6 @@ Building a Single-Problem Document
 
 .. code-block:: bash
 
-    $ pygacity singlet -t file.tex
+    $ pygacity singlet file.tex
 
 By default, the assembled results will appear in the ``build-singlet`` directory.

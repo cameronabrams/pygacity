@@ -1,13 +1,11 @@
 % standalone pythontext usage example
-\begin{pycode} 
-import numpy as np
+\begin{pycode}
+import pygacity.pythontex.texutils as tu
 from numpy.polynomial import Polynomial
-from pygacity.util.texutils import polynomial_as_tex
-import random
-roots = [1,-2,1]
+roots = [1, -2, 1]
 p = Polynomial.fromroots(roots)
 coeff = r'[ '+', '.join([f'{x}' for x in p.coef.astype(int)])+r' ]'
-polystr = polynomial_as_tex(p)
+polystr = tu.polynomial_as_tex(p)
 col = ', '.join([f'{int(x)}' for x in roots])
 res = f'the roots are {col}.'
 \end{pycode}

@@ -47,17 +47,18 @@ def build(args):
     serials = config.retrieve_serials()
 
     for i, serial in enumerate(serials):
-        outer_substitutions = dict(serial=serial, seriallabel='ser.', build_dir=build_dir, cache_dir=cache_dir, solutions=False)
+        serialstr = config.format_serial(serial)
+        outer_substitutions = dict(serial=serial, serialstr=serialstr, seriallabel='ser.', build_dir=build_dir, cache_dir=cache_dir, solutions=False)
         base_doc.make_substitutions(outer_substitutions)
         base_builder.build_document(base_doc)
         FC.append(f'{base_builder.working_job_name}.tex')
-        logger.info(f'serial # {serial} ({i+1}/{len(serials)}) => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{base_builder.working_job_name}.pdf')
+        logger.info(f'serial # {serialstr} ({i+1}/{len(serials)}) => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{base_builder.working_job_name}.pdf')
         if config.solutions:
             outer_substitutions['solutions'] = True
             solution_doc.make_substitutions(outer_substitutions)
             soln_builder.build_document(solution_doc)
             FC.append(f'{soln_builder.working_job_name}.tex')
-            logger.info(f'serial # {serial} ({i+1}/{len(serials)}) => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{soln_builder.working_job_name}.pdf')
+            logger.info(f'serial # {serialstr} ({i+1}/{len(serials)}) => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{soln_builder.working_job_name}.pdf')
 
     answerset_tex = answerset(config)
     if answerset_tex:
@@ -132,7 +133,7 @@ def answerset(config: Config = None) -> str:
     answer_docspecs['structure'].append({'text': AS.to_latex()})
     answer_docspecs['structure'].append(deepcopy(config.document_specs['structure'][-1]))
     AnswerSetDoc = Document(answer_docspecs)
-    AnswerSetDoc.make_substitutions(dict(serial='Answer Set'))
+    AnswerSetDoc.make_substitutions(dict(serial='Answer Set', serialstr='Answer Set'))
     AnswerSetBuilder.build_document(AnswerSetDoc)
     logger.info(f'Combined answer set => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{AnswerSetBuilder.working_job_name}.pdf')
     answerset_archive = AnswerSetBuilder.FC.archive(build_path / 'answerset_buildfiles', delete=True)

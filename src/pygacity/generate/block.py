@@ -71,7 +71,11 @@ class LatexCompoundBlock:
         self.textcontents: str = block_specs.get('text', '')
 
         self.sourcename: str = block_specs.get('source', None)
-        self.substitution_map: dict = block_specs.get('substitutions', {})
+        raw_substitutions = block_specs.get('substitutions', {})
+        if isinstance(raw_substitutions, list):
+            self.substitution_map: dict = {item['search']: item['replace'] for item in raw_substitutions}
+        else:
+            self.substitution_map: dict = raw_substitutions
 
         self.points: int = block_specs.get('points', 0)
         self.config_filename: str = block_specs.get('config', None)
@@ -127,6 +131,7 @@ class LatexCompoundBlock:
             self.textcontents += '### DOCUMENT GLOBALS BEGIN ####\n'
             self.textcontents += '### These should be resolved by subsitution prior to execution ###\n'
             self.textcontents += 'serial = <<<serial>>>\n'
+            self.textcontents += 'serialstr = "<<<serialstr>>>"\n'
             self.textcontents += '_build_dir = "<<<build_dir>>>"\n'
             self.textcontents += '_cache_dir = "<<<cache_dir>>>"\n'
             self.textcontents += 'solutions = <<<solutions>>>\n'

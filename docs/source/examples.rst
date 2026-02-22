@@ -3,7 +3,14 @@
 Examples
 --------
 
-.. literalinclude:: ../../examples/simple_assignment/SimpleAssignment.yaml
-    :language: yaml
+The following worked examples show how to use ``pygacity build`` to produce
+assignment and exam documents.  Each example has its own page with a full
+walkthrough of the source files, configuration, build command, and output.
 
-This is a simple example configuration file for creating a one-version assignment document using pygacity.  The document consists of a title page, three problems, and a footer.  Each problem is specified in an external LaTeX source file.  The build section specifies the job name and the build directory.
+.. toctree::
+   :maxdepth: 2
+
+   Singlet Problem <examples/singlet>
+   Simple Assignment <examples/simple_assignment>
+   Compound Exam <examples/compound_exam>
+   Thermo Exam <examples/thermo_exam>

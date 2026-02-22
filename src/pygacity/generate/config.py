@@ -59,7 +59,7 @@ class Config:
                 self.specs = yaml.safe_load(f)
             assert 'document' in self.specs, f'Your config file does not specify a document structure'
             assert 'build' in self.specs, f'Your config file does not specify document build parameters'
-        elif hasattr(args, 'texfile') and args.texfile:
+        elif hasattr(args, 'texfile'):
             # singlet problem build
             self.specs = {}
             self.specs['document'], self.specs['build'] = self._config_singlet(args)
@@ -244,8 +244,29 @@ class Config:
             self.build_specs['copies'] = 1
         if 'serial-digits' not in self.build_specs:
             self.build_specs['serial-digits'] = 8
+        if 'serial-hex' not in self.build_specs:
+            self.build_specs['serial-hex'] = False
         if 'answer-set' not in self.build_specs:
             self.build_specs['answer-set'] = 'all'
+
+    def format_serial(self, serial: int) -> str:
+        """
+        Formats a serial number as a string for display and filenames.
+
+        Parameters
+        ----------
+        serial : int
+            the integer serial number
+
+        Returns
+        -------
+        str
+            hexadecimal string if ``build.serial-hex`` is ``true``,
+            otherwise the plain decimal string
+        """
+        if self.build_specs.get('serial-hex', False):
+            return f'{serial:x}'
+        return str(serial)
 
     def _setup_paths(self, args: Namespace = None):
         

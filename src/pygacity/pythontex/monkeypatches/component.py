@@ -2,7 +2,7 @@
 Monkeypatches for the Component class to add LaTeX output functionality.
 """
 
-from ..sandler import Component
+from sandlertools import Component
 from ..texutils import format_sig, table_as_tex
 
 def as_tex(self):

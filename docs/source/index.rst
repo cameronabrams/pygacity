@@ -23,6 +23,6 @@ Contents
    installation
    usage
    examples
-   The ``autoprob`` LaTeX Package <autoprob/autoprob>
+   The autoprob LaTeX Package <autoprob/autoprob>
    API <api/API>
    changelog

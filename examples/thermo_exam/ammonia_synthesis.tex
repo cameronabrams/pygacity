@@ -6,17 +6,17 @@ group = <<<group>>>
 ### BLOCK GLOBALS END ####
 REACTOR = Pick.pick_state(
     dict(
-        P1={'default':8,'pick':{'between':[7,10],'round':-1}}, # MPa
+        P1={'default':8,'pick':{'between':[7,10],'round':-1}}, # bar
         T1={'default':500,'pick':{'between':[480,520], 'round':0}} # K
     )
 )
-T = REACTOR.T1 # K
-P = REACTOR.P1 # bar
+T = REACTOR.T1 * ureg.K
+P = REACTOR.P1 * ureg.bar
 d = SandlerProps
 
-nitrogen = Component.from_compound(d.get_compound('nitrogen'), T=298.15, P=1.0)
-hydrogen = Component.from_compound(d.get_compound('hydrogen (equilib)'), T=298.15, P=1.0)               
-ammonia = Component.from_compound(d.get_compound('ammonia'), T=298.15, P=1.0)                 
+nitrogen = Component.from_compound(d.get_compound('nitrogen'), T=298.15 * ureg.K, P=1.0 * ureg.bar)
+hydrogen = Component.from_compound(d.get_compound('hydrogen (equilib)'), T=298.15 * ureg.K, P=1.0 * ureg.bar)               
+ammonia = Component.from_compound(d.get_compound('ammonia'), T=298.15 * ureg.K, P=1.0 * ureg.bar)                 
 components = [nitrogen, hydrogen, ammonia]
 n0 = np.array([1.0, 3.0, 0.0])
 # system = ChemEqSystem(components=components, N0=n0, T=T, P=P)
@@ -28,9 +28,9 @@ rxn = Reaction(components=components)
 # need to solve a mock system to get the tex strings
 # for equilibrium constants, etc
 mock = ChemEqSystem(components=components, N0=n0, T=T, P=P, reactions=[rxn])
-ka_calcslines = mock.texgen_kacalculations(sig=5)
+ka_calcslines = mock.texgen_kacalculations(sig=5, simplified=True)
 logger.debug(f'ka_calcslines: {ka_calcslines}')
-mock.solve_implicit(Xinit=[0.5]) # single reaction
+mock.solve_implicit(Xinit=[0.5], simplified=True) # single reaction
 # report = mock.report()
 rxnstr = rxn.as_tex()
 sum_nu = rxn.sum_nu()
@@ -59,7 +59,7 @@ The initial molar feed composition to a reactor is as follows:
 \py{n0_table}
 \end{center}
 
-If the reactor is operated at constant \py{T} K and \py{P} bar, determine the equilibrium mole fractions of each species in the reactor effluent.  You can assume ideal-gas behavior, and that the simplified van't Hoff equation applies for the temperature dependence of the equilibrium constant.
+If the reactor is operated at constant \py{f'{T:.0f~P}'} and \py{f'{P:.0f~P}'}, determine the equilibrium mole fractions of each species in the reactor effluent.  You can assume ideal-gas behavior, and that the simplified van't Hoff equation applies for the temperature dependence of the equilibrium constant.
 
 The following thermochemical formation energies at standard state ($P^\circ$ = 1 bar) may be useful:
 
@@ -69,7 +69,7 @@ The following thermochemical formation energies at standard state ($P^\circ$ = 1
 
 \ifshowsolutions\vspace{1em}\Solutionheader\\
 
-At \py{T} K, the equilibrium constant for the reaction at the reference temperature $T_0$, followed by the equilibrium constant at the operating temperature $T$, are calculated as follows (via the simplified van't Hoff equation):
+At \py{f'{T:.0f~P}'}, the equilibrium constant for the reaction at the reference temperature $T_0$, followed by the equilibrium constant at the operating temperature $T$, are calculated as follows (via the simplified van't Hoff equation):
 
 \py{ka_calcslines}
 

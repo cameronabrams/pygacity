@@ -39,18 +39,29 @@ if 'content' in SQ and 'config' in SQ:
     questions = questions[:count]
     instructions = f'({points} pts.) ' + config.get('instructions', instructions)
     shuffle_choices = config.get('shuffle_choices', False)
-    if shuffle_choices:
-        for qdict in questions:
-            qtype = qdict.get('T', global_qtype)
-            if qtype != 'multiple_choice':
-                continue
-            correct_choice_text = qdict['choices'][qdict['A']]
-            all_choice_texts = list(qdict['choices'].values())
-            rng.shuffle(all_choice_texts)
-            qdict['choices'] = dict(zip(qdict['choices'].keys(), all_choice_texts))
-            for clabel, ctext in qdict['choices'].items():
-                if ctext == correct_choice_text:
-                    qdict['A'] = clabel
+    for qdict in questions:
+        qtype = qdict.get('T', global_qtype)
+        if qtype != 'multiple_choice':
+            continue
+        q_shuffle = qdict.get('shuffle_choices', shuffle_choices)
+        q_fixed_last = qdict.get('fixed_last', False)
+        if not q_shuffle and not q_fixed_last:
+            continue
+        correct_choice_text = qdict['choices'][qdict['A']]
+        choice_items = list(qdict['choices'].items())
+        if q_fixed_last:
+            last_item = choice_items[-1]
+            texts = [v for _, v in choice_items[:-1]]
+            rng.shuffle(texts)
+            new_items = [(k, t) for (k, _), t in zip(choice_items[:-1], texts)] + [last_item]
+        else:
+            texts = [v for _, v in choice_items]
+            rng.shuffle(texts)
+            new_items = [(k, t) for (k, _), t in zip(choice_items, texts)]
+        qdict['choices'] = dict(new_items)
+        for clabel, ctext in qdict['choices'].items():
+            if ctext == correct_choice_text:
+                qdict['A'] = clabel
 else:
     questions = SQ
 answers = [x['A'] for x in questions]
@@ -65,12 +76,13 @@ else:
 \end{pycode}
 \py{instructions}
 \begin{pycode}
+from pygacity.pythontex.texutils import latex_quotes
 print(r'\begin{enumerate}'+'\n')
 for iidx, qdict in enumerate(questions):
     iidx_char = str(iidx+1) if first_ordinal == 1 else chr(ord(first_ordinal)+iidx)
-    qtext = qdict['Q']
+    qtext = latex_quotes(qdict['Q'])
     answer = qdict['A']
-    explanation = qdict.get('text', '')
+    explanation = latex_quotes(qdict.get('text', ''))
     qtype = qdict.get('T', global_qtype)
     match qtype:
         case 'short_answer':
@@ -82,7 +94,7 @@ for iidx, qdict in enumerate(questions):
             print(r'\item['+iidx_char+r'.] '+qtext+'\n')
             print(r'\begin{itemize}'+'\n')
             for clabel, ctext in qdict['choices'].items():
-                print(r'\mcchoiceitem{'+clabel+r'}{'+answer+r'} '+str(ctext)+'\n')
+                print(r'\mcchoiceitem{'+clabel+r'}{'+answer+r'} '+latex_quotes(ctext)+'\n')
             print(r'\end{itemize}'+'\n')
             print(r'\ifshowsolutions\textcolor{red}{'+explanation+r'}\fi'+'\n')
         case 'true_false':

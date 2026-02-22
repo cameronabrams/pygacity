@@ -14,8 +14,9 @@ logger = logging.getLogger(__name__)
 class AnswerSet(UserDict):
     _keys = ['label', 'value', 'units', 'formatter']
 
-    def __init__(self, data: dict = {}, serial: int = 0):
+    def __init__(self, data: dict = {}, serial: int = 0, serialstr: str = None):
         self.serial = serial
+        self.serialstr = serialstr if serialstr is not None else str(serial)
         self.dumpname = f'answers-{serial:08d}.yaml'
         self.first_index = None
         super().__init__(data)
@@ -77,6 +78,11 @@ class AnswerSet(UserDict):
             self.first_index = index
         if not index in self.data:
             self.data[index] = []
+        # if value is a pint.Quantity, extract magnitude and units
+        if hasattr(value, 'magnitude') and hasattr(value, 'units'):
+            if units is None:
+                units = f'{value.units:~P}'
+            value = value.magnitude
         # if value is a numpy data type, convert to native python type
         if hasattr(value, 'item'):
             value = value.item()
@@ -221,11 +227,11 @@ class AnswerSuperSet(UserList[AnswerSet]):
         """
         Constructs pandas DataFrames for the answer data in the collection.
         """
+        # sort by integer serial so row order is always numerically ascending
+        self.data.sort(key=lambda x: x.serial)
         serials = [x.serial for x in self.data]
-        # logger.debug(serials)
-        # self.headings = ['serials']
-        # keys = ['serials']
-        values = {'serials': serials}
+        serialstrs = [x.serialstr for x in self.data]
+        values = {'serials': serialstrs}
         pattern = self.data[0]  # keys in first AnswerSet form the pattern all sets follow
         self.formatters = {}
         self.groups = {}
@@ -249,7 +255,7 @@ class AnswerSuperSet(UserList[AnswerSet]):
                 group = a.get('group', None)
                 if group:
                     if group not in self.groups:
-                        self.groups[group] = dict(formatters={}, df=None, values={'serials': serials})
+                        self.groups[group] = dict(formatters={}, df=None, values={'serials': serialstrs})
                     self.groups[group]['values'][key] = []
                     if 'formatter' in a:
                         self.groups[group]['formatters'][key] = a['formatter']
@@ -257,7 +263,6 @@ class AnswerSuperSet(UserList[AnswerSet]):
                     values[key] = []
                     if 'formatter' in a:
                         self.formatters[key] = a['formatter']
-        # logger.debug(values)
         for inst in self.data:
             for index, AL in inst.data.items():
                 index_pref = f'{index}-'
@@ -272,16 +277,13 @@ class AnswerSuperSet(UserList[AnswerSet]):
                         self.groups[group]['values'][key].append(a['value'])
                     else:
                         values[key].append(a['value'])
-        # logger.debug(values)
         if not self.groups:
             DF = pd.DataFrame(values)
-            DF.sort_values(by='serials', inplace=True)
             self.groups['base'] = dict(formatters=self.formatters, df=DF)
         else:
             for gname, gdata in self.groups.items():
                 logger.debug(f'Building DataFrame for group {gname} with values: {gdata["values"]}')
                 DF = pd.DataFrame(gdata['values'])
-                DF.sort_values(by='serials', inplace=True)
                 self.groups[gname]['df'] = DF
         # print(self.DF)
 

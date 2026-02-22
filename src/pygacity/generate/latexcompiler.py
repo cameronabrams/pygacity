@@ -66,10 +66,11 @@ class LatexCompiler:
         if not document:
             return commands
         serial = document.substitutions.get('serial', 0)
+        serialstr = document.substitutions.get('serialstr', str(serial) if isinstance(serial, int) else serial)
         is_solutions = document.substitutions.get('solutions', False)
         self.working_job_name = self.job_name
         if isinstance(serial, int) and serial > 0:
-            self.working_job_name = self.job_name + f'-{serial}'
+            self.working_job_name = self.job_name + f'-{serialstr}'
         document.write_source(local_output_name=self.working_job_name)
         includedirs = ''
         for d in self.searchdirs:
