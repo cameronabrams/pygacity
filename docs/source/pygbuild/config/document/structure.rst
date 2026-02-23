@@ -23,7 +23,7 @@ This block will include the content of the file ``introduction.tex`` at this poi
 There are three source values that are treated specially by pygacity:
 
 - ``header.tex``: If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  The main thing to note about this header file is that it defines the document class as :ref:`autoprob <autoprob>` and includes several necessary packages.  
-- ``short.tex``: This file is used to define macros and environments for short answer, multiple choice, fill-in-the-blank, and true-false questions.  If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.
+- ``short.tex``: This file is used to define macros and environments for short answer, multiple choice, fill-in-the-blank, and true-false questions.  If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  See :ref:`shorts` for a full description of the question-pool YAML format and all available options.
 - ``footer.tex``: If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  The main thing to note about this footer file is that it ends the document with the ``\end{document}`` command.
 
 ``source`` blocks also permit user-defined substitutions, which replace placeholder
