@@ -1,6 +1,6 @@
 .. _pygbuild_config_build:
 
-``build`` subsection
+``build`` Section
 ======================
 
 The ``build`` section of the configuration file describes how the document is to be built, including options for LaTeX compilation.  Four main attributes can be set in this section:
