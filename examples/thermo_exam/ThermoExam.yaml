@@ -4,16 +4,19 @@ document:
     \usepackage{tgheros}
     \renewcommand{\sfdefault}{qhv} % TeX Gyre Heros family name
     \renewcommand{\familydefault}{\sfdefault}
+    \renewcommand{\Universityname}{University of Nowhere}
+    \renewcommand{\Departmentname}{ABC 126}
+    \renewcommand{\Instructorname}{Eustace T. Smartypants}
+    \renewcommand{\Instructoremail}{ets@unow.edu}
+    \renewcommand{\Coursename}{BIO 5678 - Applied Pyrohydrodynamics}
+    \renewcommand{\Termcode}{202525}
+    \renewcommand{\Termname}{Winter 2025-2026}
+    \pagestyle{fancy}
+    \fancyhf{}
+    \lhead{\footnotesize \Universityname\ --- \Coursename\ --- \Termname}
+    \rhead{\footnotesize <<<serialstr>>>}
+    \rfoot{\thepage}
   structure:
-    - source: header.tex # provided; must contain \begin{document}
-      substitutions:
-        Universityname: University of Nowhere
-        Departmentname: ABC 1234
-        Instructorname: Eustace T. Smartypants
-        Instructoremail: ets@unow.edu
-        Coursename: BIO 5678 - Introduction to Applied Pyrohydrodynamics
-        Termcode: 202525
-        Termname: Winter 2025-2026
     - pythontex:
         - setup
         - matplotlib
@@ -25,23 +28,25 @@ document:
             for a non-smartphone, non-tablet based calculator. Show all work for full credit. 
             Clearly indicate your final answers. The total number of points is 100. You have 
             110 minutes to complete the exam.
-    - enumerate:
-      - source: air_mixing.tex
-        points: 30
-        group: 1
-      - source: desuperheater.tex
-        points: 20
-        group: 1
-      - source: vle_binary_OCM.tex
-        points: 20
-        group: 2
-      - source: ammonia_synthesis.tex
-        points: 30
-        group: 3
+    - question_number: 1
+      source: air_mixing.tex
+      points: 30
+      group: 1
+    - question_number: 2
+      source: desuperheater.tex
+      points: 20
+      group: 1
+    - question_number: 3
+      source: vle_binary_OCM.tex
+      points: 20
+      group: 2
+    - question_number: 4
+      source: ammonia_synthesis.tex
+      points: 30
+      group: 3
     - pythontex:
-        - showsteamtables
-        - teardown
-    - source: footer.tex
+      - showsteamtables
+      - teardown
 build:
   seed: 12345
   copies: 3

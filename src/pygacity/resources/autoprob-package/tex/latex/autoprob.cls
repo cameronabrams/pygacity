@@ -102,6 +102,9 @@ numbers=none
   \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
 }
 
+\NewDocumentCommand{\pyff}{O{2}m}{\py{f'{#2:.#1f}'}}
+\NewDocumentCommand{\pypl}{O{2}m}{\py{f'{#2:.#1f~L}'}}
+\NewDocumentCommand{\pypp}{O{2}m}{\py{f'{#2:.#1f~P}'}}
 \DeclareRobustCommand{\molar}[1]{\protect\underaccent{\bar}{#1}}
 \newcommand{\parmol}[2]{\overline{#1}_{#2}}
 \def\Ub{\molar{U}}
@@ -123,8 +126,8 @@ numbers=none
 \newcommand{\hf}{\df{H}}
 \newcommand{\gf}{\df{G}}
 
-\newcommand{\tffillblank}{\ul{\ \ \ \ \ \ }}
-\newcommand{\tfitem}[2]{\item[{{#1}}. \ifshowsolutions\textcolor{blue}{\underline{{#2}}}\else\tffillblank\fi]}
+\newcommand{\tffillblank}{\raisebox{-1pt}{\rule{1.5em}{0.4pt}}}
+\newcommand{\tfitem}[2]{\item[{#1}.] \ifshowsolutions\textcolor{blue}{\underline{#2}}\else\tffillblank\fi\ }
 \newcommand{\fitbfillblank}{\ul{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
 \newcommand{\fitanswerslot}[1]{\ifshowsolutions\textcolor{blue}{\underline{{#1}}}\else\fitbfillblank\fi}
 \newcommand{\mcchoiceitem}[2]{\item[\ifshowsolutions\ifthenelse{\equal{{#1}}{{#2}}}{\textcolor{blue}{\fbox{\textbf{#1}}}}{#1}\else #1\fi.]}

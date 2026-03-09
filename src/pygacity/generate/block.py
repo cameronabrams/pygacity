@@ -51,10 +51,9 @@ def path_resolver(filename: str, search_paths: list[Path] = [], ext: str ='') ->
         raise FileNotFoundError((f'Could not locate source file {local_filename} in cwd ({os.getcwd()}) '
                                  f'or search path {spm}.'))
 
-class LatexCompoundBlock:
+class LatexBlock:
     """
-    A LaTeX compound block with support for nested enumerate/itemize,
-    external source files, substitutions, and embedded pythontex code.
+    A LaTeX block with support for external source files, substitutions, and embedded pythontex code.
     """
     resources_root: Path = files('pygacity') / 'resources'
     """ The root path for pygacity resources """
@@ -71,6 +70,7 @@ class LatexCompoundBlock:
         self.textcontents: str = block_specs.get('text', '')
 
         self.sourcename: str = block_specs.get('source', None)
+        self.question_number: int = block_specs.get('question_number', None)
         raw_substitutions = block_specs.get('substitutions', {})
         if isinstance(raw_substitutions, list):
             self.substitution_map: dict = {item['search']: item['replace'] for item in raw_substitutions}
@@ -83,10 +83,6 @@ class LatexCompoundBlock:
 
         self.pythontex: list[str] = block_specs.get('pythontex', [])
 
-        self.enumerate = [LatexCompoundBlock(block_specs=child, parent_idx=self.idx, idx=i+1) for i, child in enumerate(block_specs.get('enumerate', []))]
-        self.itemize = [LatexCompoundBlock(block_specs=child, parent_idx=self.idx, idx=i+1) for i, child in enumerate(block_specs.get('itemize', []))]
-        self.children = self.enumerate + self.itemize
-
         self.sourcepath = None
         self.config_path = Path(self.config_filename) if self.config_filename else None
         self.processedcontents: str = ''
@@ -95,21 +91,18 @@ class LatexCompoundBlock:
 
         self._check_schema()
 
-        logger.debug(f'LatexCompoundBlock.__init__ substitution_map: {self.substitution_map}')
+        logger.debug(f'LatexBlock.__init__ substitution_map: {self.substitution_map}')
 
     def _check_schema(self):
         # cannot specify both text content and a source file
         if self.textcontents != '' and self.sourcename is not None:
             raise ValueError('Block cannot specify both "text" content and a "source" file.')
-        # cannot specify both enumerate and itemize
-        if len(self.enumerate) > 0 and len(self.itemize) > 0:
-            raise ValueError('Block cannot specify both "enumerate" and "itemize" children.')
         # if list of pythontext files is non-empty, cannot specify text or source
         if len(self.pythontex) > 0:
             if self.textcontents != '' or self.sourcename is not None:
                 raise ValueError('Block cannot specify "pythontex" files along with "text" content or a "source" file.')
 
-    def load(self) -> LatexCompoundBlock:
+    def load(self) -> LatexBlock:
         """
         Loads the block's text contents from source files if specified,
         processes substitutions to identify keys, and recursively loads
@@ -125,27 +118,37 @@ class LatexCompoundBlock:
             logger.debug(f'Block at idx {self.idx} resolved source file {self.sourcename} to {self.sourcepath}')
             with open(self.sourcepath, 'r', encoding='utf-8') as f:
                 self.textcontents = f.read()
+            header_contents = r'\begin{pycode}' + '\n'
+            header_contents += '### BLOCK GLOBALS BEGIN ####\n'
+            if self.question_number is not None:
+                header_contents += f'points = {self.points}\n'
+                header_contents += f'group = {self.group}\n'
+                header_contents += f'idx = str({self.idx}) # document block index\n'
+                header_contents += f'qno = {self.question_number}\n'
+                if self.points > 0:
+                    header_contents += f'print(f"({self.points} pts.)")\n'
+            if self.config_path:
+                header_contents += f'configfilename = r"""{self.config_path.as_posix()}"""\n'
+            header_contents += '### BLOCK GLOBALS END ####\n'
+            header_contents += r'\end{pycode}' + '\n'
+            self.textcontents = header_contents + self.textcontents
         elif len(self.pythontex) > 0:
             self.textcontents = r'\begin{pycode}' + '\n'
-            ## document-specific substitutions; manager does thes via string replacement later
-            self.textcontents += '### DOCUMENT GLOBALS BEGIN ####\n'
-            self.textcontents += '### These should be resolved by subsitution prior to execution ###\n'
-            self.textcontents += 'serial = <<<serial>>>\n'
-            self.textcontents += 'serialstr = "<<<serialstr>>>"\n'
-            self.textcontents += '_build_dir = "<<<build_dir>>>"\n'
-            self.textcontents += '_cache_dir = "<<<cache_dir>>>"\n'
-            self.textcontents += 'solutions = <<<solutions>>>\n'
-            ## block-specific substitutions; can do these now
-            self.textcontents += '### These are block-specific ###\n'
-            self.textcontents += f'idx = {self.idx}\n'
-            self.textcontents += f'points = {self.points}\n'
-            self.textcontents += f'group = {self.group}\n'
-            self.textcontents += '### DOCUMENT GLOBALS END ####\n'
             for ptfile in self.pythontex:
+                if ptfile == 'setup':
+                    ## document-specific substitutions; manager does this via string replacement later
+                    self.textcontents += '### DOCUMENT GLOBALS BEGIN ####\n'
+                    self.textcontents += '### These should be resolved by subsitution prior to execution ###\n'
+                    self.textcontents += 'serial = <<<serial>>>\n'
+                    self.textcontents += 'serialstr = "<<<serialstr>>>"\n'
+                    self.textcontents += '_build_dir = "<<<build_dir>>>"\n'
+                    self.textcontents += '_cache_dir = "<<<cache_dir>>>"\n'
+                    self.textcontents += 'solutions = <<<solutions>>>\n'
+                    ## block-specific substitutions; can do these now
+                    self.textcontents += '### These are block-specific ###\n'
+                    self.textcontents += f'idx = {self.idx} # document block index\n'
+                    self.textcontents += '### DOCUMENT GLOBALS END ####\n'
                 self.textcontents += f'from pygacity.pythontex.{ptfile} import *\n'
-                # ptpath = path_resolver(ptfile, search_paths=[LatexCompoundBlock.pythontex_dir], ext='.py')
-                # with open(ptpath, 'r') as f:
-                #     self.textcontents += f.read() + '\n\n'
             self.textcontents += r'\end{pycode}' + '\n'
         self.has_pycode = r'\begin{pycode}' in self.textcontents or self.has_pycode
         # check contents for substitution keys and embedded graphics files
@@ -172,12 +175,7 @@ class LatexCompoundBlock:
             self.substitution_map['group'] = self.group
         self.substitution_map['idx'] = self.idx
 
-        for child in self.children:
-            child.load()
-            self.has_pycode = child.has_pycode or self.has_pycode
-            self.embedded_graphics.extend(child.embedded_graphics)
-
-        logger.debug(f'LatexCompoundBlock.load completed for idx={self.idx} with substitutions: {self.substitution_map}')
+        logger.debug(f'LatexBlock.load completed for idx={self.idx} with substitutions: {self.substitution_map}')
         return self
 
     def substitute(self, super_substitutions: dict = {}, match_all: bool = True):
@@ -203,9 +201,6 @@ class LatexCompoundBlock:
                 self.processedcontents = self.processedcontents.replace(f'{self.substitution_delimiters[0]}{key}{self.substitution_delimiters[1]}', str(value))
             elif match_all:
                 raise KeyError(f'Substitution key {key} has no associated value for text {self.textcontents[:30]}...')
-        # apply substitutions to children
-        for child in self.children:
-            child.substitute(super_substitutions=substitutions, match_all=match_all)
 
     def copy_referenced_configs(self, output_dir: str):
         """
@@ -228,16 +223,11 @@ class LatexCompoundBlock:
                 copy2(self.config_path, dest_path)
                 logger.debug(f'Copied config file {self.config_path} to {dest_path}')
             config_paths.append(str(dest_path))
-        for child in self.children:
-            child_paths = child.copy_referenced_configs(output_dir)
-            if child_paths:
-                config_paths.extend(child_paths)
         return config_paths
 
     def __str__(self):
         """
-        Returns the processed contents of the block as a string, including any
-        enumerate/itemize environments.
+        Returns the processed contents of the block as a string.
         
         Returns
         -------
@@ -245,16 +235,4 @@ class LatexCompoundBlock:
             the processed LaTeX contents of the block
         """
         contents = self.processedcontents
-        if self.enumerate:
-            enum_str = r'\begin{enumerate}' + '\n'
-            for item in self.enumerate:
-                enum_str += r'\item ' + str(item) + '\n'
-            enum_str += r'\end{enumerate}' + '\n'
-            contents += '\n' + enum_str
-        if self.itemize:
-            item_str = r'\begin{itemize}' + '\n'
-            for item in self.itemize:
-                item_str += r'\item ' + str(item) + '\n'
-            item_str += r'\end{itemize}' + '\n'
-            contents += '\n' + item_str
         return contents

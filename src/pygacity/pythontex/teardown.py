@@ -4,22 +4,24 @@ from pathlib import Path
 import pickle
 
 pythontex_module = sys.modules['__main__']
-safe_mplconfig = getattr(pythontex_module, 'safe_mplconfig', None)
-pythontex_pickle_cache = getattr(pythontex_module, 'pythontex_pickle_cache', None)
+logger = getattr(pythontex_module, 'logger', None)
 serial = getattr(pythontex_module, 'serial', 0)
+logger.debug(f'Pygacity pythontex module teardown begins for serial {serial}.')
+
+safe_mplconfig = getattr(pythontex_module, 'safe_mplconfig', None)
+logger.debug(f'Pythontex safe_mplconfig: {safe_mplconfig}')
+pythontex_pickle_cache = getattr(pythontex_module, 'pythontex_pickle_cache', None)
+logger.debug(f'Pythontex pickle cache: {pythontex_pickle_cache}')
 pythontexFC = getattr(pythontex_module, 'pythontexFC', None)
+logger.debug(f'Pythontex FileCollector has {len(pythontexFC.data) if pythontexFC is not None else "N/A"} entries.')
+
 AnsSet = getattr(pythontex_module, 'AnsSet', None)
+logger.debug(f'Pythontex AnswerSet has {len(AnsSet) if AnsSet is not None else "N/A"} entries.')
 logger = getattr(pythontex_module, 'logger', None)
 is_solutions = getattr(pythontex_module, 'solutions', False)
 
-logger.debug(f'Pygacity pythontex module teardown begins for serial {serial}.')
-logger.debug(f'Pythontex solutions: {is_solutions}')
-logger.debug(f'Pythontex pickle cache: {pythontex_pickle_cache}')
-logger.debug(f'Pythontex safe_mplconfig: {safe_mplconfig}')
-logger.debug(f'PythontexFC has {len(pythontexFC.data) if pythontexFC is not None else "N/A"} entries.')
-logger.debug(f'AnsSet has {len(AnsSet) if AnsSet is not None else "N/A"} entries.')
-
 if safe_mplconfig is not None:
+    logger.debug(f'Removing {safe_mplconfig}')
     rmtree(safe_mplconfig)
 
 if pythontexFC is not None:

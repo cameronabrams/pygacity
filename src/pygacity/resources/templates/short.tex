@@ -17,12 +17,8 @@
 % '../' 
 \begin{pycode}
 config = {}
-configfilename = '<<<config>>>'
-idx = '<<<idx>>>'
-points = <<<points>>>
 is_top_level = not '.' in idx
-first_ordinal = '1' if is_top_level else 'a'
-group = <<<group>>>
+first_ordinal = 'a'
 instructions = 'Short-answer, multiple-choice, fill-in-the-blank, and/or true/false questions.'
 
 with open(configfilename, 'r') as f:
@@ -37,7 +33,7 @@ if 'content' in SQ and 'config' in SQ:
         rng.shuffle(questions)
     count = config.get('count',len(questions))
     questions = questions[:count]
-    instructions = f'({points} pts.) ' + config.get('instructions', instructions)
+    instructions = config.get('instructions', instructions)
     shuffle_choices = config.get('shuffle_choices', False)
     for qdict in questions:
         qtype = qdict.get('T', global_qtype)
@@ -67,10 +63,10 @@ else:
 answers = [x['A'] for x in questions]
 
 if 'AnsSet' in locals():
-    for l, t in zip([chr(ord('a')+x) for x in range(len(answers))], answers):
-        AnsSet.register(idx, group=group, label=l, value=t)
+    for l, t in zip([chr(ord(first_ordinal)+x) for x in range(len(answers))], answers):
+        AnsSet.register(qno, group=group, label=l, value=t)
 else:
-    soln = f'{serial}_{idx}_soln.yaml'
+    soln = f'{serial}_{qno}_soln.yaml'
     with open(soln,'w') as f:
         yaml.dump(dict(source=f'short.tex', serial=serial, answers=answers),f)
 \end{pycode}

@@ -1,54 +1,57 @@
 document:
-  preamble: |
+  preamble: | # stuff before \begin{document}
     \usepackage[T1]{fontenc}
     \usepackage{tgheros}
     \renewcommand{\sfdefault}{qhv}
     \renewcommand{\familydefault}{\sfdefault}
+    \renewcommand{\Universityname}{University of Nowhere}
+    \renewcommand{\Departmentname}{ABC 126}
+    \renewcommand{\Instructorname}{Eustace T. Smartypants}
+    \renewcommand{\Instructoremail}{ets@unow.edu}
+    \renewcommand{\Coursename}{BIO 5678 - Applied Pyrohydrodynamics}
+    \renewcommand{\Termcode}{202525}
+    \renewcommand{\Termname}{Winter 2025-2026}
+    \pagestyle{fancy}
+    \fancyhf{}
+    \lhead{\footnotesize \Universityname\ --- \Coursename\ --- \Termname}
+    \rhead{\footnotesize <<<serialstr>>>}
+    \rfoot{\thepage}
   structure:
-    - source: header.tex # provided; must contain \begin{document}
-      substitutions:
-        Universityname: University of Nowhere
-        Departmentname: ABC 1234
-        Instructorname: Eustace T. Smartypants
-        Instructoremail: ets@unow.edu
-        Coursename: BIO 5678 - Introduction to Applied Pyrohydrodynamics
-        Termcode: 202525
-        Termname: Winter 2025-2026
     - pythontex:
         - setup
     - text: |
-            \examheader{Exam I}{January 13, 2026}
-            \noindent\textbf{Instructions:} This exam is closed book, and you are allowed 
-            3 pages of your own handwritten notes on paper.  No electronic devices except 
-            for a non-smartphone, non-tablet based calculator. Show all work for full credit. 
-            Clearly indicate your final answers. The total number of points is 100. You have 
-            110 minutes to complete the exam.
-    - enumerate:
-      - source: compound_arithmetic.tex
-        points: 30        
-        group: 1
-      - source: short.tex
-        points: 30
-        config: derivatives_short_answer.yaml
-        group: 2
-      - source: simple_integration.tex
-        points: 20
-        group: 3
-      - source: short.tex
-        points: 20
-        config: geography_fill_in_the_blank.yaml
-        group: 3
-      - source: short.tex
-        points: 10
-        config: true_false_questions.yaml
-        group: 4
-      - source: short.tex
-        points: 10
-        config: multiple_choice_questions.yaml
-        group: 4
+        \examheader{Exam I}{January 13, 2026}
+        \noindent\textbf{Instructions:} This exam is closed book.
+    - question_number: 1
+      source: compound_arithmetic.tex
+      points: 30        
+      group: 1
+    - question_number: 2
+      source: short.tex
+      points: 30
+      config: derivatives_short_answer.yaml
+      group: 1
+    - question_number: 3
+      source: simple_integration.tex
+      points: 20
+      group: 2
+    - question_number: 4
+      source: short.tex
+      points: 20
+      config: geography_fill_in_the_blank.yaml
+      group: 2
+    - question_number: 5
+      source: short.tex
+      points: 10
+      config: true_false_questions.yaml
+      group: 3
+    - question_number: 6
+      source: short.tex
+      points: 10
+      config: multiple_choice_questions.yaml
+      group: 3
     - pythontex:
         - teardown
-    - source: footer.tex
 build:
   seed: 12345
   copies: 3

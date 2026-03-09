@@ -125,8 +125,7 @@ class Config:
             'class': {
                 'classname': 'autoprob',
                 'options': [
-                    '11pt',
-                    'solutions'
+                    '11pt'
                 ]
             },
             'preamble': r"""
@@ -135,22 +134,20 @@ class Config:
 \renewcommand{\sfdefault}{qhv}
 \renewcommand{\familydefault}{\sfdefault}""",
             'structure': [
-                {'text': r'\begin{document}'},
                 {'pythontex': [
                     'setup',
                     'matplotlib',
                     'sandler'
                 ]},
-                {'enumerate':[
-                    {'source': tex_sourcefile,
+                {
+                    'source': tex_sourcefile,
                     'points': 100,
-                    'group': 1}
-                ]},
+                    'group': 1
+                },
                 {'pythontex': [
                     'showsteamtables',
                     'teardown'
                 ]},
-                {'text': r'\end{document}'}
             ]
         }
         buildspecs = {

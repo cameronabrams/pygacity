@@ -20,8 +20,8 @@ from pygacity.util.collectors import FileCollector
 pythontex_module = sys.modules['__main__']
 serial: int = getattr(pythontex_module, 'serial', 0)
 serialstr: str = getattr(pythontex_module, 'serialstr', str(serial))
-build_dir: str = getattr(pythontex_module, 'build_dir', '.')
-cache_dir: str = getattr(pythontex_module, 'cache_dir', '.cache')
+build_dir: str = getattr(pythontex_module, '_build_dir', '.')
+cache_dir: str = getattr(pythontex_module, '_cache_dir', '.cache')
 is_solutions: bool = getattr(pythontex_module, 'solutions', False)
 log_level: str = getattr(pythontex_module, 'log_level', 'DEBUG')
 
@@ -48,6 +48,8 @@ manager_pickle_cache = Path(cache_dir)
 manager_build_path = Path(build_dir)
 pythontex_pickle_cache = manager_pickle_cache.relative_to(manager_build_path)
 logger.debug(f'Pickling to {pythontex_pickle_cache.as_posix()}')
+
+last_qno = 0
 
 rng = np.random.default_rng(seed=serial)
 Pick = Picker(serial=serial)

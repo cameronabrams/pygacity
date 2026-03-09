@@ -16,12 +16,12 @@ content:
     text: Rome is the capital city of Italy.
   - Q: Which element has the chemical symbol 'O'?
     choices:
-      A: Gold
-      B: Oxygen
-      C: Osmium
-      D: Silver
-    A: B
-    text: Oxygen has the chemical symbol 'O'.
+      a: Gold
+      b: Oxygen
+      c: Osmium
+      d: Silver
+    A: b
+    text: Oxygen has the chemical symbol 'O'.  Note that the case of the choice keys are preserved in the final document.
   - Q: Who wrote "Romeo and Juliet"?
     choices:
       A: Charles Dickens
@@ -104,8 +104,8 @@ content:
       D: Neither A nor B is correct.
     A: C
     text: Both statements are correct. Choice C cross-references A and B by label,
-      so shuffling choices would make the cross-references wrong. shuffle_choices is
-      set to false for this question to override the global shuffle_choices setting.
+      so shuffling choices would make the cross-references wrong. \texttt{shuffle\_choices} is
+      set to false for this question to override the global \texttt{shuffle\_choices} setting.
   - Q: Which of the following is a fossil fuel?
     fixed_last: true
     choices:
@@ -115,5 +115,5 @@ content:
       D: None of the above.
     A: C
     text: Natural gas is a fossil fuel. The other options are renewable energy sources.
-      The last choice "None of the above" is pinned in place with fixed_last, while
+      The last choice ``None of the above''' is pinned in place with \texttt{fixed\_last}, while
       choices A-C are shuffled freely.

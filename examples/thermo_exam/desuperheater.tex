@@ -1,38 +1,35 @@
 \begin{pycode}
-idx = '<<<idx>>>'
-group = <<<group>>>
 DSUH = Pick.pick_state(
     dict(
-        P1={'default':3.2,'pick':{'between':[2.9,3.9],'round':1}}, # MPa
-        T1={'default':355,'pick':{'between':[340,360],'round':0}}, # C
-        Psat={'default':2.9,'pick':{'between':[2.7,2.9],'round':3}}, # MPa
-        TL={'default':50,'pick':{'between':[45,55],'round':0}}, # C
-        mdot={'default':15,'pick':{'between':[10,50],'round':0}})) # kg/s
-P1  = DSUH.P1 * ureg.MPa
-T1 = DSUH.T1 * ureg.degC
-Psat = DSUH.Psat * ureg.MPa
-TL = DSUH.TL * ureg.degC
-mdot = DSUH.mdot * ureg.kg / ureg.s
+        P1={'default':3.2,'pick':{'between':[2.9,3.9],'round':1}, 'units': ureg.MPa}, # MPa
+        T1={'default':355,'pick':{'between':[340,360],'round':0}, 'units': ureg.degC}, # C
+        Psat={'default':2.9,'pick':{'between':[2.7,2.9],'round':3},'units': ureg.MPa}, # MPa
+        TL={'default':50,'pick':{'between':[45,55],'round':0}, 'units': ureg.degC}, # C
+        mdot={'default':15,'pick':{'between':[10,50],'round':0}, 'units': ureg.kg/ureg.s})) # kg/s
+P1  = DSUH.P1
+T1 = DSUH.T1
+Psat = DSUH.Psat
+TL = DSUH.TL
+mdot = DSUH.mdot
 inlet = SANDLER(T=T1, P=P1)
 outlet = SANDLER(P=Psat, x=1.0)
 inL = SANDLER(T=TL, x=0.0)
 
 mLdot = mdot * ((inlet.h - outlet.h)/(inlet.h - inL.h))
-m_show = float(np.round(mLdot.m, 3))
 AnsSet.register(idx, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=mLdot, formatter='{:.3f}')
 \end{pycode}
-Superheated steam at \py{f'{P1:,.0f~P}'} and \py{f'{T1:.0f~P}'} is to be converted to saturated steam at \py{f'{Psat:,.0f~P}'} in a desuperheater.  This desuperheater is supplied with inlet liquid water at \py{f'{TL:.0f~P}'}.  The unit should produce saturated steam at a rate of \py{f'{mdot:.0f~P}'}.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
+Superheated steam at \pypp[0]{P1} and \pypp[0]{T1} is to be converted to saturated steam at \pypp[2]{Psat} in a desuperheater.  This desuperheater is supplied with inlet liquid water at \pypp[0]{TL}.  The unit should produce saturated steam at a rate of \pypp[0]{mdot}.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
 
 The following enthalpies will be useful:
 \begin{itemize}
-\item[] Superheated steam at \py{f'{P1:,.0f~P}'} and \py{f'{T1:.0f~P}'}: $\hat{H}$ = \py{f'{inlet.h:,.2f~P}'};
-\item[] Saturated liquid water at \py{f'{TL:.0f~P}'}: $\hat{H}^{\rm L}$ = \py{f'{inL.h:,.2f~P}'}; and
-\item[] Saturated water vapor at \py{f'{Psat:,.0f~P}'}: $\hat{H}^{\rm V}$ = \py{f'{outlet.h:,.2f~P}'}.
+\item[] Superheated steam at \pypp[0]{P1} and \pypp[0]{T1}: $\hat{H}$ = \pypp[2]{inlet.h};
+\item[] Saturated liquid water at \pypp[0]{TL}: $\hat{H}^{\rm L}$ = \pypp[2]{inL.h}; and
+\item[] Saturated water vapor at \pypp[2]{Psat}: $\hat{H}^{\rm V}$ = \pypp[2]{outlet.h}.
 \end{itemize}
 
 \ifshowsolutions\Solutionheader
 
-Let stream 1 be the liquid water stream, which we assume is saturated liquid, stream 2 be the superheated steam inlet, and stream 3 be the saturated steam outlet.  Hence, $\dot{m}_3$ = \py{f'{mdot:.0f~P}'} as given.  The mass and energy balance yield the two unknowns $\dot{m}_1$ and $\dot{m}_2$:
+Let stream 1 be the liquid water stream, which we assume is saturated liquid, stream 2 be the superheated steam inlet, and stream 3 be the saturated steam outlet.  Hence, $\dot{m}_3$ = \pypp[0]{mdot} as given.  The mass and energy balance yield the two unknowns $\dot{m}_1$ and $\dot{m}_2$:
 
 \begin{align*}
 \dot{m}_1 + \dot{m}_2 & = \dot{m}_3\\
@@ -43,7 +40,7 @@ Solving these two simultaneously yields
 
 \begin{align*}
 \dot{m}_1 & = \dot{m}_3\left(\frac{\hat{H}_2-\hat{H}_3}{\hat{H}_2-\hat{H}_1}\right)\\
-& = (\py{f'{mdot:.0f~L}'})\left(\frac{\py{f'{inlet.h:,.2f~L}'}-\py{f'{outlet.h:,.2f~L}'}}{\py{f'{inlet.h:,.2f~L}'}-\py{f'{inL.h:,.2f~L}'}}\right) = \fbox{\py{f'{mLdot:.2f~P}'}}.
+& = \left(\pypl[0]{mdot}\right)\left(\frac{\pypl[2]{inlet.h}-\pypl[2]{outlet.h}}{\pypl[2]{inlet.h}-\pypl[2]{inL.h}}\right) = \fbox{\pypp[2]{mLdot}}.
 \end{align*}
 \clearpage
 \else

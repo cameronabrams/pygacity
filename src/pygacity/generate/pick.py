@@ -79,7 +79,7 @@ def _pick_recursive(specs: dict, rng: np.random.Generator | None):
                     r = rng.random()
                     specs[k] = lims[0] + r * (lims[1] - lims[0])
                     if 'round' in pickrule:
-                        specs[k]=np.round(specs[k], pickrule['round'])
+                        specs[k] = np.round(specs[k], pickrule['round'])
                 elif 'pickfrom' in pickrule or 'from' in pickrule:
                     domain = pickrule.get('pickfrom', pickrule.get('from', None))
                     if domain is None:
@@ -89,6 +89,8 @@ def _pick_recursive(specs: dict, rng: np.random.Generator | None):
                         specs[k] = np.round(specs[k], pickrule['round'])
                 else:
                     raise Exception('Missing picking rule')
+            if 'units' in v:
+                specs[k] *= v['units']
         else:
             _pick_recursive(v,rng)
         
@@ -104,9 +106,11 @@ def _space_recursive(specs):
                 specs[k] = np.linspace(lims[0], lims[1], intervals)
             elif 'pickfrom' in pickrule:
                 domain = pickrule['pickfrom']
-                specs[k] = domain
+                specs[k] = np.array(domain)
             else:
                 raise Exception('Missing picking rule')
+            if 'units' in v:
+                specs[k] *= v['units']
         else:
             _space_recursive(v)
 

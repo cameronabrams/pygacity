@@ -9,7 +9,7 @@ from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path
 
-from .block import LatexCompoundBlock
+from .block import LatexBlock
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +45,18 @@ class Document:
         document_specs : dict
             document specifications
         """
-        self.blocks: list[LatexCompoundBlock] = []
+        self.blocks: list[LatexBlock] = []
         self.specs = deepcopy(document_specs)
-        self.preamble = self.specs.get('preamble', [])
+        preamble_text = self.specs.get('preamble', None)
+        self.preable = None
+        if preamble_text:
+            self.preamble = LatexBlock(block_specs={'text': preamble_text}, idx=0).load()
         self.substitutions = self.specs.get('substitutions', {})
         logger.debug(f'Document.__init__ with specs: {self.specs}')
-        for idx, section in enumerate(self.specs['structure']):
-            assert type(section) == dict
-            self.blocks.append(LatexCompoundBlock(block_specs=section, parent_idx='', idx=idx+1).load())
-            logger.debug(f'Added block for top section {idx}: {section}')
+        for idx, block_specs in enumerate(self.specs['structure']):
+            assert type(block_specs) == dict
+            self.blocks.append(LatexBlock(block_specs=block_specs, idx=idx+1).load())
+            logger.debug(f'Added block {idx}: {block_specs}')
         self.has_pycode = any(block.has_pycode for block in self.blocks)
         self.embedded_graphics = []
         for block in self.blocks:
@@ -70,6 +73,7 @@ class Document:
         """
         self.substitutions.update(deepcopy(outer_substitutions))
         logger.debug(f'Document.make_substitutions with substitutions: {self.substitutions}')
+        self.preamble.substitute(super_substitutions=self.substitutions)
         for block in self.blocks:
             block.substitute(super_substitutions=self.substitutions)
 
@@ -90,8 +94,22 @@ class Document:
             classname = class_specs.get('classname', 'article')
             f.write(rf'\documentclass[{", ".join(dcoptions)}]{{{classname}}}' + '\n')
             f.write(str(self.preamble) + '\n')
+            f.write(r'\begin{document}' + '\n')
+            enumerating = False
             for block in self.blocks:
-                f.write(str(block) + '\n')
+                if block.question_number is not None and not enumerating:
+                    f.write(r'\begin{enumerate}' + '\n')
+                    enumerating = True
+                if block.question_number is None and enumerating:
+                    enumerating = False
+                if enumerating:
+                    f.write(rf'\item[{block.question_number}.] ' + str(block) + '\n')
+                else:
+                    f.write(str(block) + '\n')
+            if enumerating:
+                f.write(r'\end{enumerate}' + '\n')
+                enumerating = False
+            f.write(r'\end{document}' + '\n')
             f.write('% End of automatically generated LaTeX source file\n')
 
 

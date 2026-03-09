@@ -11,11 +11,13 @@ from sandlertools import Component, Reaction, ChemEqSystem
 from sandlertools import (
     CSState, ureg,
     R, IdealGasEOS, VanDerWaalsEOS, PengRobinsonEOS )
+import pint
 
 SandlerProps = get_database()
 
 SteamTables = get_tables()
 suphPavail = SteamTables['suph'].uniqs['P']
+satdTavail = SteamTables['satd'].DF['T']['T'].unique()
 
 class Request:
     """ Class to handle requests for latex-formatted steam tables"""
@@ -32,10 +34,14 @@ class Request:
             self.satdT = True
         if 'suphP' in kwargs:
             P = kwargs['suphP']
+            if isinstance(P, pint.Quantity):
+                P = P.to('MPa').magnitude
             if P in SteamTables['suph'].uniqs['P'] and not P in self.suph:
                 self.suph.append(P)
         if 'subcP' in kwargs:
             P = kwargs['subcP']
+            if isinstance(P, pint.Quantity):
+                P = P.to('MPa').magnitude
             if P in SteamTables['subc'].uniqs['P'] and not P in self.subc:
                 self.subc.append(P)
         return self

@@ -133,7 +133,7 @@ def answerset(config: Config = None) -> str:
     answer_docspecs['structure'].append({'text': AS.to_latex()})
     answer_docspecs['structure'].append(deepcopy(config.document_specs['structure'][-1]))
     AnswerSetDoc = Document(answer_docspecs)
-    AnswerSetDoc.make_substitutions(dict(serial='Answer Set', serialstr='Answer Set'))
+    AnswerSetDoc.make_substitutions(dict(serial=0, serialstr='Answer Set', solutions=False, build_dir=build_path.as_posix(), cache_dir=pickle_cache.as_posix()))
     AnswerSetBuilder.build_document(AnswerSetDoc)
     logger.info(f'Combined answer set => {build_path.absolute().relative_to(Path.cwd()).as_posix()}/{AnswerSetBuilder.working_job_name}.pdf')
     answerset_archive = AnswerSetBuilder.FC.archive(build_path / 'answerset_buildfiles', delete=True)

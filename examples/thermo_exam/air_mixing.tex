@@ -1,33 +1,29 @@
 \begin{pycode}
-idx = '<<<idx>>>'
-group = <<<group>>>
-points = <<<points>>>
 MIXER = Pick.pick_state(
     dict(
-        P1={'default':14,'pick':{'between':[13,15],'round':2}},
-        P2={'default':12,'pick':{'between':[10,12.5],'round':2}},
-        T1={'default':1000,'pick':{'pickfrom':[900,950,1000,1050,1100]}},
-        T2={'default':400,'pick':{'pickfrom':[350,375,400,425,450]}},
-        T3={'default':600,'pick':{'pickfrom':[500,550,600,650,700]}},
+        P1={'default':14,'pick':{'between':[13,15],'round':2}, 'units': ureg.bar},
+        P2={'default':12,'pick':{'between':[10,12.5],'round':2}, 'units': ureg.bar},
+        T1={'default':1000,'pick':{'pickfrom':[900,950,1000,1050,1100]}, 'units': ureg.K},
+        T2={'default':400,'pick':{'pickfrom':[350,375,400,425,450]}, 'units': ureg.K},
+        T3={'default':600,'pick':{'pickfrom':[500,550,600,650,700]}, 'units': ureg.K},
         CP_over_R={'default':3.5,'pick':{'pickfrom':[3.0, 3.5, 4.0]}}
     )
 )
-P1 = MIXER.P1 * ureg.bar
-P2 = MIXER.P2 * ureg.bar
-T1 = MIXER.T1 * ureg.K
-T2 = MIXER.T2 * ureg.K
-T3 = MIXER.T3 * ureg.K
+P1 = MIXER.P1
+P2 = MIXER.P2
+T1 = MIXER.T1
+T2 = MIXER.T2
+T3 = MIXER.T3
 CP_over_R = MIXER.CP_over_R
 alpha = (T1 - T3) / (T3 - T2)
 P3 = pow(pow(T3**(1 + alpha) / T1 / T2**alpha, CP_over_R) * P1 * P2**alpha, 1 / (1 + alpha))
 P3 = P3.m * ureg.bar
 cpr = tu.frac_or_int_as_tex(fr.Fraction(CP_over_R))
 
-AnsSet.register(idx, group=group, label=r'\(\alpha\)', value=np.round(alpha.m,3), formatter='{:.3f}')
+AnsSet.register(idx, group=group, label=r'\(\alpha\)', value=alpha, formatter='{:.3f}')
 AnsSet.register(idx, group=group, label=r'\(P\)', value=P3, formatter='{:.3f}')
 \end{pycode}
-(\py{points} pts.)
-A stream of air at \py{f'{P1:.0f~P}'} and \py{f'{T1:.0f~P}'} (labeled ``stream 1'') is to be cooled to \py{f'{T3:.0f~P}'} by mixing with another stream of air at \py{f'{P2:.0f~P}'} and \py{f'{T2:.0f~P}'} (labeled ``stream 2'').  Let $\alpha$ be the ratio of the molar flow rate of the hotter stream to that of the cooler stream.  Compute (1) $\alpha$, and (2) the pressure $P$ of the mixed stream (labeled ``stream 3'').  You may assume this is carried out adiabatically and that air is an ideal gas for which $C^*_{\rm P}$ = $\py{cpr}R$.
+A stream of air at \pypp[0]{P1} and \pypp[0]{T1} (labeled ``stream 1'') is to be cooled to \pypp[0]{T3} by mixing with another stream of air at \pypp[0]{P2} and \pypp[0]{T2} (labeled ``stream 2'').  Let $\alpha$ be the ratio of the molar flow rate of the hotter stream to that of the cooler stream.  Compute (1) $\alpha$, and (2) the pressure $P$ of the mixed stream (labeled ``stream 3'').  You may assume this is carried out adiabatically and that air is an ideal gas for which $C^*_{\rm P}$ = $\py{cpr}R$.
 
 It may be helpful for you to remember, {\bf for the ideal gas}, that a change of state from $(T_A,P_A)$ to $(T_B,P_B)$ results in the following enthalpy and entropy changes, respectively:
 
@@ -47,7 +43,7 @@ H_{\rm out} & = H_{\rm in}\\
 (1+\alpha)T_3 & = T_1 + \alpha T_2\\
 \Rightarrow T_3 & = \frac{T_1+\alpha T_2}{1+\alpha},\ \mbox{or}\\
 \alpha & = \frac{T_1-T_3}{T_3-T_2}\\
- & = \frac{900-500}{500-400} = \frac{400}{100} = \fbox{\py{f'{alpha:.3f~P}'}}.
+  & = \frac{\pypl[0]{T1}-\pypl[0]{T3}}{\pypl[0]{T3}-\pypl[0]{T2}} = \frac{\pypl[0]{T1-T3}}{\pypl[0]{T3-T2}} = \fbox{\pypl[3]{alpha}}.
 \end{align*}
 (Note all terms involving $T_r$ cancel and $C^*_{\rm P}$ divides out.).  We can get $P_3$ from an entropy balance:
 \begin{align*}
@@ -58,8 +54,8 @@ C^*_{\rm P}\ln\frac{T_3}{T_1} - R\ln\frac{P_3}{P_1} + \alpha\left[C^*_{\rm P}\ln
 C^*_{\rm P}\ln\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right) - R\ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right) & = 0\\
 \ln\left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C^*_{\rm P}}{R}}\right] & = \ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right)\\
 \Rightarrow\ P_3 & = \left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C^*_{\rm P}}{R}}P_1P_2^\alpha\right]^{\frac{1}{1+\alpha}}\\
-& = \left[\left(\frac{(\py{f'{T3.m:.0f}'})^{(1+\py{f'{alpha:.3f~L}'})}}{(\py{f'{T1.m:.0f}'}) (\py{f'{T2.m:.0f}'})^{\py{f'{alpha:.3f~L}'}}}\right)^{\py{cpr}} (\py{f'{P1.m:.2f}'}) (\py{f'{P2.m:.2f}'})^{\py{f'{alpha:.3f~L}'}}\right]^{\frac{1}{1+\py{f'{alpha:.3f~L}'}}} \\
-& = \fbox{\py{f'{P3:.2f~P}'}}.
+& = \left[\left(\frac{(\pypl[0]{T3})^{(1+\pypl[3]{alpha})}}{(\pypl[0]{T1}) (\pypl[0]{T2})^{\pypl[3]{alpha}}}\right)^{\py{cpr}} (\pypl[0]{P1}) (\pypl[0]{P2})^{\pypl[3]{alpha}}\right]^{\frac{1}{1+\pypl[3]{alpha}}} \\
+& = \fbox{\pypp[0]{P3}}.
 \end{align*}
 \clearpage
 \else

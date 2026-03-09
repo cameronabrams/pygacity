@@ -2,37 +2,35 @@ document:
   preamble: |
     \usepackage[T1]{fontenc}
     \usepackage{tgheros}
-    \renewcommand{\sfdefault}{qhv} % TeX Gyre Heros family name
+    \renewcommand{\sfdefault}{qhv}
     \renewcommand{\familydefault}{\sfdefault}
+    \renewcommand{\Universityname}{University of Nowhere}
+    \renewcommand{\Departmentname}{ABC 126}
+    \renewcommand{\Instructorname}{Eustace T. Smartypants}
+    \renewcommand{\Instructoremail}{ets@unow.edu}
+    \renewcommand{\Coursename}{BIO 5678 - Applied Pyrohydrodynamics}
+    \renewcommand{\Termcode}{202525}
+    \renewcommand{\Termname}{Winter 2025-2026}
+    \pagestyle{fancy}
+    \fancyhf{}
+    \lhead{\footnotesize \Universityname\ --- \Coursename\ --- \Termname}
+    \rhead{\footnotesize <<<serialstr>>>}
+    \rfoot{\thepage}
   structure:
-    - source: header.tex
-      substitutions:
-        - search: Universityname
-          replace: University of Nowhere
-        - search: Departmentname
-          replace: ABC 1234
-        - search: Instructorname
-          replace: Eustace T. Smartypants
-        - search: Instructoremail
-          replace: ets@unow.edu
-        - search: Coursename
-          replace: BIO 5678 - Introduction to Applied Pyrohydrodynamics
-        - search: Termcode
-          replace: 202525
-        - search: Termname
-          replace: Winter 2025-2026
     - text: |
-          \asnheader{Assignment 1: Random Topics}{January 13, 2026}
-    - enumerate:
-      - source: simple_arithmetic.tex
-        points: 25  
-      - source: simple_derivatives.tex
-        points: 25
-      - source: simple_integration.tex
-        points: 25
-      - source: python_numerics.tex
-        points: 25
-    - source: footer.tex
+        \asnheader{Assignment 1: Random Topics}{January 13, 2026}
+    - question_number: 1
+      source: simple_arithmetic.tex
+      points: 25  
+    - question_number: 2
+      source: simple_derivatives.tex
+      points: 25
+    - question_number: 3
+      source: simple_integration.tex
+      points: 25
+    - question_number: 4
+      source: python_numerics.tex
+      points: 25
 build:
   job-name: Assignment
   paths:
