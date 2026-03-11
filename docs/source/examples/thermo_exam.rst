@@ -67,16 +67,11 @@ target outlet temperature, and :math:`C^*_P/R` (drawn from ``[3.0, 3.5, 4.0]``).
 
 ``Pick.pick_state`` controls all six at once.  Note the mix of ``pickfrom``
 (draws from an explicit list) and ``between`` (draws a random value in a
-continuous range rounded to the specified precision) strategies.  Every picked
-scalar is immediately wrapped in a pint unit (``ureg.bar``, ``ureg.K``) so
-that all downstream arithmetic preserves units automatically.
+continuous range rounded to the specified precision) strategies.  The dictionary passed to
+``Pick.pick_state`` also includes the ``units`` key, so the picked values are wrapped in pint units automatically (e.g. ``T1 = 300.0 * ureg.K``) and all subsequent arithmetic carries units through to the final answers.
 
-The outlet pressure ``P3`` is computed as a :class:`pint.Quantity`, then
-rounded by stripping the magnitude (``P3.m``) and re-attaching the unit before
-being passed to ``AnsSet.register``.  :math:`\alpha` is dimensionless, so its
-plain magnitude (``.m``) is registered.  The ``\py{...}`` inline expressions
-use the ``~P`` pint format specifier (e.g. ``f'{P1:.0f~P}'``) so that value
-and abbreviated unit string appear together in the typeset text automatically.
+The outlet pressure ``P3`` and flow-rate fraction :math:`\alpha` are computed as :class:`pint.Quantity` instances, which are passed to ``AnsSet.register``. The local Python variable ``qno`` always contains the current question number. The ``\pypp[#]{...}`` inline expressions are shorthand for ``pythontex``'s ``\py{...}`` that also detect :class:`pint.Quantity` values and format them with the magnitude and unit string together.  In the solution text, the same values are formatted with f-strings using use the ``~P`` pint format specifier (e.g. ``f'{P1:.0f~P}'``) so that value
+and abbreviated unit string appear together in the typeset text automatically.  ``\pppl[#]{...}`` is the ``\pypp`` variant that also applies the ``~L`` format specifier, so it can be used directly in the LaTeX without needing an f-string.
 
 Problem 2: Steam Desuperheater (``desuperheater.tex``)
 ------------------------------------------------------
@@ -104,9 +99,7 @@ and mass flow rate (``mdot``):
 is a :class:`pint.Quantity` (kJ/kg), so ``mLdot`` is automatically a
 :class:`pint.Quantity` in kg/s.  Because ``AnsSet.register`` detects the
 :class:`pint.Quantity` and extracts its magnitude and unit string, no manual
-stripping is needed.  The solution text likewise uses the ``~P`` format
-specifier throughout, including for the enthalpy values from the steam
-state objects (e.g. ``f'{inlet.h:,.2f~P}'``).
+stripping is needed.  Note the use of ``\pypp`` and ``\pppl`` in the solution text to format the answers with units automatically.
 
 Problem 3: Binary VLE with OCM Activity Coefficients (``vle_binary_OCM.tex``)
 ------------------------------------------------------------------------------
@@ -208,7 +201,7 @@ The ``build/`` directory contains:
           :width: 100%
           :alt: Student exam page 1
 
-          Page 1: problems 1–2 and start of problem 3
+          Page 1: problems 1-2 and start of problem 3
 
      - .. figure:: ../_static/examples/thermo_exam_s1-2.png
           :width: 100%
