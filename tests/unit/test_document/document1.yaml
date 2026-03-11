@@ -1,16 +1,14 @@
-substitutions:
-  description: test1
-  date: no-date
 structure:
-  - unstructured: 
-      source: header.tex
-  - unstructured: 
-      source: footer.tex
+  - source: problem_abc.tex
+  - source: problem_def.tex
 class:
   classname: farticle
   options:
     - 11pt
     - foobar
-preamble_commands: |
+preamble: |
   \usepackage[abc1, abc2]{package_abc}
   \usepackage[xyz1]{package_xyz}
+substitutions:
+  description: test1
+  date: no-date

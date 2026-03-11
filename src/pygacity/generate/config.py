@@ -19,6 +19,22 @@ from ..util.stringthings import chmod_recursive_dirs_files
 
 logger = logging.getLogger(__name__)
 
+def _user_cache_base() -> Path:
+    """
+    Return the platform-appropriate user-level cache root for pygacity.
+
+    * Windows  — ``%LOCALAPPDATA%\\pygacity``
+    * macOS    — ``~/Library/Caches/pygacity``
+    * Linux    — ``$XDG_CACHE_HOME/pygacity`` (default ``~/.cache/pygacity``)
+    """
+    if sys.platform == 'win32':
+        base = Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData' / 'Local'))
+    elif sys.platform == 'darwin':
+        base = Path.home() / 'Library' / 'Caches'
+    else:
+        base = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache'))
+    return base / 'pygacity'
+
 def is_executable(cmd: str) -> bool:
     """
     Checks if cmd is an executable in PATH
@@ -89,7 +105,8 @@ class Config:
 
         # shortcuts
         self.build_path = Path(self.build_specs['paths']['build-dir'])
-        self.cache_path = self.build_path / self.build_specs['paths']['cache-dir']
+        _cache_spec = Path(self.build_specs['paths']['cache-dir'])
+        self.cache_path = _cache_spec if _cache_spec.is_absolute() else self.build_path / _cache_spec
 
         logger.debug(f'Build path: {str(self.build_path)}')
         logger.debug(f'Cache path: {str(self.cache_path)}')
@@ -128,11 +145,6 @@ class Config:
                     '11pt'
                 ]
             },
-            'preamble': r"""
-\usepackage[T1]{fontenc}
-\usepackage{tgheros}
-\renewcommand{\sfdefault}{qhv}
-\renewcommand{\familydefault}{\sfdefault}""",
             'structure': [
                 {'pythontex': [
                     'setup',
@@ -229,10 +241,12 @@ class Config:
                     logger.debug(f'Found {cmd} executable in PATH')
         if 'build-dir' not in self.build_specs['paths']:
             self.build_specs['paths']['build-dir'] = 'build'
-        if 'cache-dir' not in self.build_specs['paths']:
-            self.build_specs['paths']['cache-dir'] = '.cache'
         if 'job-name' not in self.build_specs:
             self.build_specs['job-name'] = 'pygacity_document'
+        if 'cache-dir' not in self.build_specs['paths']:
+            self.build_specs['paths']['cache-dir'] = str(
+                _user_cache_base() / self.build_specs['job-name']
+            )
         if 'overwrite' not in self.build_specs:
             self.build_specs['overwrite'] = False
         if 'solutions' not in self.build_specs:

@@ -10,22 +10,23 @@ logger = logging.getLogger(__name__)
 class AnswerSetTests(unittest.TestCase):
 
     def test_answerset_init(self):
-        A = AnswerSet(1234567)
+        A = AnswerSet(serial=1234567)
         self.assertEqual(A.serial, 1234567)
         self.assertEqual(A.dumpname, 'answers-01234567.yaml')
-        self.assertTrue(A.D == {})
+        self.assertTrue(A.data == {})
+
 
     def test_answerset_register(self):
-        A = AnswerSet(999)
+        A = AnswerSet(serial=999)
         A.register(1, label='$V$', units='m$^3$', value=101.4)
-        self.assertEqual(len(A.D[1]), 1)
+        self.assertEqual(len(A.data[1]), 1)
         A.register(1, label='$V1$', units='m$^3$', value=102.4)
-        self.assertEqual(len(A.D[1]), 2)
+        self.assertEqual(len(A.data[1]), 2)
         A.register(2, label='X', units=None, value=-909.0)
-        self.assertEqual(len(A.D), 2)
+        self.assertEqual(len(A.data), 2)
 
     def test_answerset_dump(self):
-        A = AnswerSet(999)
+        A = AnswerSet(serial=999)
         A.register(1, label='$V1$', units='m$^3$', value=101.4)
         A.register(1, label='$V2$', units='m$^3$', value=102.4)
         A.register(2, label='X', units=None, value=-909.0)
@@ -40,11 +41,11 @@ class AnswerSetTests(unittest.TestCase):
     def test_answerset_read(self):
         A = AnswerSet.from_yaml('answers-00000999.yaml')
         self.assertEqual(A.serial, 999)
-        self.assertEqual(len(A.D), 3)
-        self.assertEqual(len(A.D[3]), 5)
+        self.assertEqual(len(A.data), 3)
+        self.assertEqual(len(A.data[3]), 5)
 
     def test_answerset_display(self):
-        A = AnswerSet(999)
+        A = AnswerSet(serial=999)
         A.register(1, label=r'$V_1$', units='m$^3$', value=1001.4, formatter='{:,.2f}')
         A.register(1, label=r'$V_2$', units='m$^3$', value=102.4e12, formatter='{:.4e}')
         d1 = A.display(1,element=0)
@@ -64,7 +65,7 @@ class AnswerSuperSetTests(unittest.TestCase):
         files = []
         serials = [random.randint(10000000,99999999) for _ in range(10)]
         for s in serials:
-            A = AnswerSet(s)
+            A = AnswerSet(serial=s)
             TF = [random.choice([True, False]) for _ in range(10)]
             for l,t in zip([chr(ord('a')+i) for i in range(10)], TF):
                 A.register(1, label=l, value='T' if t else 'F')
@@ -82,7 +83,7 @@ class AnswerSuperSetTests(unittest.TestCase):
             os.remove(f)
         files = self.make_superset()
         self.assertEqual(len(files), 10)
-        S = AnswerSuperSet(files)
+        S = AnswerSuperSet.from_dumpfiles(files)
         for f in files:
             os.remove(f)
         self.assertEqual(len(S), 10)

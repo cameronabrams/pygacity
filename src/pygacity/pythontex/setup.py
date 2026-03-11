@@ -46,7 +46,13 @@ logger.debug(f'Pythontex logfile:   {_pythontex_logfile}')
 # build directory relative to that CWD
 manager_pickle_cache = Path(cache_dir)
 manager_build_path = Path(build_dir)
-pythontex_pickle_cache = manager_pickle_cache.relative_to(manager_build_path)
+# If the cache path is absolute (user-level cache) use it directly; otherwise
+# express it relative to the build directory, since pythontex runs there.
+if manager_pickle_cache.is_absolute():
+    pythontex_pickle_cache = manager_pickle_cache
+else:
+    pythontex_pickle_cache = manager_pickle_cache.relative_to(manager_build_path)
+pythontex_pickle_cache.mkdir(parents=True, exist_ok=True)
 logger.debug(f'Pickling to {pythontex_pickle_cache.as_posix()}')
 
 last_qno = 0

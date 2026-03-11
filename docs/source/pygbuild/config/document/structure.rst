@@ -3,40 +3,29 @@
 ``structure`` subsection
 ========================
 
-The ``structure`` section of the configuration file describes the hierarchical structure of the document, including chapters, sections, subsections, and so on. It is represented as a nested list of dictionaries, where each dictionary represents a document element (termed a **block**) and its content.
-
-Each block is formatted as a dictionary.  There are severl types of blocks, and block type is signified by the presence of specific keys in the dictionary.  The most common block types are ``source``, ``text``, ``pythontex``, ``enumerate``, and ``itemize``.
+The ``structure`` section of the configuration file defines the document body
+as an ordered list of **blocks**.  Each block is a YAML dictionary; the key
+that is present determines the block type.
 
 .. _source_blocks:
 
 ``source`` blocks
 -----------------
 
-This block type indicates that the content of the block is to be read from an external source file.  The value associated with the ``source`` key is a string specifying the path to the source file.  For example:
+Reads content from an external LaTeX file:
 
-  .. code-block:: yaml
+.. code-block:: yaml
 
-      - source: introduction.tex
+    - source: introduction.tex
 
-This block will include the content of the file ``introduction.tex`` at this point in the document.
+pygacity searches for the file first in the current working directory, then in
+its bundled template directory.
 
-There are three source values that are treated specially by pygacity:
+``source`` blocks also accept substitutions, which replace ``<<<KEY>>>``
+placeholders in the source file with specified values.  Two equivalent forms
+are supported:
 
-- ``header.tex``: If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  The main thing to note about this header file is that it defines the document class as :ref:`autoprob <autoprob>` and includes several necessary packages.  
-- ``short.tex``: This file is used to define macros and environments for short answer, multiple choice, fill-in-the-blank, and true-false questions.  If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  See :ref:`shorts` for a full description of the question-pool YAML format and all available options.
-- ``footer.tex``: If no file by this name exists in the working directory, pygacity uses a default version that comes packaged with pygacity.  The main thing to note about this footer file is that it ends the document with the ``\end{document}`` command.
-
-``source`` blocks also permit user-defined substitutions, which replace placeholder
-keys embedded in the source file with specified values.  Placeholder keys are
-delimited by ``<<<`` and ``>>>`` in the source file, for example:
-
-.. code-block:: latex
-
-    \section{<<<PROB_TITLE>>>}
-
-Substitutions can be specified in two equivalent forms in the YAML input.
-
-**Dictionary form** — keys and values are given directly as a mapping:
+**Dictionary form:**
 
 .. code-block:: yaml
 
@@ -45,9 +34,7 @@ Substitutions can be specified in two equivalent forms in the YAML input.
           PROB_TITLE: "My Awesome Problem Set"
           SEMESTER: "Spring 2026"
 
-**List form** — each substitution is a two-key dictionary with ``search`` and
-``replace`` entries.  This form is useful when the order of substitutions matters
-or when the same key appears more than once:
+**List form** (useful when order matters or a key appears more than once):
 
 .. code-block:: yaml
 
@@ -58,65 +45,95 @@ or when the same key appears more than once:
           - search: SEMESTER
             replace: "Spring 2026"
 
-Both forms produce identical results.  Every ``<<<KEY>>>`` placeholder found in
-the source file that has a matching entry in the substitution mapping will be
-replaced with the corresponding value before the document is compiled.
-
 .. _text_blocks:
 
 ``text`` blocks
 -----------------
 
-This block type indicates that the content of the block is to be included directly the the LaTex document at this point. The value associated with the ``text`` key is a string containing the LaTeX content to be included.  For example:
+Injects a literal LaTeX string directly into the document:
 
-  .. code-block:: yaml
+.. code-block:: yaml
 
-      - text: |
-          \section{Introduction}
-          This is the introduction to the document.
+    - text: |
+        \section{Introduction}
+        This is the introduction to the document.
 
 .. _pythontex_blocks:
 
 ``pythontex`` blocks
 ---------------------
 
-This block declares a block that will import Python code so that it is available for use in subsequent ``pycode`` blocks. The value associated with the ``pythontex`` key is list of names of available pythontex resources in pygacity.  For example:
+Imports Python code into the document's pythontex kernel.  The value is a list
+of named pygacity pythontex resources:
 
-  .. code-block:: yaml
+.. code-block:: yaml
 
-      - pythontex: 
+    - pythontex:
         - setup
 
-This block will make the all code defined in a package resource file called ``setup.pycode`` into the document's python kernel.  The python resources available in pygacity are described in the :ref:`Python Resources <pythonresources>` section of the documentation.
+See :ref:`Python Resources <pythonresources>` for available resources.
 
-.. _enumerate_itemize_blocks:
+.. _question_blocks:
 
-``enumerate`` and ``itemize`` blocks
+Question blocks
+---------------
+
+A block with a ``question_number`` key is treated as a numbered exam or
+assignment question.  It is rendered as an ``\item`` inside a LaTeX
+``enumerate`` environment in the compiled document.  Question blocks must also
+have a ``source`` key pointing to the LaTeX fragment for that question:
+
+.. code-block:: yaml
+
+    - question_number: 1
+      source: problem1.tex
+      points: 25
+      group: 1
+
+Additional optional keys:
+
+``points``
+    Integer point value.  When non-zero, the value is injected into the
+    pythontex header as ``points`` and displayed in the compiled output.
+
+``group``
+    Integer group identifier used by the ``AnswerSet`` to organise answers into
+    separate tables.
+
+``config``
+    Path to a YAML configuration file for ``short.tex``-style question pools.
+
+Consecutive question blocks (i.e. blocks whose ``question_number`` is not
+``None``) are automatically wrapped in a single ``\\begin{enumerate}`` …
+``\\end{enumerate}`` in the output.
+
+.. _enumerate_shorthand:
+
+``enumerate`` shorthand (old-style)
 ------------------------------------
 
-These block types indicate that the content of the block is to be included as an enumerated or itemized list. The value associated with the ``enumerate`` or ``itemize`` key is a list of **blocks**. For examples:
+As a convenience, a list of question blocks can be expressed under a single
+``enumerate`` key.  Question numbers are assigned sequentially starting from 1
+(unless overridden with an explicit ``question_number``):
 
-  .. code-block:: yaml
+.. code-block:: yaml
 
-      - enumerate:
+    - enumerate:
         - source: problem1.tex
+          points: 25
         - source: problem2.tex
+          points: 25
 
-This block will include an enumerated list where the first item is the content of ``problem1.tex`` and the second item is the content of ``problem2.tex``.  Below is an example of an itemized list:
+This is exactly equivalent to:
 
-  .. code-block:: yaml
+.. code-block:: yaml
 
-      - itemize:
-        - text: First item
-        - text: Second item
+    - question_number: 1
+      source: problem1.tex
+      points: 25
+    - question_number: 2
+      source: problem2.tex
+      points: 25
 
-``enumerate`` and ``itemize`` blocks are recursive, meaning that the items in the list can themselves be any type of block, including additional ``enumerate`` or ``itemize`` blocks.  For example:
-
-  .. code-block:: yaml
-
-      - enumerate:
-        - text: First item
-        - itemize:
-          - text: Subitem 1
-          - text: Subitem 2
-        - text: Third item
+The shorthand is provided for backward compatibility.  New configurations
+should use explicit ``question_number`` keys for clarity.

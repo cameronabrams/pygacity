@@ -64,9 +64,25 @@ class LatexBlock:
     substitution_delimiters: tuple = (r'<<<', r'>>>')
     """ The delimiters for substitution keys in LaTeX text """
 
-    def __init__(self, block_specs: dict, parent_idx: str = '', idx: int = 0):
+    @classmethod
+    def from_specs(cls, block_specs: dict) -> list[LatexBlock]:
+        """
+        Factory that returns a list of LatexBlocks. Handles the old-style
+        'enumerate' shorthand: if block_specs has an 'enumerate' key whose value
+        is a list, each item is treated as a question block with question_number
+        assigned sequentially starting from 1.
+        """
+        if 'enumerate' in block_specs and isinstance(block_specs['enumerate'], list):
+            blocks = []
+            for q_num, item_specs in enumerate(block_specs['enumerate'], start=1):
+                specs = deepcopy(item_specs)
+                specs.setdefault('question_number', q_num)
+                blocks.append(cls(block_specs=specs).load())
+            return blocks
+        return [cls(block_specs=block_specs).load()]
+
+    def __init__(self, block_specs: dict):
         self.block_specs = block_specs
-        self.idx = parent_idx + (f'.{idx}' if parent_idx != '' else f'{idx}')
         self.textcontents: str = block_specs.get('text', '')
 
         self.sourcename: str = block_specs.get('source', None)
@@ -115,7 +131,7 @@ class LatexBlock:
         """
         if self.sourcename:
             self.sourcepath = path_resolver(self.sourcename, search_paths=[self.templates_dir])
-            logger.debug(f'Block at idx {self.idx} resolved source file {self.sourcename} to {self.sourcepath}')
+            logger.debug(f'Block resolved source file {self.sourcename} to {self.sourcepath}')
             with open(self.sourcepath, 'r', encoding='utf-8') as f:
                 self.textcontents = f.read()
             header_contents = r'\begin{pycode}' + '\n'
@@ -123,7 +139,6 @@ class LatexBlock:
             if self.question_number is not None:
                 header_contents += f'points = {self.points}\n'
                 header_contents += f'group = {self.group}\n'
-                header_contents += f'idx = str({self.idx}) # document block index\n'
                 header_contents += f'qno = {self.question_number}\n'
                 if self.points > 0:
                     header_contents += f'print(f"({self.points} pts.)")\n'
@@ -146,7 +161,6 @@ class LatexBlock:
                     self.textcontents += 'solutions = <<<solutions>>>\n'
                     ## block-specific substitutions; can do these now
                     self.textcontents += '### These are block-specific ###\n'
-                    self.textcontents += f'idx = {self.idx} # document block index\n'
                     self.textcontents += '### DOCUMENT GLOBALS END ####\n'
                 self.textcontents += f'from pygacity.pythontex.{ptfile} import *\n'
             self.textcontents += r'\end{pycode}' + '\n'
@@ -169,13 +183,14 @@ class LatexBlock:
             if not self.config_path.exists():
                 raise FileNotFoundError(f'Configuration file {self.config_path.as_posix()} does not exist.')
             self.substitution_map['config'] = self.config_path.as_posix()
+        if self.question_number is not None:
+            self.substitution_map['qno'] = self.question_number
         if self.points:
             self.substitution_map['points'] = self.points
         if self.group:
             self.substitution_map['group'] = self.group
-        self.substitution_map['idx'] = self.idx
 
-        logger.debug(f'LatexBlock.load completed for idx={self.idx} with substitutions: {self.substitution_map}')
+        logger.debug(f'LatexBlock.load completed with substitutions: {self.substitution_map}')
         return self
 
     def substitute(self, super_substitutions: dict = {}, match_all: bool = True):
@@ -191,10 +206,10 @@ class LatexBlock:
         """
         self.processedcontents = self.textcontents[:]
         substitutions = deepcopy(super_substitutions)
-        logger.debug(f'block at idx {self.idx} incoming substitutions: {substitutions}')
-        logger.debug(f'block at idx {self.idx} own substitution_map: {self.substitution_map}')
+        logger.debug(f'block incoming substitutions: {substitutions}')
+        logger.debug(f'block own substitution_map: {self.substitution_map}')
         substitutions.update({k: v for k, v in self.substitution_map.items() if v is not None})
-        logger.debug(f'block at idx {self.idx} substitutions: {substitutions}')
+        logger.debug(f'block substitutions: {substitutions}')
         # apply substitutions to the contents
         for key, value in substitutions.items():
             if value is not None:

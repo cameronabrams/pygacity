@@ -7,13 +7,14 @@ from copy import deepcopy
 import logging
 import os
 import pickle
+import sys
 from pathlib import Path
 from .answerset import AnswerSet, AnswerSuperSet
-from .config import Config
+from .config import Config, is_executable
 from .document import Document
 from ..util.collectors import FileCollector
 from .latexcompiler import LatexCompiler
-from pathlib import Path
+from ..util.command import Command
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,8 @@ def build(args):
     build_path: Path = config.build_path
     build_dir = build_path.as_posix()
     cache_path: Path = config.cache_path
-    cache_dir = cache_path.relative_to(build_path.parent).as_posix()
+    cache_dir = (cache_path.as_posix() if cache_path.is_absolute()
+                 else cache_path.relative_to(build_path.parent).as_posix())
 
     logger.debug(f'Building in {str(build_path)}')
     logger.debug(f'Caching data in {cache_dir}')
@@ -149,5 +151,76 @@ def answerset_subcommand(args):
     tex_file = answerset(config)
     # remove the tex source
     os.remove(tex_file)
+
+def _resolve_executable(name: str) -> str:
+    """Return a usable path to *name*, checking the MiKTeX default on Windows."""
+    if is_executable(name):
+        return name
+    if sys.platform == 'win32':
+        candidate = str(Path.home() / 'AppData' / 'Local' / 'Programs' / 'MiKTeX'
+                        / 'miktex' / 'bin' / 'x64' / f'{name}.exe')
+        if is_executable(candidate):
+            return candidate
+    raise ValueError(f'"{name}" executable not found in PATH')
+
+def latex_subcommand(args):
+    """
+    CLI subcommand to compile an arbitrary LaTeX source file with pygacity's
+    autoprob package directory on the search path.
+
+    If the source file contains ``\\begin{pycode}`` blocks, a pythontex pass
+    is automatically inserted between the first and second pdflatex runs.
+    """
+    from importlib.resources import files
+
+    tex_file = Path(args.texfile)
+    if not tex_file.exists():
+        raise FileNotFoundError(f'LaTeX source file not found: {tex_file}')
+
+    # locate autoprob package directory
+    autoprob_dir = files('pygacity') / 'resources' / 'autoprob-package' / 'tex' / 'latex'
+
+    pdflatex = _resolve_executable('pdflatex')
+
+    # detect pythontex requirement by scanning the source for pycode environments
+    has_pycode = r'\begin{pycode}' in tex_file.read_text(encoding='utf-8', errors='replace')
+    if has_pycode:
+        pythontex = _resolve_executable('pythontex')
+        logger.info(f'pycode blocks detected in {tex_file.name}; pythontex will be run')
+
+    output_dir = args.output_dir or '.'
+    output_option = f'-output-directory={output_dir}' if output_dir != '.' else ''
+    stem = tex_file.stem
+    pytxcode_target = f'{output_dir}/{stem}' if output_dir != '.' else stem
+
+    pdflatex_cmd = Command(
+        f'{pdflatex} -interaction=nonstopmode -file-line-error '
+        f'-include-directory={autoprob_dir} '
+        f'{output_option} {tex_file}',
+        ignore_codes=[1],
+    )
+
+    def run_pdflatex(label):
+        logger.info(f'pdflatex {label}: {tex_file.name}')
+        out, err = pdflatex_cmd.run()
+        logger.debug(f'pdflatex output:\n{out}')
+        logger.debug(f'pdflatex stderr:\n{err}')
+
+    if has_pycode:
+        run_pdflatex('pass 1/2')
+        logger.info(f'pythontex: {tex_file.name}')
+        out, err = Command(f'{pythontex} {pytxcode_target}').run()
+        logger.debug(f'pythontex output:\n{out}')
+        logger.debug(f'pythontex stderr:\n{err}')
+        run_pdflatex('pass 2/2')
+    else:
+        for i in range(args.runs):
+            run_pdflatex(f'pass {i + 1}/{args.runs}')
+
+    pdf = Path(output_dir) / f'{stem}.pdf'
+    if pdf.exists():
+        logger.info(f'Output: {pdf}')
+    else:
+        logger.warning(f'Expected output PDF not found: {pdf}')
 
     

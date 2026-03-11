@@ -1,27 +1,19 @@
 structure:
-  - unstructured: 
-      source: header.tex
-  - list:
-      type: enumerate
-      items:
-        - item:
-            type: question 
-            source: problem_abc.tex
-            config: problem_abc.yaml
-            points: 50 
-        - item:
-            type: question
-            source: problem_def.tex
-            config: problem_def.yaml
-            points: 50 
-  - unstructured: 
-      source: footer.tex
+  - source: problem_abc.tex
+  - enumerate:
+      - source: problem_abc.tex
+        config: problem_abc.yaml
+        points: 50
+      - source: problem_def.tex
+        config: problem_def.yaml
+        points: 50
+  - source: problem_def.tex
 class:
   classname: farticle
   options:
     - 11pt
     - foobar
-preamble_commands: |
+preamble: |
   \usepackage[abc1, abc2]{package_abc}
   \usepackage[xyz1]{package_xyz}
 substitutions:

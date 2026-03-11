@@ -27,6 +27,7 @@ The Configuration File
 .. literalinclude:: ../../../examples/compound_exam/CompoundExam.yaml
     :language: yaml
 
+
 Several features here go beyond the Simple Assignment example.
 
 **build.seed and build.copies** — instead of one document, pygacity generates
@@ -41,9 +42,12 @@ objects that parameterized source files use.  The matching
 ``pythontex: [teardown]`` block at the end persists the collected answers so
 that the answer set document can be assembled afterwards.
 
-**group** — each problem in the ``enumerate`` list carries a ``group`` integer.
-The answer set document organizes answers into one table per group, making it
-easy to produce a grading key that mirrors the exam's section structure.
+**question blocks** — each block with a ``question_number`` key is a numbered
+question rendered as an ``\item`` in the compiled document.  The ``points``
+key sets the point value displayed next to each question.  The ``group``
+integer determines how ``AnswerSet`` organises answers into tables; each
+distinct group value gets its own table.  The optional ``config`` key points
+to a YAML question-pool file used by ``short.tex``.
 
 **short.tex reuse** — the same packaged ``short.tex`` template appears four
 times, each time with a different ``config:`` YAML file specifying the question
@@ -58,9 +62,10 @@ Parameterized Problem: compound_arithmetic.tex
 This is the heart of pygacity's compound-exam capability.  ``Pick.pick_state``
 draws one value for each named parameter from its ``pickfrom`` list (or uses
 the ``default`` if no pick list is given).  The draws are seeded by the
-serial number, so the same serial always produces the same values.
+serial number, so the same serial always produces the same values.  ``Pick.pick_state`` returns a ``Namespace`` whose
+members are accessed via dot notation.
 
-``AnsSet.register`` records each sub-part answer (labelled ``a``, ``b``, ``c``)
+``AnsSet.register`` records each sub-part answer (labeled ``a``, ``b``, ``c``)
 together with the problem index and group, so the answer set document can
 tabulate all answers across all serials automatically.
 
@@ -143,13 +148,13 @@ serial's ``Pick.pick_state`` draws independently:
           :width: 100%
           :alt: Exam page 1, serial 11364882
 
-          ser. 11364882: 14×4, 40÷5, 7+10
+          ser. 11364882: 14x4, 40÷5, 7+10
 
      - .. figure:: ../_static/examples/compound_exam_s2-1.png
           :width: 100%
           :alt: Exam page 1, serial 50082762
 
-          ser. 50082762: 14×3, 45÷5, 7+8
+          ser. 50082762: 14x3, 45÷5, 7+8
 
 **Solutions for serial 11364882** (page 1):
 

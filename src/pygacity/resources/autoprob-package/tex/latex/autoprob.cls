@@ -101,10 +101,11 @@ numbers=none
 \newcommand{\inl}[1][]{%
   \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
 }
-
+% shortcuts for formatting pint.Quantity
 \NewDocumentCommand{\pyff}{O{2}m}{\py{f'{#2:.#1f}'}}
 \NewDocumentCommand{\pypl}{O{2}m}{\py{f'{#2:.#1f~L}'}}
 \NewDocumentCommand{\pypp}{O{2}m}{\py{f'{#2:.#1f~P}'}}
+
 \DeclareRobustCommand{\molar}[1]{\protect\underaccent{\bar}{#1}}
 \newcommand{\parmol}[2]{\overline{#1}_{#2}}
 \def\Ub{\molar{U}}
@@ -195,14 +196,14 @@ numbers=none
     \end{centering}
 }
 
-\newcommand{\morespace}[1]{
-\noindent More space for problem #1
-\clearpage
-}
-\newcommand\examquestion[2]{\givespacetrue\newcommand\totalpoints{#1}\input{#2}\givespacefalse}
-\newcommand\qualquestion[2]{\input{#1}\ifgivespace\morespace{#2}\fi}
-\newcommand\practicequestion[1]{\givespacefalse\input{#1}}
-\newcommand\problem[1]{\input{#1}}
+% \newcommand{\morespace}[1]{
+% \noindent More space for problem #1
+% \clearpage
+% }
+% \newcommand\examquestion[2]{\givespacetrue\newcommand\totalpoints{#1}\input{#2}\givespacefalse}
+% \newcommand\qualquestion[2]{\input{#1}\ifgivespace\morespace{#2}\fi}
+% \newcommand\practicequestion[1]{\givespacefalse\input{#1}}
+% \newcommand\problem[1]{\input{#1}}
 
 
 \newlength{\hght}

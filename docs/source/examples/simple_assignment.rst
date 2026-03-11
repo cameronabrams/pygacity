@@ -27,26 +27,21 @@ The Configuration File
 
 The configuration has two top-level sections.
 
-**document.preamble** supplies extra LaTeX preamble commands that are injected
-into the document before ``\begin{document}``.  Here it loads a sans-serif font.
+**document.preamble** supplies extra LaTeX preamble content injected before
+``\begin{document}``.  The ``commands`` sub-key sets autoprob class variables
+(institution name, course, instructor, etc.) via ``\renewcommand``.  Setting
+``font`` and ``pagestyle`` to ``~`` (null) suppresses the built-in defaults,
+allowing the commands block to fully control preamble content.
 
 **document.structure** defines the document body as an ordered list of blocks:
 
-1. A ``source`` block loading the packaged ``header.tex`` template.
-   The ``substitutions`` list replaces seven ``<<<KEY>>>`` placeholders in that
-   template — university name, department, instructor details, course name, and
-   term information — with the values appropriate for this assignment.
+1. A ``text`` block that injects a ``\asnheader{...}{...}`` command directly
+   into the document to produce the assignment title and due date.
 
-2. A ``text`` block that injects a ``\asnheader{...}{...}`` command directly
-   into the document to produce the assignment title and date.
-
-3. An ``enumerate`` block containing four child ``source`` blocks, one per
-   problem.  Each child carries a ``points`` key; pygacity uses this value to
-   fill the ``<<<points>>>`` placeholder that the ``autoprob`` LaTeX class
-   expects.
-
-4. A ``source`` block loading the packaged ``footer.tex`` template to close
-   the document.
+2. Four question blocks, each identified by a ``question_number`` key.  Every
+   question block has a ``source`` key pointing to its LaTeX fragment and a
+   ``points`` key; the point value is displayed next to the question number in
+   the compiled output.
 
 **build** names the job (used as the base filename for output PDFs) and sets
 the build directory where all generated files are written.

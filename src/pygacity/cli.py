@@ -6,7 +6,7 @@ import shutil
 
 import argparse as ap
 
-from .generate.build import build, answerset_subcommand
+from .generate.build import build, answerset_subcommand, latex_subcommand
 from .util.distribute import distribute_subcommand
 from .util.pdfutils import combine_pdfs
 from .util.stringthings import oxford, banner
@@ -50,6 +50,10 @@ def cli():
         'distribute': dict(
             func = distribute_subcommand,
             help = 'distribute built exam PDFs to students',
+        ),
+        'latex': dict(
+            func = latex_subcommand,
+            help = 'compile an arbitrary LaTeX file with autoprob.cls on the search path',
         ),
     }
     parser = ap.ArgumentParser(
@@ -132,6 +136,25 @@ def cli():
         default=True,
         action=ap.BooleanOptionalAction,
         help='completely remove old save dir and build new exams')
+    command_parsers['latex'].add_argument(
+        'texfile',
+        type=str,
+        help='LaTeX source file to compile'
+    )
+    command_parsers['latex'].add_argument(
+        '-o',
+        '--output-dir',
+        type=str,
+        default='.',
+        help='directory for output files (default: current directory)'
+    )
+    command_parsers['latex'].add_argument(
+        '-n',
+        '--runs',
+        type=int,
+        default=2,
+        help='number of pdflatex passes (default: 2)'
+    )
     command_parsers['distribute'].add_argument(
         'build_dir',
         help='directory containing built exam PDFs')

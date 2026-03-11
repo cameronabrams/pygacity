@@ -1,8 +1,20 @@
 import unittest
 import pytest
+import shutil
+import os
+from argparse import Namespace
 from pygacity.generate.config import Config
 
 class ConfigTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        if os.path.isdir('build'):
+            shutil.rmtree('build')
+
+    def tearDown(self):
+        if os.path.isdir('build'):
+            shutil.rmtree('build')
 
     def test_config_init_empty(self):
         c = Config()
@@ -13,12 +25,12 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual(len(docspecs['structure']), 0)
         
         buildspecs = c.build_specs
-        self.assertEqual(buildspecs['output-name'], 'tpdoc')
-        self.assertEqual(len(buildspecs['paths']), 3)
+        self.assertEqual(buildspecs['job-name'], 'pygacity_document')
+        self.assertEqual(len(buildspecs['paths']), 4)
         self.assertTrue(buildspecs['solutions'])
 
     def test_config_user1(self):
-        c = Config('exam_description1.yaml')
+        c = Config(Namespace(f='exam_description1.yaml'))
         self.assertTrue('document' in c.specs)
         self.assertTrue('build' in c.specs)
         docspecs = c.document_specs

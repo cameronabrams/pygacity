@@ -16,7 +16,7 @@ outlet = SANDLER(P=Psat, x=1.0)
 inL = SANDLER(T=TL, x=0.0)
 
 mLdot = mdot * ((inlet.h - outlet.h)/(inlet.h - inL.h))
-AnsSet.register(idx, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=mLdot, formatter='{:.3f}')
+AnsSet.register(qno, group=group, label=r'\(\dot{m}_\mathrm{L}\)', value=mLdot, formatter='{:.3f}')
 \end{pycode}
 Superheated steam at \pypp[0]{P1} and \pypp[0]{T1} is to be converted to saturated steam at \pypp[2]{Psat} in a desuperheater.  This desuperheater is supplied with inlet liquid water at \pypp[0]{TL}.  The unit should produce saturated steam at a rate of \pypp[0]{mdot}.  Assuming adiabatic operation, and assuming the liquid inlet is saturated, what is the mass flowrate of the inlet water?
 
