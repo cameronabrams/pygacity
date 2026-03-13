@@ -96,6 +96,7 @@ class LatexBlock:
         self.points: int = block_specs.get('points', 0)
         self.config_filename: str = block_specs.get('config', None)
         self.group: int = block_specs.get('group', 0)
+        self.toplevel: bool = block_specs.get('toplevel', False)
 
         self.pythontex: list[str] = block_specs.get('pythontex', [])
 
@@ -144,6 +145,8 @@ class LatexBlock:
                     header_contents += f'print(f"({self.points} pts.)")\n'
             if self.config_path:
                 header_contents += f'configfilename = r"""{self.config_path.as_posix()}"""\n'
+            if self.toplevel:
+                header_contents += 'first_ordinal = 1\n'
             header_contents += '### BLOCK GLOBALS END ####\n'
             header_contents += r'\end{pycode}' + '\n'
             self.textcontents = header_contents + self.textcontents

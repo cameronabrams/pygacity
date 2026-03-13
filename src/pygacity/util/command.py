@@ -3,6 +3,7 @@
 Simple command runner
 """
 import subprocess
+import sys
 import logging
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,14 @@ class Command:
         try:
             out, err = process.communicate(timeout=self.timeout)
         except subprocess.TimeoutExpired:
+            if sys.platform == 'win32':
+                # On Windows, process.kill() only kills the shell (cmd.exe), leaving
+                # grandchildren (e.g. xelatex) as orphans that hold file locks.
+                # taskkill /T kills the entire process tree.
+                subprocess.run(
+                    ['taskkill', '/F', '/T', '/PID', str(process.pid)],
+                    capture_output=True,
+                )
             process.kill()
             process.communicate()  # drain pipes so the child is fully reaped
             raise subprocess.TimeoutExpired(

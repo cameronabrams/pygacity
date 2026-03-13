@@ -2,8 +2,7 @@ document:
   preamble:
     pagestyle: ~
     font: |
-      \usepackage{lato}
-      \renewcommand{\familydefault}{\sfdefault}
+      \setmainfont{Lato}
     commands:
       Universityname: University of Nowhere
       Departmentname: Mechanical Engineering

@@ -72,9 +72,9 @@ class Document:
         }
 
     def _resolve_preamble_attr(self, attr: str, val) -> str:
-        """Resolve one preamble sub-key (*font*, *pagestyle*, or *commands*) to LaTeX text."""
+        """Resolve one preamble sub-key (*font*, *pagestyle*, *colors*, or *commands*) to LaTeX text."""
         preambles_dir = self.resources_root / 'preambles'
-        KEYWORDS = {'default', 'example'}
+        KEYWORDS = {'default', 'example', 'single'}
 
         if isinstance(val, str):
             if val in KEYWORDS:
@@ -91,7 +91,7 @@ class Document:
                 return val
 
         elif isinstance(val, dict):
-            if attr in ('font', 'pagestyle'):
+            if attr in ('font', 'pagestyle', 'colors'):
                 if 'input' not in val:
                     raise ValueError(
                         f'preamble.{attr} dict must contain an "input" key '
@@ -120,7 +120,7 @@ class Document:
                 raise ValueError(
                     f'preamble.{attr}: dict value is not supported for this attribute. '
                     f'Use a keyword string ("default"/"example"), a literal LaTeX string, '
-                    f'or — for font/pagestyle — a dict with an "input" key.'
+                    f'or — for font/pagestyle/colors — a dict with an "input" key.'
                 )
 
         else:
@@ -139,10 +139,11 @@ class Document:
         * **str** — used as-is (backward-compatible literal LaTeX); no
           defaults are injected.
         * **dict** — structured form with optional sub-keys *font*,
-          *pagestyle*, and *commands*, each resolved independently and
-          concatenated in that order.  *font* and *pagestyle* default to
+          *pagestyle*, *colors*, and *commands*, each resolved independently
+          and concatenated in that order.  *font* and *pagestyle* default to
           ``"default"`` when absent; set either to ``null`` (``~``) in YAML
-          to suppress its default entirely.
+          to suppress its default entirely.  *colors* defaults to ``None``
+          (no color setup) when absent.
         """
         if isinstance(preamble_specs, str):
             return preamble_specs
@@ -150,14 +151,14 @@ class Document:
             preamble_specs = {}
         if isinstance(preamble_specs, dict):
             parts = []
-            for attr in ('font', 'pagestyle', 'commands'):
+            for attr in ('font', 'pagestyle', 'colors', 'commands'):
                 val = preamble_specs.get(attr, 'default' if attr in ('font', 'pagestyle') else None)
                 if val is None:
                     continue
                 parts.append(self._resolve_preamble_attr(attr, val))
             # any remaining unknown keys are treated as literal LaTeX strings
             for attr, val in preamble_specs.items():
-                if attr not in ('font', 'pagestyle', 'commands'):
+                if attr not in ('font', 'pagestyle', 'colors', 'commands'):
                     logger.warning(f'Unknown preamble attribute "{attr}"; treating value as literal LaTeX')
                     parts.append(str(val))
             return '\n'.join(parts)
@@ -204,6 +205,7 @@ class Document:
                     f.write(r'\begin{enumerate}' + '\n')
                     enumerating = True
                 if block.question_number is None and enumerating:
+                    f.write(r'\end{enumerate}' + '\n')
                     enumerating = False
                 if enumerating:
                     f.write(rf'\item[{block.question_number}.] ' + str(block) + '\n')

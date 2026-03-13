@@ -36,13 +36,15 @@ def build(args):
     logger.debug(f'Building in {str(build_path)}')
     logger.debug(f'Caching data in {cache_dir}')
 
-    base_builder = LatexCompiler(config.build_specs, 
-                                 searchdirs = [config.autoprob_package_dir])
+    base_builder = LatexCompiler(config.build_specs,
+                                 searchdirs=[config.autoprob_package_root,
+                                             config.autoprob_package_dir])
     base_doc = Document(config.document_specs)
     logger.debug(f'base_doc has {len(base_doc.blocks)} blocks')
     if config.solutions:
         soln_builder = LatexCompiler(config.solution_build_specs,
-                                    searchdirs = [config.autoprob_package_dir])
+                        searchdirs=[config.autoprob_package_root,
+                            config.autoprob_package_dir])
         solution_doc = Document(config.solution_document_specs)
         logger.debug(f'solution_doc has {len(solution_doc.blocks)} blocks')
 
@@ -127,7 +129,8 @@ def answerset(config: Config = None) -> str:
     answer_buildspecs = {'job-name': config.build_specs.get('answer-name', 'answerset'),
                          'paths': config.build_specs['paths']}
     AnswerSetBuilder = LatexCompiler(answer_buildspecs,
-                                    searchdirs = [config.autoprob_package_dir])
+                                    searchdirs=[config.autoprob_package_root,
+                                                config.autoprob_package_dir])
     
     answer_docspecs = deepcopy(config.document_specs) 
     answer_docspecs['structure'] = [] 
@@ -169,7 +172,7 @@ def latex_subcommand(args):
     autoprob package directory on the search path.
 
     If the source file contains ``\\begin{pycode}`` blocks, a pythontex pass
-    is automatically inserted between the first and second pdflatex runs.
+    is automatically inserted between two latexmk+xelatex runs.
     """
     from importlib.resources import files
 
@@ -177,10 +180,12 @@ def latex_subcommand(args):
     if not tex_file.exists():
         raise FileNotFoundError(f'LaTeX source file not found: {tex_file}')
 
-    # locate autoprob package directory
+    # locate autoprob package directory and bundled latexmkrc
     autoprob_dir = files('pygacity') / 'resources' / 'autoprob-package' / 'tex' / 'latex'
+    autoprob_dir_arg = Path(autoprob_dir).as_posix()
+    latexmkrc = Path(files('pygacity') / 'resources' / 'latexmkrc').as_posix()
 
-    pdflatex = _resolve_executable('pdflatex')
+    latexmk = _resolve_executable('latexmk')
 
     # detect pythontex requirement by scanning the source for pycode environments
     has_pycode = r'\begin{pycode}' in tex_file.read_text(encoding='utf-8', errors='replace')
@@ -189,33 +194,33 @@ def latex_subcommand(args):
         logger.info(f'pycode blocks detected in {tex_file.name}; pythontex will be run')
 
     output_dir = args.output_dir or '.'
-    output_option = f'-output-directory={output_dir}' if output_dir != '.' else ''
+    output_option = f'-outdir={output_dir}' if output_dir != '.' else ''
     stem = tex_file.stem
     pytxcode_target = f'{output_dir}/{stem}' if output_dir != '.' else stem
 
-    pdflatex_cmd = Command(
-        f'{pdflatex} -interaction=nonstopmode -file-line-error '
-        f'-include-directory={autoprob_dir} '
-        f'{output_option} {tex_file}',
+    latexmk_cmd = Command(
+        f'{latexmk} -r "{latexmkrc}" -xelatex -interaction=nonstopmode -file-line-error '
+        f'-latexoption="-include-directory={autoprob_dir_arg}" '
+        f'{output_option} "{tex_file}"',
         ignore_codes=[1],
     )
 
-    def run_pdflatex(label):
-        logger.info(f'pdflatex {label}: {tex_file.name}')
-        out, err = pdflatex_cmd.run()
-        logger.debug(f'pdflatex output:\n{out}')
-        logger.debug(f'pdflatex stderr:\n{err}')
+    def run_latexmk(label):
+        logger.info(f'latexmk+xelatex {label}: {tex_file.name}')
+        out, err = latexmk_cmd.run()
+        logger.debug(f'latexmk output:\n{out}')
+        logger.debug(f'latexmk stderr:\n{err}')
 
     if has_pycode:
-        run_pdflatex('pass 1/2')
+        run_latexmk('pass 1/2')
         logger.info(f'pythontex: {tex_file.name}')
         out, err = Command(f'{pythontex} {pytxcode_target}').run()
         logger.debug(f'pythontex output:\n{out}')
         logger.debug(f'pythontex stderr:\n{err}')
-        run_pdflatex('pass 2/2')
+        run_latexmk('pass 2/2')
     else:
         for i in range(args.runs):
-            run_pdflatex(f'pass {i + 1}/{args.runs}')
+            run_latexmk(f'run {i + 1}/{args.runs}')
 
     pdf = Path(output_dir) / f'{stem}.pdf'
     if pdf.exists():

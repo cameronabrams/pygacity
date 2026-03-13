@@ -52,7 +52,10 @@ S_{\rm out} & = S_{\rm in}\\
 \Sb(T_3,P_3) - \Sb(T_1,P_1) + \alpha\left[\Sb(T_3,P_3)-\Sb(T_2,P_2)\right] & = 0\\
 C^*_{\rm P}\ln\frac{T_3}{T_1} - R\ln\frac{P_3}{P_1} + \alpha\left[C^*_{\rm P}\ln\frac{T_3}{T_2}-R\ln\frac{P_3}{P_2}\right] & = 0\\
 C^*_{\rm P}\ln\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right) - R\ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right) & = 0\\
-\ln\left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C^*_{\rm P}}{R}}\right] & = \ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right)\\
+\ln\left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C^*_{\rm P}}{R}}\right] & = \ln\left(\frac{P_3^{1+\alpha}}{P_1P_2^\alpha}\right)
+\end{align*}
+Solving for $P_3$ gives
+\begin{align*}
 \Rightarrow\ P_3 & = \left[\left(\frac{T_3^{1+\alpha}}{T_1T_2^\alpha}\right)^{\frac{C^*_{\rm P}}{R}}P_1P_2^\alpha\right]^{\frac{1}{1+\alpha}}\\
 & = \left[\left(\frac{(\pypl[0]{T3})^{(1+\pypl[3]{alpha})}}{(\pypl[0]{T1}) (\pypl[0]{T2})^{\pypl[3]{alpha}}}\right)^{\py{cpr}} (\pypl[0]{P1}) (\pypl[0]{P2})^{\pypl[3]{alpha}}\right]^{\frac{1}{1+\pypl[3]{alpha}}} \\
 & = \fbox{\pypp[0]{P3}}.

@@ -153,7 +153,7 @@ def cli():
         '--runs',
         type=int,
         default=2,
-        help='number of pdflatex passes (default: 2)'
+        help='number of latexmk invocations when no pycode blocks are present (default: 2)'
     )
     command_parsers['distribute'].add_argument(
         'build_dir',

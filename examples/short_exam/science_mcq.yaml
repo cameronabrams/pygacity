@@ -1,0 +1,72 @@
+config:
+  count: 5
+  shuffle: true
+  instructions: |
+    \textbf{Multiple choice.}  Circle the letter of the best answer.
+  type: multiple_choice
+  shuffle_choices: true
+content:
+  - Q: What is the SI unit of electric current?
+    choices:
+      A: Volt
+      B: Watt
+      C: Ampere
+      D: Ohm
+    A: C
+    text: The ampere (A) is the SI base unit of electric current.
+  - Q: Which gas makes up the largest fraction of Earth's atmosphere?
+    choices:
+      A: Oxygen
+      B: Argon
+      C: Carbon dioxide
+      D: Nitrogen
+    A: D
+    text: Nitrogen makes up approximately 78\% of Earth's atmosphere.
+  - Q: What is the speed of light in a vacuum?
+    choices:
+      A: \(3.0 \times 10^6\) m/s
+      B: \(3.0 \times 10^8\) m/s
+      C: \(3.0 \times 10^{10}\) m/s
+      D: \(3.0 \times 10^{12}\) m/s
+    A: B
+    text: The speed of light in a vacuum is approximately \(3.0 \times 10^8\) m/s.
+  - Q: Which of the following is a vector quantity?
+    choices:
+      A: Mass
+      B: Temperature
+      C: Speed
+      D: Velocity
+    A: D
+    text: Velocity is a vector quantity because it has both magnitude and direction. Speed is a scalar.
+  - Q: What is the chemical symbol for gold?
+    choices:
+      A: Go
+      B: Gd
+      C: Au
+      D: Ag
+    A: C
+    text: Gold's chemical symbol Au comes from the Latin word \textit{aurum}.
+  - Q: Which law states that the pressure of a fixed amount of gas is inversely proportional to its volume at constant temperature?
+    choices:
+      A: Charles's Law
+      B: Avogadro's Law
+      C: Boyle's Law
+      D: Gay-Lussac's Law
+    A: C
+    text: Boyle's Law states that \(P \propto 1/V\) at constant temperature.
+  - Q: How many protons does a carbon atom have?
+    choices:
+      A: 4
+      B: 6
+      C: 8
+      D: 12
+    A: B
+    text: Carbon has atomic number 6, meaning it has 6 protons in its nucleus.
+  - Q: What is the unit of frequency?
+    choices:
+      A: Joule
+      B: Newton
+      C: Pascal
+      D: Hertz
+    A: D
+    text: Frequency is measured in hertz (Hz), where 1 Hz = 1 cycle per second.

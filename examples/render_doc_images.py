@@ -140,6 +140,22 @@ def render_singlet(dpi: int, build: bool):
     render_pages(b / 'radius-singlet_soln.pdf', 'singlet_soln', [1], dpi)
 
 
+def render_short_exam(dpi: int, build: bool):
+    d = EXAMPLES_DIR / 'short_exam'
+    if build:
+        run_build(d, yaml_file='ShortExam.yaml')
+    b = d / 'build'
+    print('\nRendering short_exam ...')
+    students = serial_pdfs(b, 'Quiz1-*.pdf')
+    solns    = serial_pdfs(b, 'Quiz1_soln-*.pdf')
+    if len(students) >= 1:
+        render_pages(students[0], 'short_exam_s1',      [1], dpi)
+    if len(students) >= 2:
+        render_pages(students[1], 'short_exam_s2',      [1], dpi)
+    if len(solns) >= 1:
+        render_pages(solns[0],    'short_exam_s1_soln', [1], dpi)
+
+
 def render_thermo_exam(dpi: int, build: bool):
     d = EXAMPLES_DIR / 'thermo_exam'
     if build:
@@ -171,11 +187,11 @@ def main():
     parser.add_argument('--dpi', type=int, default=150,
                         help='PNG resolution in dots per inch (default: 150)')
     parser.add_argument('examples', nargs='*',
-                        choices=['simple_assignment', 'compound_exam', 'singlet', 'thermo_exam'],
+                        choices=['simple_assignment', 'compound_exam', 'singlet', 'thermo_exam', 'short_exam'],
                         help='Examples to render (default: all)')
     args = parser.parse_args()
 
-    targets = args.examples or ['simple_assignment', 'compound_exam', 'singlet', 'thermo_exam']
+    targets = args.examples or ['simple_assignment', 'compound_exam', 'singlet', 'thermo_exam', 'short_exam']
     build = not args.no_build
 
     dispatch = {
@@ -183,6 +199,7 @@ def main():
         'compound_exam':     render_compound_exam,
         'singlet':           render_singlet,
         'thermo_exam':       render_thermo_exam,
+        'short_exam':        render_short_exam,
     }
     for name in targets:
         dispatch[name](dpi=args.dpi, build=build)

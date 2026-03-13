@@ -1,0 +1,6 @@
+# pygacity latexmk configuration
+#
+# This file is intentionally minimal and is packaged so users can customize
+# latexmk behavior centrally if needed. Pygacity sets the TeX engine and
+# orchestrates pythontex explicitly in its build pipeline.
+

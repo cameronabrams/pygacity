@@ -1,0 +1,30 @@
+document:
+  preamble:
+    pagestyle: ~
+    font: |
+      \setmainfont{Lato}
+    commands:
+      Universityname: University of Nowhere
+      Departmentname: Mechanical Engineering
+      Instructorname: Eustace T. Smartypants
+      Instructoremail: ets@unow.edu
+      Termcode: 202525
+      Termname: Winter 2025-2026
+      Coursename: BIO 5678 - Applied Pyrohydrodynamics
+  structure:
+    - pythontex:
+        - setup
+    - text: |
+        \examheader{Quiz 1}{January 13, 2026}
+        \noindent\textbf{Instructions:} This is a closed-book quiz.
+    - source: short.tex
+      config: science_mcq.yaml
+      toplevel: true
+    - pythontex:
+        - teardown
+build:
+  seed: 42
+  copies: 3
+  job-name: Quiz1
+  paths:
+    build-dir: ./build

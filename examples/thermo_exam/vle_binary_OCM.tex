@@ -162,7 +162,7 @@ Additionally, we need its derivative $df/dx$:
 
 NR says that the quantity $x - f/(df/dx)$ is a better approximation to the solution of the implicit equation than is just $x$.  So we follow an iterative strategy in which the "current" value of $x$ is updated to "new" value of $x$, which then becomes the "current" value to give as another "new" value, and so on.  When the absolute value of the correction term $f/(df/dx)$ falls below some tolerance $\epsilon$, then we stop and claim victory.\\*[1em]
 
-To begin, we need an initial guess for $x$.  We know that ethanoate (species 1) is much more volatile than $n$-heptane (species 2) at the temperature because it has the higher vapor pressure.  So that means that we expect that, in the absence of any azeotropes, that the liquid in equilibrium with a vapor will have a much lower mole fraction of ethanoate than that vapor does.  So we expect $x$ to be much less than \pypp[2]{ydew}. Let's begin with $x$ = \pypp[2]{xinit} and use a tolerance $\epsilon$ of \py{tu.format_sig(epsilon, sig=1)}:
+To begin, we need an initial guess for $x$.  We know that ethanoate (species 1) is much more volatile than $n$-heptane (species 2) at the temperature because it has the higher vapor pressure.  So that means that we expect that, in the absence of any azeotropes, that the liquid in equilibrium with a vapor will have a much lower mole fraction of ethanoate than that vapor does.  So we expect $x$ to be much less than \pypp[2]{ydew}. Let's begin with $x$ = \pypp[2]{xinit} and use a tolerance $\epsilon$ of \(\py{tu.format_sig(epsilon, sig=1)}\):
 
 \begin{table}[h]
 \begin{center}

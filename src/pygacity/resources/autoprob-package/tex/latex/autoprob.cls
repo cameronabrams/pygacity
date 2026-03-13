@@ -18,6 +18,7 @@
 \LoadClass{article}
 
 % core
+\RequirePackage{fontspec}
 \RequirePackage{graphicx}
 \RequirePackage{xcolor}
 \RequirePackage[margin=1in]{geometry}

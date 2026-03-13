@@ -92,6 +92,7 @@ class Config:
 
         self.autoprob_package_root = self.resource_root / 'autoprob-package'
         self.autoprob_package_dir = self.autoprob_package_root / 'tex' / 'latex'
+        self.latexmkrc_file = self.resource_root / 'latexmkrc'
         logger.debug(f'autoprob_package_root {self.autoprob_package_root}')
         
         self.progress = self.build_specs.get('progress', False)
@@ -145,6 +146,9 @@ class Config:
                     '11pt'
                 ]
             },
+            'preamble': {
+                'pagestyle': 'single',
+            },
             'structure': [
                 {'pythontex': [
                     'setup',
@@ -167,7 +171,7 @@ class Config:
             'job-name': Path(tex_sourcefile).stem + '-singlet',
             'paths': {
                 'build-dir': './build_singlet',
-                'pdflatex': 'pdflatex',
+                'latexmk': 'latexmk',
                 'pythontex': 'pythontex'
             }
         }
@@ -224,13 +228,18 @@ class Config:
             self.document_specs['substitutions'] = {}
         if 'paths' not in self.build_specs:
             self.build_specs['paths'] = {}
-        for cmd in ['pdflatex', 'pythontex']:
+        # Backward compatibility: accept legacy pdflatex key but prefer latexmk.
+        if 'latexmk' not in self.build_specs['paths'] and 'pdflatex' in self.build_specs['paths']:
+            logger.warning('build.paths.pdflatex is deprecated; using default "latexmk" for build.paths.latexmk')
+            self.build_specs['paths']['latexmk'] = 'latexmk'
+
+        for cmd in ['latexmk', 'pythontex']:
             if cmd not in self.build_specs['paths']:
                 self.build_specs['paths'][cmd] = cmd
                 logger.debug(f'Setting default path for {cmd} to "{cmd}"')
                 if not is_executable(cmd):
                     if self.platform == 'win32':
-                        # default: C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe
+                        # default: C:\Users\cfa22\AppData\Local\Programs\MiKTeX\miktex\bin\x64\latexmk.exe
                         self.build_specs['paths'][cmd] = self.home / 'AppData' / 'Local' / 'Programs' / 'MiKTeX' / 'miktex' / 'bin' / 'x64' / f'{cmd}.exe'
                         cmd = str(self.build_specs['paths'][cmd])
                         if not is_executable(cmd):
@@ -241,12 +250,26 @@ class Config:
                     logger.debug(f'Found {cmd} executable in PATH')
         if 'build-dir' not in self.build_specs['paths']:
             self.build_specs['paths']['build-dir'] = 'build'
+        if 'latexmkrc-profile' not in self.build_specs:
+            self.build_specs['latexmkrc-profile'] = 'pythontex'
+        if self.build_specs['latexmkrc-profile'] not in ['minimal', 'pythontex']:
+            raise ValueError(
+                f'Unknown build.latexmkrc-profile "{self.build_specs["latexmkrc-profile"]}"; '
+                'expected "minimal" or "pythontex"'
+            )
+        if 'latexmkrc' not in self.build_specs['paths']:
+            if self.build_specs['latexmkrc-profile'] == 'pythontex':
+                self.build_specs['paths']['latexmkrc'] = str(self.resource_root / 'latexmkrc-pythontex')
+            else:
+                self.build_specs['paths']['latexmkrc'] = str(self.latexmkrc_file)
         if 'job-name' not in self.build_specs:
             self.build_specs['job-name'] = 'pygacity_document'
         if 'cache-dir' not in self.build_specs['paths']:
             self.build_specs['paths']['cache-dir'] = str(
                 _user_cache_base() / self.build_specs['job-name']
             )
+        if 'pythontex-workflow' not in self.build_specs:
+            self.build_specs['pythontex-workflow'] = 'latexmkrc'
         if 'overwrite' not in self.build_specs:
             self.build_specs['overwrite'] = False
         if 'solutions' not in self.build_specs:

@@ -17,7 +17,7 @@
 % '../' 
 \begin{pycode}
 config = {}
-first_ordinal = 'a'
+first_ordinal = locals().get('first_ordinal', 'a')
 instructions = 'Short-answer, multiple-choice, fill-in-the-blank, and/or true/false questions.'
 
 with open(configfilename, 'r') as f:
@@ -61,10 +61,10 @@ else:
     questions = SQ
 answers = [x['A'] for x in questions]
 
-if 'AnsSet' in locals():
+if 'AnsSet' in locals() and 'qno' in locals():
     for l, t in zip([chr(ord(first_ordinal)+x) for x in range(len(answers))], answers):
         AnsSet.register(qno, group=group, label=l, value=t)
-else:
+elif 'qno' in locals():
     soln = f'{serial}_{qno}_soln.yaml'
     with open(soln,'w') as f:
         yaml.dump(dict(source=f'short.tex', serial=serial, answers=answers),f)

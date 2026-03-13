@@ -20,8 +20,8 @@ class LatexCompiler:
     ----------
     specs : dict
         build specifications
-    pdflatex : str
-        path to pdflatex executable
+    latexmk : str
+        path to latexmk executable
     pythontex : str
         path to pythontex executable
     searchdirs : list of str
@@ -39,14 +39,30 @@ class LatexCompiler:
     """
     def __init__(self, build_specs: dict, searchdirs: list = []):
         self.specs = build_specs
-        self.pdflatex = self.specs['paths']['pdflatex']
+        self.latexmk = self.specs['paths']['latexmk']
+        latexmkrc_spec = self.specs.get('paths', {}).get('latexmkrc')
+        self.latexmkrc = Path(latexmkrc_spec).as_posix() if latexmkrc_spec else None
         self.pythontex = self.specs['paths']['pythontex']
+        # explicit: latexmk -> pythontex -> latexmk
+        # latexmkrc: single latexmk invocation, with pythontex orchestration in latexmkrc
+        self.pythontex_workflow = self.specs.get('pythontex-workflow', 'latexmkrc')
         self.searchdirs = searchdirs
         self.output_dir: str = self.specs.get('paths', {}).get('build-dir', '.')
         self.cache_dir: str = self.specs.get('paths', {}).get('cache-dir', '.cache')
         self.job_name = self.specs.get('job-name', 'document')
         self.working_job_name = self.job_name
         self.FC = FileCollector()
+
+    def _build_latexmk_command(
+        self,
+        includedirs: str,
+        output_option: str,
+        include_rc: bool = True,
+    ) -> str:
+        rc_option = f'-r "{self.latexmkrc}" ' if self.latexmkrc and include_rc else ''
+        return (f'{self.latexmk} {rc_option}-xelatex -interaction=nonstopmode -file-line-error '
+                f'-jobname={self.working_job_name} {includedirs} '
+                f'{output_option} {self.working_job_name}.tex')
 
     def build_commands(self, document: Document = None):
         """
@@ -74,12 +90,13 @@ class LatexCompiler:
         document.write_source(local_output_name=self.working_job_name)
         includedirs = ''
         for d in self.searchdirs:
-            includedirs = includedirs + ' -include-directory=' + str(d)
+            include_dir = Path(d).as_posix()
+            includedirs = includedirs + f' -latexoption="-include-directory={include_dir}"'
         logger.debug(f'includedirs {includedirs}')
         has_pycode = document.has_pycode
         output_option = ''
         if self.output_dir != '.':
-            output_option = f'-output-directory={self.output_dir}'
+            output_option = f'-outdir={self.output_dir}'
         build_path = Path.cwd() / self.output_dir
         
         if self.output_dir != '.':
@@ -93,24 +110,33 @@ class LatexCompiler:
                     else:
                         self.FC.append(file_or_files_or_none)
 
-        repeated_command = (f'{self.pdflatex} -interaction=nonstopmode -file-line-error '
-                                f'-jobname={self.working_job_name} {includedirs} '
-                                f'{output_option} {self.working_job_name}.tex')
-        commands.append(Command(repeated_command, ignore_codes=[1]))
+        use_rc = not (self.pythontex_workflow == 'latexmkrc' and not has_pycode)
+        latexmk_command = self._build_latexmk_command(
+            includedirs,
+            output_option,
+            include_rc=use_rc,
+        )
+        commands.append(Command(latexmk_command, ignore_codes=[1]))
 
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.aux')
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.log')
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.out')
-        self.FC.append(f'{self.output_dir}/{self.working_job_name}.pytxcode')
+        suffixes = ['.aux', '.log', '.out', '.pytxcode', '.fdb_latexmk', '.fls',    '.xdv']
+
+        for suffix in suffixes:
+            self.FC.append(f'{self.output_dir}/{self.working_job_name}{suffix}')
         if has_pycode:
             self.FC.append(f'{self.output_dir}/pythontex-files-{self.working_job_name}')
             if not is_solutions:
                 self.FC.append(f'{self.output_dir}/pythontex-{serial}.log')
             else:
                 self.FC.append(f'{self.output_dir}/pythontex-solutions-{serial}.log')
-            commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
 
-        commands.append(Command(repeated_command, ignore_codes=[1]))
+            if self.pythontex_workflow == 'latexmkrc':
+                if not self.latexmkrc:
+                    raise ValueError('pythontex-workflow "latexmkrc" requires build.paths.latexmkrc')
+            elif self.pythontex_workflow == 'explicit':
+                commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
+                commands.append(Command(latexmk_command, ignore_codes=[1]))
+            else:
+                raise ValueError(f'Unknown pythontex-workflow "{self.pythontex_workflow}"; expected "explicit" or "latexmkrc"')
         return commands
 
     def build_document(self, document: Document = None, cleanup: bool = False):

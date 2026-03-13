@@ -1,0 +1,34 @@
+# pygacity latexmk configuration with pythontex support
+#
+# This profile is intended for use with:
+#   build.pythontex-workflow: latexmkrc
+#   build.latexmkrc-profile: pythontex
+#
+# Strategy: override $xelatex to run pythontex after each xelatex pass.
+#
+# The standard add_cus_dep approach cannot work here.  latexmk requires the
+# dep source and target to share the same stem, but the .pytxcode file lives
+# in $out_dir/<job>.pytxcode while LaTeX needs
+# pythontex-files-<job>/<job>.pytxmcr — different directory prefixes, so the
+# stems never match and the dep never fires.
+
+$xelatex = 'internal xelatex_pythontex %O %S';
+
+sub xelatex_pythontex {
+    # @_ is (%O expanded, %S expanded) — the full xelatex options string and
+    # the source file.  Reconstruct and run the real xelatex command.
+    my $ret = system("xelatex " . join(" ", @_));
+
+    if ($ret == 0) {
+        # Run pythontex if .pytxcode was generated into $out_dir.
+        my $outdir = $out_dir || '.';
+        $outdir =~ s{/+$}{};    # strip any trailing slashes
+        if (-e "$outdir/$jobname.pytxcode") {
+            system("pythontex \"$outdir/$jobname\"");
+        }
+    }
+
+    return $ret;
+}
+
+$clean_ext .= ' pytxcode pytxpyg pythontex_data.pkl';

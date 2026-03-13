@@ -1,0 +1,37 @@
+document:
+  class:
+    classname: autoprob
+    options:
+      - 11pt
+  preamble:
+    pagestyle: null
+    font: null
+    commands:
+      Universityname: University of Nowhere
+      Departmentname: Mechanical Engineering
+      Instructorname: Eustace T. Smartypants
+      Instructoremail: ets@unow.edu
+      Coursename: BIO 5678 - Applied Pyrohydrodynamics
+      Termcode: 202525
+      Termname: Winter 2025-2026
+  structure:
+    - text: |
+        \asnheader{Assignment 1: Random Topics}{January 13, 2026}
+    - question_number: 1
+      source: simple_arithmetic.tex
+      points: 25
+    - question_number: 2
+      source: simple_derivatives.tex
+      points: 25
+    - question_number: 3
+      source: simple_integration.tex
+      points: 25
+    - question_number: 4
+      source: python_numerics.tex
+      points: 25
+build:
+  job-name: Assignment
+  pythontex-workflow: latexmkrc
+  latexmkrc-profile: pythontex
+  paths:
+    build-dir: ./build_latexmkrc
