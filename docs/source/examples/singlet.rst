@@ -41,7 +41,7 @@ From inside the ``singlet/`` directory, run:
     pygacity singlet radius.tex
 
 Pygacity assembles a minimal LaTeX document around the problem fragment,
-runs PDFLaTeX (and pythontex, because the file contains a ``pycode`` block),
+runs ``latexmk`` with XeLaTeX (and pythontex, because the file contains a ``pycode`` block),
 and writes all output to the ``build-singlet/`` directory.
 
 Output

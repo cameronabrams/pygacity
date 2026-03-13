@@ -22,4 +22,4 @@ Then, navigate to the cloned directory and install using pip:
    cd pygacity
    pip install -e .  # the -e flag installs in editable mode
 
-Pygacity uses ``pdflatex`` and ``pythontex`` to build assignments and exams. Make sure you have a working LaTeX distribution installed on your system. You can download and install `TexLive <https://www.tug.org/texlive/>`_ or `MikTex <https://miktex.org/>`_.  These will come with ``pdflatex`` an ``pythontex`` packages.
+Pygacity uses ``latexmk`` (configured to run XeLaTeX) and ``pythontex`` to build assignments and exams. Make sure you have a working LaTeX distribution installed on your system. You can download and install `TexLive <https://www.tug.org/texlive/>`_ or `MikTex <https://miktex.org/>`_. These distributions include ``latexmk``, ``xelatex``, and ``pythontex``.

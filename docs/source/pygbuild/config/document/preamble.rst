@@ -16,9 +16,7 @@ A plain YAML string is inserted verbatim:
 
     document:
       preamble: |
-        \usepackage[T1]{fontenc}
-        \usepackage{lato}
-        \renewcommand{\familydefault}{\sfdefault}
+        \setmainfont{Lato}
 
 This form gives full control but suppresses all pygacity defaults — nothing
 extra is added.
@@ -26,16 +24,16 @@ extra is added.
 Absent / ``null``
 -----------------
 
-If ``preamble`` is omitted entirely or set to ``~``, pygacity applies its
+If ``preamble`` is omitted entirely, pygacity applies its
 built-in defaults: the ``default`` font and the ``default`` pagestyle (see
 below).
 
 Structured dict form
 --------------------
 
-The most flexible form is a mapping with up to three sub-keys: ``font``,
-``pagestyle``, and ``commands``.  Each is optional; ``font`` and ``pagestyle``
-default to ``"default"`` when absent.
+The most flexible form is a mapping with up to four sub-keys: ``font``,
+``pagestyle``, ``colors``, and ``commands``.  Each is optional; ``font`` and
+``pagestyle`` default to ``"default"`` when absent.
 
 .. code-block:: yaml
 
@@ -53,26 +51,18 @@ default to ``"default"`` when absent.
 Controls the font preamble.  Accepted values:
 
 ``"default"`` *(default when absent)*
-    Loads TeX Gyre Heros (a metric-compatible Helvetica substitute) and sets it
-    as the document default:
+    Loads TeX Gyre Heros via ``fontspec`` and sets it as the document default:
 
     .. code-block:: latex
 
-        \usepackage[T1]{fontenc}
-        \usepackage{tgheros}
-        \renewcommand{\familydefault}{\sfdefault}
-
-``"example"``
-    Loads an alternative bundled font configuration.
+        \setmainfont{TeX Gyre Heros}
 
 *literal LaTeX string*
     Any other string is inserted verbatim, e.g.:
 
     .. code-block:: yaml
 
-        font: |
-          \usepackage{lato}
-          \renewcommand{\familydefault}{\sfdefault}
+        font: \setmainfont{Lato}
 
 *dict with* ``input`` *key*
     Reads font preamble from a local file:
@@ -106,9 +96,35 @@ Controls the page-style preamble.  Accepted values follow the same pattern as
     ``<<<serialstr>>>`` is replaced by pygacity at build time with the
     document's serial-number string.
 
+``"single"``
+    A minimal page style suited to single-page documents (singlets):
+
+    .. code-block:: latex
+
+        \pagestyle{fancy}
+        \fancyhf{}
+        \chead{\sc{singlet}}
+        \rfoot{\thepage}
+
 ``~`` *(null)*
     Suppresses the default — no page-style setup is added.  Use this when your
     document class handles headers and footers itself.
+
+``colors``
+^^^^^^^^^^
+
+Controls an optional color / hyperref configuration block.  Accepted values
+follow the same pattern as ``font``:
+
+``"example"``
+    Loads the bundled example color configuration (Drexel blue/yellow palette
+    with ``hyperref`` link colours).
+
+*literal LaTeX string* or *dict with* ``input`` *key*
+    As for ``font`` above.
+
+``~`` *(null, default)*
+    No color preamble is added.
 
 ``commands``
 ^^^^^^^^^^^^

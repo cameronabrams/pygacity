@@ -7,7 +7,7 @@ pygacity
 .. image:: https://static.pepy.tech/badge/pygacity
    :target: https://pepy.tech/projects/pygacity
 
-**Pygacity** ("pie-GAS-ity") is a a tool for building printable assignment, exam, and solution documents using PDFLaTeX and PythonTex.   A user must provide latex/pythontex versions of problems and their solutions, along with YAML-format input to specify document construction.  Pygacity's pythontex integration includes random/unique initial condition generation for numerical problems.
+**Pygacity** ("pie-GAS-ity") is a a tool for building printable assignment, exam, and solution documents using ``latexmk`` with XeLaTeX and PythonTex.   A user must provide latex/pythontex versions of problems and their solutions, along with YAML-format input to specify document construction.  Pygacity's pythontex integration includes random/unique initial condition generation for numerical problems.
 
 .. note::
 

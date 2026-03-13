@@ -13,4 +13,5 @@ walkthrough of the source files, configuration, build command, and output.
    Singlet Problem <examples/singlet>
    Simple Assignment <examples/simple_assignment>
    Compound Exam <examples/compound_exam>
+   Short Exam <examples/short_exam>
    Thermo Exam <examples/thermo_exam>

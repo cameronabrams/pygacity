@@ -86,8 +86,8 @@ From inside the ``simple_assignment/`` directory, run:
 
     pygacity build SimpleAssignment.yaml
 
-Pygacity reads the configuration, assembles the LaTeX source, runs PDFLaTeX
-(and pythontex where needed), and writes the results to the ``build/``
+Pygacity reads the configuration, assembles the LaTeX source, runs ``latexmk``
+with XeLaTeX (and pythontex where needed), and writes the results to the ``build/``
 directory specified in the configuration.
 
 Output
