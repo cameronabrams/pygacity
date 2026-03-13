@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pygacity"
-version = "0.10.0"
+version = "0.10.2"
 authors = [
   { name="Cameron F Abrams", email="cfa22@drexel.edu" },
 ]
