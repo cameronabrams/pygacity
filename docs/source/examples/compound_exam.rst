@@ -44,10 +44,8 @@ that the answer set document can be assembled afterwards.
 
 **question blocks** — each block with a ``question_number`` key is a numbered
 question rendered as an ``\item`` in the compiled document.  The ``points``
-key sets the point value displayed next to each question.  The ``group``
-integer determines how ``AnswerSet`` organises answers into tables; each
-distinct group value gets its own table.  The optional ``config`` key points
-to a YAML question-pool file used by ``short.tex``.
+key sets the point value displayed next to each question.  The optional
+``config`` key points to a YAML question-pool file used by ``short.tex``.
 
 **short.tex reuse** — the same packaged ``short.tex`` template appears four
 times, each time with a different ``config:`` YAML file specifying the question
@@ -66,8 +64,8 @@ serial number, so the same serial always produces the same values.  ``Pick.pick_
 members are accessed via dot notation.
 
 ``AnsSet.register`` records each sub-part answer (labeled ``a``, ``b``, ``c``)
-together with the problem index and group, so the answer set document can
-tabulate all answers across all serials automatically.
+together with the problem index, so the answer set document can tabulate all
+answers across all serials automatically.
 
 The ``\py{...}`` commands embed the drawn values directly in the typeset
 question text, so no manual editing of question numbers is ever needed.
@@ -134,7 +132,7 @@ The ``build/`` directory contains:
 
 - ``ExamI-{serial}.pdf`` — student exam for each serial
 - ``ExamI_soln-{serial}.pdf`` — instructor copy with solutions for each serial
-- ``answerset.pdf`` — consolidated answer key for all serials and all groups
+- ``answerset.pdf`` — consolidated answer key for all serials
 - ``buildfiles.zip`` / ``solnbuildfiles.zip`` — zipped LaTeX sources
 - ``tex_artifacts.zip`` — intermediate LaTeX artifacts
 
@@ -163,7 +161,7 @@ serial's ``Pick.pick_state`` draws independently:
    :align: center
    :alt: Solutions page 1, serial 11364882
 
-**Answer set** — one table per group, one row per serial:
+**Answer set** — one table per question, one row per serial:
 
 .. figure:: ../_static/examples/compound_exam_answerset-1.png
    :width: 90%

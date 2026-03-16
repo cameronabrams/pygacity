@@ -8,9 +8,9 @@ part_b.answer = part_b.C // part_b.D
 part_c = Pick.pick_state({'E': 7,
                           'F': {'pick': {'pickfrom': [8, 9, 10]}}})
 part_c.answer = part_c.E + part_c.F
-AnsSet.register(qno, group=group, label='a', value=part_a.answer)
-AnsSet.register(qno, group=group, label='b', value=part_b.answer)
-AnsSet.register(qno, group=group, label='c', value=part_c.answer)
+AnsSet.register(qno, label='a', value=part_a.answer)
+AnsSet.register(qno, label='b', value=part_b.answer)
+AnsSet.register(qno, label='c', value=part_c.answer)
 \end{pycode}
 \textbf{Simple Arithmetic.} Solve the following arithmetic problems:
 

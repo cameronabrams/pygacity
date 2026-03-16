@@ -17,9 +17,14 @@ class AnswerSet(UserDict):
     def __init__(self, data: dict = {}, serial: int = 0, serialstr: str = None):
         self.serial = serial
         self.serialstr = serialstr if serialstr is not None else str(serial)
-        self.dumpname = f'answers-{serial:08d}.yaml'
+        self.dumpname = f'answers-{self.serialstr}.yaml'
         self.first_index = None
+        self.sources: dict = {}
         super().__init__(data)
+
+    def set_source(self, index: any, source: str):
+        """Record the source filename for a question index."""
+        self.sources[index] = source
 
     def __len__(self):
         return len(self.data)
@@ -184,18 +189,25 @@ class AnswerSuperSet(UserList[AnswerSet]):
     def to_latex(self):
         """
         Converts the **AnswerSuperSet** to a LaTeX formatted string.
-        
+
         Returns
         -------
         str
             LaTeX formatted string representing the **AnswerSuperSet**
         """
         result = ''
-        for group_name, group_data in self.groups.items():
-            df = group_data['df']
-            formatters = group_data.get('formatters', None)
-            logger.debug(f'AnswerSuperSet.to_latex group "{group_name}" with formatters: {formatters}')
-            result += df.to_latex(formatters=formatters, index=False, longtable=True)#,header=self.headings)
+        for index, qdata in self.questions.items():
+            df = qdata['df']
+            formatters = qdata.get('formatters', None)
+            logger.debug(f'AnswerSuperSet.to_latex question "{index}" with formatters: {formatters}')
+            source = self.question_sources.get(index, '')
+            if source:
+                escaped = source.replace('_', r'\_')
+                source_label = f' (\\texttt{{{escaped}}})'
+            else:
+                source_label = ''
+            result += f'\\noindent\\textbf{{Question {index}:{source_label}}}\\\\\n'
+            result += df.to_latex(formatters=formatters, index=False, longtable=True)
         return result
     
     def _check_congruency(self):
@@ -225,66 +237,54 @@ class AnswerSuperSet(UserList[AnswerSet]):
     
     def _make_dfs(self):
         """
-        Constructs pandas DataFrames for the answer data in the collection.
+        Constructs one pandas DataFrame per question index.
+        The ``group`` field on answer entries is ignored; each question gets its
+        own table regardless of grouping.
         """
-        # sort by integer serial so row order is always numerically ascending
         self.data.sort(key=lambda x: x.serial)
-        serials = [x.serial for x in self.data]
         serialstrs = [x.serialstr for x in self.data]
-        values = {'serials': serialstrs}
-        pattern = self.data[0]  # keys in first AnswerSet form the pattern all sets follow
-        self.formatters = {}
-        self.groups = {}
-        # keys in D may be prepended with a common prefix; remove it
+        pattern = self.data[0]
+        self.questions = {}  # index -> {formatters, values, df, source}
+        # strip any common prefix from question indices
         common_prefix = os.path.commonprefix([str(x) for x in pattern.data.keys()])
+        # collect source filenames, applying same prefix stripping as question indices
+        self.question_sources = {
+            str(k)[len(common_prefix):]: v for k, v in pattern.sources.items()
+        }
         logger.debug(f'Overall common prefix: "{common_prefix}"')
         for dataset in self.data:
-            new_dataset_D = {}
+            new_D = {}
             for index in dataset.data.keys():
-                new_index = str(index)[len(common_prefix):]
-                new_dataset_D[new_index] = dataset.data[index]
-            dataset.data = new_dataset_D
+                new_D[str(index)[len(common_prefix):]] = dataset.data[index]
+            dataset.data = new_D
+        # build column structure from the pattern AnswerSet
         for index, AL in pattern.data.items():
-            index_pref = f'{index}-'
-            if len(serials) == 1:
-                index_pref = ''
+            values = {'serials': serialstrs}
+            formatters = {}
             for a in AL:
-                key = f'{index_pref}{a["label"]}'
-                if 'units' in a and a['units']:
-                    key += f' ({a["units"]})'
-                group = a.get('group', None)
-                if group:
-                    if group not in self.groups:
-                        self.groups[group] = dict(formatters={}, df=None, values={'serials': serialstrs})
-                    self.groups[group]['values'][key] = []
-                    if 'formatter' in a:
-                        self.groups[group]['formatters'][key] = a['formatter']
-                else:
-                    values[key] = []
-                    if 'formatter' in a:
-                        self.formatters[key] = a['formatter']
+                label = a.get('label', None)
+                units = a.get('units', None)
+                key = str(label) if label is not None else ''
+                if units:
+                    key += f' ({units})'
+                values[key] = []
+                fmt = a.get('formatter', None)
+                if fmt:
+                    formatters[key] = fmt
+            self.questions[index] = dict(formatters=formatters, values=values, df=None)
+        # fill values from all AnswerSet instances (one per serial)
         for inst in self.data:
             for index, AL in inst.data.items():
-                index_pref = f'{index}-'
-                if len(serials) == 1:
-                    index_pref = ''
                 for a in AL:
-                    key = f'{index_pref}{a["label"]}'
-                    if 'units' in a and a['units']:
-                        key += f' ({a["units"]})'
-                    group = a.get('group', None)
-                    if group:
-                        self.groups[group]['values'][key].append(a['value'])
-                    else:
-                        values[key].append(a['value'])
-        if not self.groups:
-            DF = pd.DataFrame(values)
-            self.groups['base'] = dict(formatters=self.formatters, df=DF)
-        else:
-            for gname, gdata in self.groups.items():
-                logger.debug(f'Building DataFrame for group {gname} with values: {gdata["values"]}')
-                DF = pd.DataFrame(gdata['values'])
-                self.groups[gname]['df'] = DF
-        # print(self.DF)
+                    label = a.get('label', None)
+                    units = a.get('units', None)
+                    key = str(label) if label is not None else ''
+                    if units:
+                        key += f' ({units})'
+                    self.questions[index]['values'][key].append(a['value'])
+        # build DataFrames
+        for index, qdata in self.questions.items():
+            logger.debug(f'Building DataFrame for question {index} with values: {qdata["values"]}')
+            qdata['df'] = pd.DataFrame(qdata['values'])
 
 

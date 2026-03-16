@@ -6,6 +6,7 @@ import pickle
 pythontex_module = sys.modules['__main__']
 logger = getattr(pythontex_module, 'logger', None)
 serial = getattr(pythontex_module, 'serial', 0)
+serialstr = getattr(pythontex_module, 'serialstr', str(serial))
 logger.debug(f'Pygacity pythontex module teardown begins for serial {serial}.')
 
 safe_mplconfig = getattr(pythontex_module, 'safe_mplconfig', None)
@@ -26,9 +27,9 @@ if safe_mplconfig is not None:
 
 if pythontexFC is not None:
     # write this serial's usergenerated files to a pickle for the manager to collect
-    userfiles_pickle  = Path(pythontex_pickle_cache) / f"pythontex-usergenerated-files-{serial}.pkl"
+    userfiles_pickle  = Path(pythontex_pickle_cache) / f"pythontex-usergenerated-files-{serialstr}.pkl"
     if is_solutions:
-        userfiles_pickle = Path(pythontex_pickle_cache) / f"pythontex-solutions-usergenerated-files-{serial}.pkl"
+        userfiles_pickle = Path(pythontex_pickle_cache) / f"pythontex-solutions-usergenerated-files-{serialstr}.pkl"
     if len(pythontexFC.data) > 0:
         logger.debug(f'Pickling pythontexFC with {len(pythontexFC.data)} entries for serial {serial} to {userfiles_pickle.as_posix()}.')
         userfiles_pickle.write_bytes(pickle.dumps(pythontexFC, protocol=pickle.HIGHEST_PROTOCOL))
@@ -40,7 +41,7 @@ else:
 if AnsSet is not None:
     if len(AnsSet) > 0:
         # pickle a non-empty answer set for manager to use
-        pkl = Path(pythontex_pickle_cache) / f"answers-{serial}.pkl"
+        pkl = Path(pythontex_pickle_cache) / f"answers-{serialstr}.pkl"
         pkl.write_bytes(pickle.dumps(AnsSet, protocol=pickle.HIGHEST_PROTOCOL))
 
 logger.debug(f'Pygacity pythontex module teardown complete for serial {serial}.')

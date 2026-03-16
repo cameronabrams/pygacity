@@ -20,8 +20,8 @@ P3 = pow(pow(T3**(1 + alpha) / T1 / T2**alpha, CP_over_R) * P1 * P2**alpha, 1 / 
 P3 = P3.m * ureg.bar
 cpr = tu.frac_or_int_as_tex(fr.Fraction(CP_over_R))
 
-AnsSet.register(qno, group=group, label=r'\(\alpha\)', value=alpha, formatter='{:.3f}')
-AnsSet.register(qno, group=group, label=r'\(P\)', value=P3, formatter='{:.3f}')
+AnsSet.register(qno, label=r'\(\alpha\)', value=alpha, formatter='{:.3f}')
+AnsSet.register(qno, label=r'\(P\)', value=P3, formatter='{:.3f}')
 \end{pycode}
 A stream of air at \pypp[0]{P1} and \pypp[0]{T1} (labeled ``stream 1'') is to be cooled to \pypp[0]{T3} by mixing with another stream of air at \pypp[0]{P2} and \pypp[0]{T2} (labeled ``stream 2'').  Let $\alpha$ be the ratio of the molar flow rate of the hotter stream to that of the cooler stream.  Compute (1) $\alpha$, and (2) the pressure $P$ of the mixed stream (labeled ``stream 3'').  You may assume this is carried out adiabatically and that air is an ideal gas for which $C^*_{\rm P}$ = $\py{cpr}R$.
 

@@ -19,32 +19,26 @@ document:
         \noindent\textbf{Instructions:} This exam is closed book.
     - question_number: 1
       source: compound_arithmetic.tex
-      points: 30        
-      group: 1
+      points: 30
     - question_number: 2
       source: short.tex
       points: 30
       config: derivatives_short_answer.yaml
-      group: 1
     - question_number: 3
       source: simple_integration.tex
       points: 20
-      group: 2
     - question_number: 4
       source: short.tex
       points: 20
       config: geography_fill_in_the_blank.yaml
-      group: 2
     - question_number: 5
       source: short.tex
       points: 10
       config: true_false_questions.yaml
-      group: 3
     - question_number: 6
       source: short.tex
       points: 10
       config: multiple_choice_questions.yaml
-      group: 3
     - pythontex:
         - teardown
 build:

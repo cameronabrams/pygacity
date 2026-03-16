@@ -141,6 +141,8 @@ class LatexBlock:
                 header_contents += f'points = {self.points}\n'
                 header_contents += f'group = {self.group}\n'
                 header_contents += f'qno = {self.question_number}\n'
+                header_contents += f'sourcename = r"""{self.sourcename}"""\n'
+                header_contents += f'if "AnsSet" in locals(): AnsSet.set_source(qno, sourcename)\n'
                 if self.points > 0:
                     header_contents += f'print(f"({self.points} pts.)")\n'
             if self.config_path:
@@ -159,6 +161,8 @@ class LatexBlock:
                     self.textcontents += '### These should be resolved by subsitution prior to execution ###\n'
                     self.textcontents += 'serial = <<<serial>>>\n'
                     self.textcontents += 'serialstr = "<<<serialstr>>>"\n'
+                    self.textcontents += 'serials = <<<serials>>>\n'
+                    self.textcontents += 'serialstrs = <<<serialstrs>>>\n'
                     self.textcontents += '_build_dir = "<<<build_dir>>>"\n'
                     self.textcontents += '_cache_dir = "<<<cache_dir>>>"\n'
                     self.textcontents += 'solutions = <<<solutions>>>\n'

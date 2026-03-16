@@ -14,21 +14,24 @@ import pygacity.pythontex.texutils as tu
 from pygacity.generate.answerset import AnswerSet
 from pygacity.generate.pick import Picker
 from pygacity.util.collectors import FileCollector
+from pygacity.util.colors import *
 
 # pythontex_module is the __main__ module where pythontex code is executed
 # during document compilation
 pythontex_module = sys.modules['__main__']
 serial: int = getattr(pythontex_module, 'serial', 0)
 serialstr: str = getattr(pythontex_module, 'serialstr', str(serial))
+serials: list = getattr(pythontex_module, 'serials', [serial])
+serialstrs: list = getattr(pythontex_module, 'serialstrs', [serialstr])
 build_dir: str = getattr(pythontex_module, '_build_dir', '.')
 cache_dir: str = getattr(pythontex_module, '_cache_dir', '.cache')
 is_solutions: bool = getattr(pythontex_module, 'solutions', False)
 log_level: str = getattr(pythontex_module, 'log_level', 'DEBUG')
 
 _loglevel_numeric = getattr(logging, log_level.upper())
-_pythontex_logfile = f'pythontex-{serial}.log'
+_pythontex_logfile = f'pythontex-{serialstr}.log'
 if is_solutions:
-    _pythontex_logfile = f'pythontex-solutions-{serial}.log'
+    _pythontex_logfile = f'pythontex-solutions-{serialstr}.log'
 logging.basicConfig(filename=_pythontex_logfile,
                     filemode='w',
                     format='%(asctime)s %(name)s %(message)s',
@@ -36,6 +39,7 @@ logging.basicConfig(filename=_pythontex_logfile,
 logger = logging.getLogger(__name__)
 logger.debug(f'Pygacity pythontex module begins')
 logger.debug(f'Pythontex serial:    {serial}')
+logger.debug(f'Pythontex serialstr: {serialstr}')
 logger.debug(f'Pythontex solutions: {is_solutions}')
 logger.debug(f'Pythontex build_dir: {build_dir} (pythontex runs with this as CWD)')
 logger.debug(f'Pythontex cache_dir: {cache_dir}')
@@ -56,6 +60,7 @@ pythontex_pickle_cache.mkdir(parents=True, exist_ok=True)
 logger.debug(f'Pickling to {pythontex_pickle_cache.as_posix()}')
 
 last_qno = 0
+
 
 rng = np.random.default_rng(seed=serial)
 Pick = Picker(serial=serial)

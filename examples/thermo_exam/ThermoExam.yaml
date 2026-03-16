@@ -23,25 +23,23 @@ document:
     - question_number: 1
       source: air_mixing.tex
       points: 30
-      group: 1
     - question_number: 2
       source: desuperheater.tex
       points: 20
-      group: 1
     - question_number: 3
       source: vle_binary_OCM.tex
       points: 20
-      group: 2
     - question_number: 4
       source: ammonia_synthesis.tex
       points: 30
-      group: 3
     - pythontex:
       - showsteamtables
       - teardown
 build:
   seed: 12345
-  copies: 3
+  copies: 30
+  bundle-size: 10
+  two-sided: false
   serial-hex: true
   job-name: ExamI
   paths:

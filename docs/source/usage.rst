@@ -33,12 +33,11 @@ The majority of work in creating a document with ``pygacity`` is in creating pyg
 Other Subcommands
 +++++++++++++++++
 
-``pygacity`` also has four other subcommands:
+``pygacity`` also has three other subcommands:
 
 .. toctree::
    :maxdepth: 2
 
    subcommands/singlet
-   subcommands/answerset
-   subcommands/combine
+   subcommands/bundle
    subcommands/distribute

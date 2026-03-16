@@ -43,6 +43,9 @@ The following objects are available if the document structure includes a `python
 **Objects**: 
 
 - :var:`serial`: the unique serial number for the current document copy being built (an integer)
+- :var:`serialstr`: the formatted string representation of :var:`serial` — a plain decimal string by default, or a zero-padded lowercase hexadecimal string when ``build.serial-hex`` is ``true`` (width controlled by ``build.serial-hex-digits``).  This is the same string used in output filenames.
+- :var:`serials`: a list of all serial integers for the current build run, in the order they were generated.  Useful for generating content that references or summarises all exam versions.
+- :var:`serialstrs`: a list of the formatted string representations of all serials (same formatting rules as :var:`serialstr`), in the same order as :var:`serials`.
 - :var:`rng`: the random number generator instance seeded using **the document serial number**. (The ``seed`` value from the configuration file is only used to generate the list of serial numbers; each document copy gets its own RNG seeded by its serial number.)
 - :var:`Pick`: an instance of the ``Picker`` class that can be used to make random selections in a reproducible way across multiple document copies.
 - :var:`AnsSet`: an instance of the ``AnswerSet`` class that can be used to store and retrieve answers generated during the build process.

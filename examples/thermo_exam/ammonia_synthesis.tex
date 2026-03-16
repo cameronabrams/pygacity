@@ -36,9 +36,9 @@ stoprod_y = rxn.stoichiometric_product_as_tex(base_string=rf'y')
 resultstable = tu.table_as_tex({'Species':[c.as_tex() for c in components],r'$y_i$':mock.ys}, sig=4)
 
 # register answers
-AnsSet.register(qno, group=group, label=r'\(X_{\rm eq}\)', value=mock.Xeq[0], formatter='{:.5f}')
+AnsSet.register(qno, label=r'\(X_{\rm eq}\)', value=mock.Xeq[0], formatter='{:.5f}')
 for y, c in zip(mock.ys, components):
-    AnsSet.register(qno, group=group, label=rf'\(y_{{\rm {c.as_tex()}}}\)', value=y, formatter='{:.5f}')
+    AnsSet.register(qno, label=rf'\(y_{{\rm {c.as_tex()}}}\)', value=y, formatter='{:.5f}')
 \end{pycode}
 Consider the following reaction:
 \[

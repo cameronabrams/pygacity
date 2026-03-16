@@ -13,6 +13,7 @@ Submodules
    :maxdepth: 4
 
    pygacity.util.collectors
+   pygacity.util.colors
    pygacity.util.command
    pygacity.util.distribute
    pygacity.util.pdfutils

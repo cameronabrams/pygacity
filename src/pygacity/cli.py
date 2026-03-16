@@ -6,9 +6,9 @@ import shutil
 
 import argparse as ap
 
-from .generate.build import build, answerset_subcommand, latex_subcommand
+from .generate.build import build, latex_subcommand
 from .util.distribute import distribute_subcommand
-from .util.pdfutils import combine_pdfs
+from .util.pdfutils import bundle_subcommand
 from .util.stringthings import oxford, banner
 
 logger = logging.getLogger(__name__)
@@ -35,17 +35,13 @@ def cli():
             func = build,
             help = 'build document',
             ),
-        'answerset' : dict(
-            func = answerset_subcommand,
-            help = 'remake answer set document from a previous build',
-        ),
-        'combine': dict(
-            func = combine_pdfs,
-            help = 'combine PDFs',
-        ),
         'singlet': dict(
             func = build,
             help = 'build a single problem'
+        ),
+        'bundle': dict(
+            func = bundle_subcommand,
+            help = 'bundle student exam PDFs from a build directory into print-ready PDFs',
         ),
         'distribute': dict(
             func = distribute_subcommand,
@@ -105,25 +101,37 @@ def cli():
         action=ap.BooleanOptionalAction,
         help='completely remove old save dir and build new exams')
     command_parsers['build'].add_argument(
+        '--bundle-size',
+        type=int,
+        default=None,
+        dest='bundle_size',
+        metavar='N',
+        help='number of exams per printed bundle PDF (default: 10; 0 disables bundling; overrides YAML build.bundle-size)')
+    command_parsers['build'].add_argument(
+        '--two-sided',
+        default=None,
+        action=ap.BooleanOptionalAction,
+        dest='two_sided',
+        help='pad each exam to an even page count so the next exam starts on a right-hand page (overrides YAML build.two-sided)')
+    command_parsers['build'].add_argument(
         'f',
         help='mandatory YAML input file')
-    command_parsers['answerset'].add_argument(
-        'f',
-        help='mandatory YAML input file used in a previous build to generate the answer set')
-    command_parsers['combine'].add_argument(
-        '-i',
-        '--input-pdfs',
-        type=str,
-        default=[],
-        nargs='+',  
-        help='space-separated list of PDF file names to combine'
-    )
-    command_parsers['combine'].add_argument(
-        '-o',
-        '--pdf-out',
-        type=str,
-        default='out.pdf',
-        help='name of new output PDF to be created')
+    command_parsers['bundle'].add_argument(
+        'build_dir',
+        help='directory containing built student exam PDFs')
+    command_parsers['bundle'].add_argument(
+        '--bundle-size',
+        type=int,
+        default=10,
+        dest='bundle_size',
+        metavar='N',
+        help='number of exams per bundle PDF (default: 10)')
+    command_parsers['bundle'].add_argument(
+        '--two-sided',
+        default=False,
+        action=ap.BooleanOptionalAction,
+        dest='two_sided',
+        help='pad each exam to an even page count so the next exam starts on a right-hand page')
     command_parsers['singlet'].add_argument(
         'texfile',
         type=str,

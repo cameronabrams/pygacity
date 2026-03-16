@@ -88,3 +88,26 @@ class AnswerSuperSetTests(unittest.TestCase):
             os.remove(f)
         self.assertEqual(len(S), 10)
         logger.debug(S.to_latex())
+
+    def test_superset_per_question(self):
+        """Each question index gets its own DataFrame in S.questions."""
+        oldfiles = glob('answers-*.yaml')
+        for f in oldfiles:
+            os.remove(f)
+        serials = [random.randint(10000000, 99999999) for _ in range(3)]
+        files = []
+        for s in serials:
+            A = AnswerSet(serial=s)
+            for l in ['a', 'b', 'c']:
+                A.register(1, label=l, value='T')
+            A.register(2, label='energy', units='kJ', value=round(float(random.random() * 100), 2), formatter='{:.2f}')
+            A.register(3, label='fugacity', units='MPa', value=round(float(random.random() * 10), 3), formatter='{:.3f}')
+            A.to_yaml()
+            files.append(A.dumpname)
+        S = AnswerSuperSet.from_dumpfiles(files, delete=True)
+        self.assertIn('1', S.questions, "question 1 should be present")
+        self.assertIn('2', S.questions, "question 2 should be present")
+        self.assertIn('3', S.questions, "question 3 should be present")
+        latex = S.to_latex()
+        self.assertIn('energy', latex)
+        self.assertIn('fugacity', latex)

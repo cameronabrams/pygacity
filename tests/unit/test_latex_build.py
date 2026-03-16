@@ -129,6 +129,55 @@ def test_latexcompiler_build_commands_explicit_mode_without_rc():
     assert cmds[1].c.strip() == 'pythontex ./doc-7'
 
 
+def test_check_pythontex_log_no_log_file(tmp_path):
+    """No log file → _check_pythontex_log is a silent no-op."""
+    compiler = LatexCompiler(
+        {'job-name': 'doc', 'paths': {'latexmk': 'lmk', 'latexmkrc': '', 'pythontex': 'ptx', 'build-dir': '.'}},
+    )
+    compiler._pythontex_log = str(tmp_path / 'nonexistent.log')
+    # Should not raise
+    compiler._check_pythontex_log()
+
+
+def test_check_pythontex_log_no_errors(tmp_path, caplog):
+    """Log with 0 errors → no logger.error call."""
+    import logging
+    log_file = tmp_path / 'pythontex-0.log'
+    log_file.write_text('This is PythonTeX 0.18\n\nPythonTeX:  doc - 0 error(s), 0 warning(s)\n', encoding='utf-8')
+    compiler = LatexCompiler(
+        {'job-name': 'doc', 'paths': {'latexmk': 'lmk', 'latexmkrc': '', 'pythontex': 'ptx', 'build-dir': '.'}},
+    )
+    compiler._pythontex_log = str(log_file)
+    with caplog.at_level(logging.ERROR, logger='pygacity.generate.latexcompiler'):
+        compiler._check_pythontex_log()
+    assert caplog.records == []
+
+
+def test_check_pythontex_log_with_errors(tmp_path, caplog):
+    """Log with errors → logger.error is called with count and block content."""
+    import logging
+    log_content = (
+        'This is PythonTeX 0.18\n\n'
+        '-----  Messages for py:default:default  ----\n'
+        '  Traceback (most recent call last):\n'
+        '* PythonTeX stderr - error on line 393:\n'
+        "    KeyError: 'c'\n\n"
+        '---------------------------------------------------\n'
+        'PythonTeX:  doc - 1 error(s), 0 warning(s)\n'
+    )
+    log_file = tmp_path / 'pythontex-0.log'
+    log_file.write_text(log_content, encoding='utf-8')
+    compiler = LatexCompiler(
+        {'job-name': 'doc', 'paths': {'latexmk': 'lmk', 'latexmkrc': '', 'pythontex': 'ptx', 'build-dir': '.'}},
+    )
+    compiler._pythontex_log = str(log_file)
+    with caplog.at_level(logging.ERROR, logger='pygacity.generate.latexcompiler'):
+        compiler._check_pythontex_log()
+    messages = [r.message for r in caplog.records]
+    assert any('1 error' in m for m in messages)
+    assert any("KeyError" in m for m in messages)
+
+
 def test_latex_subcommand_without_pycode_runs_requested_count(monkeypatch, tmp_path):
     _reset_fake_command_state()
     tex = tmp_path / 'plain.tex'

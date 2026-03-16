@@ -72,8 +72,8 @@ while abs(dx) > epsilon:
     dx = -fsav[-1] / dfsav[-1]
 nrdf = pd.DataFrame({r'$x$': xsav, r'$\gamma_1$': g1sav, r'$\gamma_2$': g2sav, r'$[1-2Ax(1-x)]$': dsav, r'$f$': fsav, r'$df/dx$': dfsav})
 nrdf_str = nrdf.to_latex(header=True, index=False, float_format="%.5f")
-nrdf.to_csv(f'nr_dewp_{serial}_{qno}.csv', header=True, index=False)
-pythontexFC.append(f'nr_dewp_{serial}_{qno}.csv')
+nrdf.to_csv(f'nr_dewp_{serialstr}_{qno}.csv', header=True, index=False)
+pythontexFC.append(f'nr_dewp_{serialstr}_{qno}.csv')
 
 xazeo = 0.5 - 0.5 / Aij * np.log(Pv[1] / Pv[0])
 gazeo = acm_ocm(xazeo, Aij)
@@ -83,15 +83,15 @@ gplot = acm_ocm(xplot, Aij)
 Pplot = xplot * gplot[0] * Pv[0] + (1 - xplot) * gplot[1] * Pv[1]
 yplot = xplot * gplot[0] * Pv[0] * np.reciprocal(Pplot)
 
-AnsSet.register(qno, group=group, label=r'a \(P_{\rm bub}\)', value=Pbub, formatter='{:.2f}')
-AnsSet.register(qno, group=group, label=r'b \(P_{\rm dew}\)', value=Pdew, formatter='{:.2f}')
-AnsSet.register(qno, group=group, label=r'c \(x_{\rm az}\)', value=xazeo, formatter='{:.4f}')
-AnsSet.register(qno, group=group, label=r'c \(P_{\rm az}\)', value=Pazeo, formatter='{:.2f}')
+AnsSet.register(qno, label=r'a \(P_{\rm bub}\)', value=Pbub, formatter='{:.2f}')
+AnsSet.register(qno, label=r'b \(P_{\rm dew}\)', value=Pdew, formatter='{:.2f}')
+AnsSet.register(qno, label=r'c \(x_{\rm az}\)', value=xazeo, formatter='{:.4f}')
+AnsSet.register(qno, label=r'c \(P_{\rm az}\)', value=Pazeo, formatter='{:.2f}')
 
 df = pd.DataFrame({'x': xplot, 'y': yplot, 'g1': gplot[0], 'g2': gplot[1], 'P': Pplot})
-df.to_csv(f'pxy-{serial}-{qno}.csv', header=True, index=False)
-pythontexFC.append(f'pxy-{serial}-{qno}.csv')
-logger.debug(f'VLE binary OCM Pxy data saved to pxy-{serial}-{qno}.csv')
+df.to_csv(f'pxy-{serialstr}-{qno}.csv', header=True, index=False)
+pythontexFC.append(f'pxy-{serialstr}-{qno}.csv')
+logger.debug(f'VLE binary OCM Pxy data saved to pxy-{serialstr}-{qno}.csv')
 fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 logger.debug('Plotting VLE binary OCM Pxy diagram')
 ax.plot(xplot, Pplot, label='bub')
@@ -102,9 +102,9 @@ ax.set_xlabel(r'$x_1$, $y_1$')
 ax.set_ylabel(r'$P$ [kPa]')
 ax.legend()
 ax.grid(True)
-plt.savefig(f'mypxy-{serial}-{qno}.pdf', bbox_inches='tight')
-pythontexFC.append(f'mypxy-{serial}-{qno}.pdf')
-logger.debug(f'VLE binary OCM Pxy plot saved to mypxy-{serial}-{qno}.pdf')
+plt.savefig(f'mypxy-{serialstr}-{qno}.pdf', bbox_inches='tight')
+pythontexFC.append(f'mypxy-{serialstr}-{qno}.pdf')
+logger.debug(f'VLE binary OCM Pxy plot saved to mypxy-{serialstr}-{qno}.pdf')
 plt.close()
 
 register_files = pythontexFC.get_filenames()
@@ -202,12 +202,12 @@ Peforming a bubble-point pressure calculation at this composition gives the pres
     & = (\pypl[4]{xazeo})(\pypl[4]{gazeo[0]})(\pypl[1]{Pv[0]}) + (1-\pypl[4]{xazeo})(\pypl[4]{gazeo[1]})(\pypl[1]{Pv[1]}) = \fbox{\pypp[2]{Pazeo}}.
 \end{align*}
 
-\IfFileExists{mypxy-<<<serial>>>-<<<qno>>>.pdf}{
+\IfFileExists{mypxy-<<<serialstr>>>-<<<qno>>>.pdf}{
 The figure below shows the full $Pxy$ diagram for this binary at \pypp[2]{T}, with the azeotrope labeled.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.5\textwidth]{mypxy-<<<serial>>>-<<<qno>>>.pdf}
+\includegraphics[width=0.5\textwidth]{mypxy-<<<serialstr>>>-<<<qno>>>.pdf}
 \end{center}
 \end{figure}
 }{

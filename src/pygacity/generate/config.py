@@ -200,14 +200,17 @@ class Config:
                 with open(self.build_specs['serial-file'], 'r') as f:
                     serials = [int(line.strip()) for line in f if line.strip()]
             else:
-                serial_digits = self.build_specs.get('serial-digits', len(str(self.build_specs['copies'])))
                 # generate 'copies' random serial numbers
+                if self.build_specs.get('serial-hex', False):
+                    hex_digits = self.build_specs.get('serial-hex-digits', 8)
+                    lo, hi = 16 ** (hex_digits - 1), 16 ** hex_digits - 1
+                else:
+                    serial_digits = self.build_specs.get('serial-digits', len(str(self.build_specs['copies'])))
+                    lo, hi = 10 ** (serial_digits - 1), 10 ** serial_digits - 1
                 serials = set()
                 while len(serials) < self.build_specs['copies']:
-                    serial = random.randint(10**(serial_digits-1), 10**serial_digits - 1)
-                    serials.add(serial)
-                serials = list(serials)
-                serials.sort()
+                    serials.add(random.randint(lo, hi))
+                serials = sorted(serials)
         else:
             if self.build_specs.get('serials', None):
                 # check for explict serials
@@ -280,6 +283,12 @@ class Config:
             self.build_specs['serial-digits'] = 8
         if 'serial-hex' not in self.build_specs:
             self.build_specs['serial-hex'] = False
+        if 'serial-hex-digits' not in self.build_specs:
+            self.build_specs['serial-hex-digits'] = 8
+        if 'bundle-size' not in self.build_specs:
+            self.build_specs['bundle-size'] = 10
+        if 'two-sided' not in self.build_specs:
+            self.build_specs['two-sided'] = False
         if 'answer-set' not in self.build_specs:
             self.build_specs['answer-set'] = 'all'
 
@@ -295,11 +304,12 @@ class Config:
         Returns
         -------
         str
-            hexadecimal string if ``build.serial-hex`` is ``true``,
-            otherwise the plain decimal string
+            zero-padded hexadecimal string of width ``build.serial-hex-digits``
+            if ``build.serial-hex`` is ``true``, otherwise the plain decimal string
         """
         if self.build_specs.get('serial-hex', False):
-            return f'{serial:x}'
+            digits = self.build_specs.get('serial-hex-digits', 8)
+            return f'{serial:0{digits}x}'
         return str(serial)
 
     def _setup_paths(self, args: Namespace = None):
@@ -317,5 +327,6 @@ class Config:
                 raise Exception(f'Build directory "{build_path.as_posix()}" already exists and "--overwrite" was not specified.')
 
         cache_path: Path = self.cache_path
-        if not cache_path.exists():
-            cache_path.mkdir(parents=True, exist_ok=True)
+        if cache_path.exists():
+            rmtree(cache_path)
+        cache_path.mkdir(parents=True, exist_ok=True)

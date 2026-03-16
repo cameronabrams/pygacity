@@ -3,6 +3,7 @@
 LaTeX compilation functions for pygacity
 """
 import logging
+import re
 
 from pathlib import Path
 
@@ -52,17 +53,19 @@ class LatexCompiler:
         self.job_name = self.specs.get('job-name', 'document')
         self.working_job_name = self.job_name
         self.FC = FileCollector()
+        self._pythontex_log: str | None = None
 
     def _build_latexmk_command(
         self,
         includedirs: str,
-        output_option: str,
+        source_path: str,
         include_rc: bool = True,
     ) -> str:
         rc_option = f'-r "{self.latexmkrc}" ' if self.latexmkrc and include_rc else ''
+        outdir_option = f'-outdir={self.output_dir} ' if self.output_dir != '.' else ''
         return (f'{self.latexmk} {rc_option}-xelatex -interaction=nonstopmode -file-line-error '
                 f'-jobname={self.working_job_name} {includedirs} '
-                f'{output_option} {self.working_job_name}.tex')
+                f'{outdir_option}"{source_path}"')
 
     def build_commands(self, document: Document = None):
         """
@@ -87,18 +90,21 @@ class LatexCompiler:
         self.working_job_name = self.job_name
         if isinstance(serial, int) and serial > 0:
             self.working_job_name = self.job_name + f'-{serialstr}'
-        document.write_source(local_output_name=self.working_job_name)
+        build_path = Path.cwd() / self.output_dir
+        if self.output_dir != '.':
+            source_path = build_path / f'{self.working_job_name}.tex'
+        else:
+            source_path = Path(f'{self.working_job_name}.tex')
+        document.write_source(local_output_name=str(source_path.with_suffix('')))
         includedirs = ''
         for d in self.searchdirs:
             include_dir = Path(d).as_posix()
             includedirs = includedirs + f' -latexoption="-include-directory={include_dir}"'
+        if self.output_dir != '.':
+            includedirs = includedirs + f' -latexoption="-include-directory={Path.cwd().as_posix()}"'
         logger.debug(f'includedirs {includedirs}')
         has_pycode = document.has_pycode
-        output_option = ''
-        if self.output_dir != '.':
-            output_option = f'-outdir={self.output_dir}'
-        build_path = Path.cwd() / self.output_dir
-        
+
         if self.output_dir != '.':
             # find any configs referenced in document blocks and copy them to output_dir
             for block in document.blocks:
@@ -113,7 +119,7 @@ class LatexCompiler:
         use_rc = not (self.pythontex_workflow == 'latexmkrc' and not has_pycode)
         latexmk_command = self._build_latexmk_command(
             includedirs,
-            output_option,
+            source_path.as_posix(),
             include_rc=use_rc,
         )
         commands.append(Command(latexmk_command, ignore_codes=[1]))
@@ -125,9 +131,11 @@ class LatexCompiler:
         if has_pycode:
             self.FC.append(f'{self.output_dir}/pythontex-files-{self.working_job_name}')
             if not is_solutions:
-                self.FC.append(f'{self.output_dir}/pythontex-{serial}.log')
+                pytx_log = f'{self.output_dir}/pythontex-{serialstr}.log'
             else:
-                self.FC.append(f'{self.output_dir}/pythontex-solutions-{serial}.log')
+                pytx_log = f'{self.output_dir}/pythontex-solutions-{serialstr}.log'
+            self.FC.append(pytx_log)
+            self._pythontex_log = pytx_log
 
             if self.pythontex_workflow == 'latexmkrc':
                 if not self.latexmkrc:
@@ -139,10 +147,28 @@ class LatexCompiler:
                 raise ValueError(f'Unknown pythontex-workflow "{self.pythontex_workflow}"; expected "explicit" or "latexmkrc"')
         return commands
 
+    def _check_pythontex_log(self):
+        """Parse the PythonTeX log and emit logger.error for any reported errors."""
+        if not self._pythontex_log:
+            return
+        log_path = Path(self._pythontex_log)
+        if not log_path.exists():
+            return
+        content = log_path.read_text(encoding='utf-8', errors='replace')
+        match = re.search(r'PythonTeX:\s+\S+\s+-\s+(\d+)\s+error', content)
+        if not match or int(match.group(1)) == 0:
+            return
+        n_errors = int(match.group(1))
+        logger.error(f'PythonTeX reported {n_errors} error(s) in {log_path}')
+        # Extract each message block (between -----...---- delimiters)
+        for block in re.findall(r'(-----[^\n]*\n.*?---+)', content, re.DOTALL):
+            if re.search(r'traceback|error', block, re.IGNORECASE):
+                logger.error(block.strip())
+
     def build_document(self, document: Document = None, cleanup: bool = False):
         """
         Builds the specified document by running the necessary commands.
-        
+
         Parameters
         ----------
         document : **Document**, optional
@@ -156,5 +182,6 @@ class LatexCompiler:
             out, err = c.run()
             logger.debug(f'Command output:\n{out}\n\n')
             logger.debug(f'Command error:\n{err}\n\n')
-        if cleanup:            
+        self._check_pythontex_log()
+        if cleanup:
             self.FC.flush()
