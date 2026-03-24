@@ -3,6 +3,7 @@
 LaTeX compilation functions for pygacity
 """
 import logging
+import os
 import re
 
 from pathlib import Path
@@ -57,15 +58,15 @@ class LatexCompiler:
 
     def _build_latexmk_command(
         self,
-        includedirs: str,
-        source_path: str,
+        source_name: str,
         include_rc: bool = True,
+        outdir: str = None,
     ) -> str:
         rc_option = f'-r "{self.latexmkrc}" ' if self.latexmkrc and include_rc else ''
-        outdir_option = f'-outdir={self.output_dir} ' if self.output_dir != '.' else ''
+        outdir_option = f'"-outdir={outdir}" ' if outdir else ''
         return (f'{self.latexmk} {rc_option}-xelatex -interaction=nonstopmode -file-line-error '
-                f'-jobname={self.working_job_name} {includedirs} '
-                f'{outdir_option}"{source_path}"')
+                f'"-jobname={self.working_job_name}" '
+                f'{outdir_option}"{source_name}"')
 
     def build_commands(self, document: Document = None):
         """
@@ -96,13 +97,15 @@ class LatexCompiler:
         else:
             source_path = Path(f'{self.working_job_name}.tex')
         document.write_source(local_output_name=str(source_path.with_suffix('')))
-        includedirs = ''
-        for d in self.searchdirs:
-            include_dir = Path(d).as_posix()
-            includedirs = includedirs + f' -latexoption="-include-directory={include_dir}"'
+
+        # Build TEXINPUTS so xelatex can find included files regardless of spaces/parens in paths.
+        # TEXINPUTS entries are separated by os.pathsep; a trailing separator tells TeX to
+        # append the default search path after our explicit entries.
+        texinputs_dirs = [str(Path(d)) for d in self.searchdirs]
         if self.output_dir != '.':
-            includedirs = includedirs + f' -latexoption="-include-directory={Path.cwd().as_posix()}"'
-        logger.debug(f'includedirs {includedirs}')
+            texinputs_dirs.append(str(Path.cwd()))
+        texinputs = os.pathsep.join(texinputs_dirs) + os.pathsep
+        logger.debug(f'TEXINPUTS {texinputs}')
         has_pycode = document.has_pycode
 
         if self.output_dir != '.':
@@ -116,13 +119,26 @@ class LatexCompiler:
                     else:
                         self.FC.append(file_or_files_or_none)
 
+        # Run latexmk from the build directory with just the bare filename so that
+        # xelatex never sees a path containing spaces or parentheses.
+        if self.output_dir != '.':
+            latexmk_cwd = str(build_path)
+            latexmk_source = f'{self.working_job_name}.tex'
+            latexmk_outdir = None  # already running inside the output dir
+            pytx_target = self.working_job_name
+        else:
+            latexmk_cwd = None
+            latexmk_source = source_path.as_posix()
+            latexmk_outdir = None
+            pytx_target = self.working_job_name
+
         use_rc = not (self.pythontex_workflow == 'latexmkrc' and not has_pycode)
         latexmk_command = self._build_latexmk_command(
-            includedirs,
-            source_path.as_posix(),
+            latexmk_source,
             include_rc=use_rc,
+            outdir=latexmk_outdir,
         )
-        commands.append(Command(latexmk_command, ignore_codes=[1]))
+        commands.append(Command(latexmk_command, ignore_codes=[1], env={'TEXINPUTS': texinputs}, cwd=latexmk_cwd))
 
         suffixes = ['.aux', '.log', '.out', '.pytxcode', '.fdb_latexmk', '.fls',    '.xdv']
 
@@ -141,8 +157,8 @@ class LatexCompiler:
                 if not self.latexmkrc:
                     raise ValueError('pythontex-workflow "latexmkrc" requires build.paths.latexmkrc')
             elif self.pythontex_workflow == 'explicit':
-                commands.append(Command(f'{self.pythontex} {self.output_dir}/{self.working_job_name}'))
-                commands.append(Command(latexmk_command, ignore_codes=[1]))
+                commands.append(Command(f'{self.pythontex} "{pytx_target}"', env={'TEXINPUTS': texinputs}, cwd=latexmk_cwd))
+                commands.append(Command(latexmk_command, ignore_codes=[1], env={'TEXINPUTS': texinputs}, cwd=latexmk_cwd))
             else:
                 raise ValueError(f'Unknown pythontex-workflow "{self.pythontex_workflow}"; expected "explicit" or "latexmkrc"')
         return commands

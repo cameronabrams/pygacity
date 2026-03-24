@@ -206,15 +206,21 @@ def latex_subcommand(args):
         logger.info(f'pycode blocks detected in {tex_file.name}; pythontex will be run')
 
     output_dir = args.output_dir or '.'
-    output_option = f'-outdir={output_dir}' if output_dir != '.' else ''
+    output_option = f'"-outdir={output_dir}"' if output_dir != '.' else ''
     stem = tex_file.stem
     pytxcode_target = f'{output_dir}/{stem}' if output_dir != '.' else stem
 
+    texinputs_dirs = [autoprob_dir_arg]
+    if output_dir != '.':
+        texinputs_dirs.append(str(Path.cwd()))
+    texinputs = os.pathsep.join(texinputs_dirs) + os.pathsep
+    latexmk_env = {'TEXINPUTS': texinputs}
+
     latexmk_cmd = Command(
         f'{latexmk} -r "{latexmkrc}" -xelatex -interaction=nonstopmode -file-line-error '
-        f'-latexoption="-include-directory={autoprob_dir_arg}" '
         f'{output_option} "{tex_file}"',
         ignore_codes=[1],
+        env=latexmk_env,
     )
 
     def run_latexmk(label):
@@ -226,7 +232,7 @@ def latex_subcommand(args):
     if has_pycode:
         run_latexmk('pass 1/2')
         logger.info(f'pythontex: {tex_file.name}')
-        out, err = Command(f'{pythontex} {pytxcode_target}').run()
+        out, err = Command(f'{pythontex} {pytxcode_target}', env=latexmk_env).run()
         logger.debug(f'pythontex output:\n{out}')
         logger.debug(f'pythontex stderr:\n{err}')
         run_latexmk('pass 2/2')

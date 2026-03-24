@@ -91,14 +91,18 @@ class AnswerSet(UserDict):
         # if value is a numpy data type, convert to native python type
         if hasattr(value, 'item'):
             value = value.item()
+        element = len(self.data[index])
         self.data[index].append(dict(  label=label,
                                        value=value,
                                        units=units,
                                        formatter=formatter,
                                        group=group))
         logger.debug(f'AnswerSet.register index={index} label={label} value={value} units={units} formatter={formatter} group={group}')
+        return (index, element)
     
     def display(self, index: any, element: int = 0):
+        if isinstance(index, tuple):
+            index, element = index
         """
         Returns a formatted string for a particular answer entry.
         

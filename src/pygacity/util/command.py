@@ -2,6 +2,7 @@
 """
 Simple command runner
 """
+import os
 import subprocess
 import sys
 import logging
@@ -9,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command:
-    def __init__(self, command: str, ignore_codes: list[int] = [], timeout: int = 120, **options):
+    def __init__(self, command: str, ignore_codes: list[int] = [], timeout: int = 120, env: dict = None, cwd: str = None, **options):
         """
         Initializes the Command instance.
 
@@ -21,12 +22,18 @@ class Command:
             list of return codes to ignore (default is empty list)
         timeout : int, optional
             seconds to wait before killing the process (default is 120)
+        env : dict, optional
+            extra environment variables to merge with os.environ (default is None)
+        cwd : str, optional
+            working directory for the process (default is None, meaning current directory)
         options : dict
             command-line options as key-value pairs
         """
         self.command = command
         self.ignore_codes = ignore_codes
         self.timeout = timeout
+        self.env = env
+        self.cwd = cwd
         self.options = options
         self.c = f'{self.command} ' + ' '.join([f'-{k} {v}' for k, v in self.options.items()])
 
@@ -43,7 +50,10 @@ class Command:
             if the process exits with a non-zero return code that is not in
             ``self.ignore_codes``
         """
-        process = subprocess.Popen(self.c, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        merged_env = os.environ.copy()
+        if self.env:
+            merged_env.update(self.env)
+        process = subprocess.Popen(self.c, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=merged_env, cwd=self.cwd)
         try:
             out, err = process.communicate(timeout=self.timeout)
         except subprocess.TimeoutExpired:

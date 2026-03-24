@@ -286,7 +286,7 @@ class Config:
         if 'serial-hex-digits' not in self.build_specs:
             self.build_specs['serial-hex-digits'] = 8
         if 'bundle-size' not in self.build_specs:
-            self.build_specs['bundle-size'] = 10
+            self.build_specs['bundle-size'] = 0
         if 'two-sided' not in self.build_specs:
             self.build_specs['two-sided'] = False
         if 'answer-set' not in self.build_specs:

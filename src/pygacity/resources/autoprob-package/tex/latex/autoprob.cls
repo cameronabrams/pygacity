@@ -55,6 +55,7 @@
 \RequirePackage{listings}
 \RequirePackage{pythontex}
 \RequirePackage{tcolorbox}
+\tcbuselibrary{skins}
 
 % lists / headers
 \RequirePackage{enumitem}
@@ -102,10 +103,27 @@ numbers=none
 \newcommand{\inl}[1][]{%
   \lstinline[style=mypython,basicstyle=\ttfamily,#1]%
 }
-% shortcuts for formatting pint.Quantity
-\NewDocumentCommand{\pyff}{O{2}m}{\py{f'{#2:.#1f}'}}
+% general f-string formatter: \pyf{val}{fmt} -> \py{f'{val:fmt}'}
+% NOTE: fmt must not contain ~ (active char); use \pyfP or \pyfL for pint quantities
+\NewDocumentCommand{\pyf}{mm}{\py{f'{#1:#2}'}}
+% shortcuts for formatting plain floats and pint.Quantity values
+% optional arg is decimal-place count; ~ kept in body to avoid active-char expansion
+\NewDocumentCommand{\pyff}{O{2}m}{\pyf{#2}{.#1f}}
 \NewDocumentCommand{\pypl}{O{2}m}{\py{f'{#2:.#1f~L}'}}
 \NewDocumentCommand{\pypp}{O{2}m}{\py{f'{#2:.#1f~P}'}}
+% pint with arbitrary numeric format spec: \pyfP{val}{fmt} / \pyfL{val}{fmt}
+% ~ appended in body so fmt need not contain it
+\NewDocumentCommand{\pyfP}{mm}{\py{f'{#1:#2~P}'}}
+\NewDocumentCommand{\pyfL}{mm}{\py{f'{#1:#2~L}'}}
+% temperature in degC: magnitude formatted to #1 decimal places, no space before °C
+\NewDocumentCommand{\pydegC}{O{1}m}{\pyff[#1]{#2.magnitude}°C}
+% answer box: thick border, rounded corners, lightly tinted background, natural width
+\NewDocumentCommand{\ansbox}{m}{%
+  \tcbox[enhanced, arc=4pt, boxrule=2pt,
+    colframe=black!70, colback=black!5,
+    left=6pt, right=6pt, top=4pt, bottom=4pt,
+    nobeforeafter]{#1}%
+}
 
 \DeclareRobustCommand{\molar}[1]{\protect\underaccent{\bar}{#1}}
 \newcommand{\parmol}[2]{\overline{#1}_{#2}}
