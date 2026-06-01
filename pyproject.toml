@@ -20,10 +20,12 @@ dependencies = [
     "numpy",
     "pandas",
     "scipy",
+    "matplotlib",
+    "pint",
+    "pyyaml",
     "iapws",
     "sandlertools",
     "roman",
-    "progressbar",
     "pypdf2",
     "jinja2",
 ]
